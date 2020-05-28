@@ -24,8 +24,10 @@ CONFIG -= debug_and_release debug_and_release_target
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    usermapslayer.cpp
 
 HEADERS += \
+    usermapslayer.h \
     usermapslayerlib_global.h \
 
 unix {
