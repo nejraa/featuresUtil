@@ -1,11 +1,18 @@
 #ifndef CUSERMAPSLAYER_H
 #define CUSERMAPSLAYER_H
 
+#include "usermapslayerlib_global.h"
+#include "../LayerLib/baselayer.h"
 
-class CUserMapsLayer
+class USERMAPSLAYERLIB_API CUserMapsLayer : public CBaseLayer
 {
+	Q_OBJECT
+
 public:
-	CUserMapsLayer();
+	CUserMapsLayer(QQuickItem *parent = nullptr);
+	~CUserMapsLayer();
+
+	QQuickFramebufferObject::Renderer* createRenderer() const override;
 };
 
 #endif // CUSERMAPSLAYER_H

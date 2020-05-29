@@ -24,11 +24,13 @@ CONFIG -= debug_and_release debug_and_release_target
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    usermapslayer.cpp
+    usermapslayer.cpp \
+    usermapsrenderer.cpp
 
 HEADERS += \
     usermapslayer.h \
-    usermapslayerlib_global.h \
+    usermapslayerlib_global.h \ \
+    usermapsrenderer.h
 
 unix {
     target.path = /usr/lib
@@ -47,11 +49,11 @@ else{LIBS += -L$$OUT_PWD/../LayerLib/ -lLayerLib}
 INCLUDEPATH += $$PWD/../LayerLib
 DEPENDPATH += $$PWD/../LayerLib
 
-if(android){LIBS += -L$$OUT_PWD/../UserMapsDataLib/ -lUserMapsDataLib_$$ANDROID_TARGET_ARCH}
-else{LIBS += -L$$OUT_PWD/../UserMapsDataLib/ -lUserMapsDataLib}
+#if(android){LIBS += -L$$OUT_PWD/../UserMapsDataLib/ -lUserMapsDataLib_$$ANDROID_TARGET_ARCH}
+#else{LIBS += -L$$OUT_PWD/../UserMapsDataLib/ -lUserMapsDataLib}
 
-INCLUDEPATH += $$PWD/../UserMapsDataLib
-DEPENDPATH += $$PWD/../UserMapsDataLib
+#INCLUDEPATH += $$PWD/../UserMapsDataLib
+#DEPENDPATH += $$PWD/../UserMapsDataLib
 
 if(android){LIBS += -L$$OUT_PWD/../ShipDataLib/ -lShipDataLib_$$ANDROID_TARGET_ARCH}
 else{LIBS += -L$$OUT_PWD/../ShipDataLib/ -lShipDataLib}
