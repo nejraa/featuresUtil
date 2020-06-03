@@ -49,11 +49,11 @@ else{LIBS += -L$$OUT_PWD/../LayerLib/ -lLayerLib}
 INCLUDEPATH += $$PWD/../LayerLib
 DEPENDPATH += $$PWD/../LayerLib
 
-#if(android){LIBS += -L$$OUT_PWD/../UserMapsDataLib/ -lUserMapsDataLib_$$ANDROID_TARGET_ARCH}
-#else{LIBS += -L$$OUT_PWD/../UserMapsDataLib/ -lUserMapsDataLib}
+if(android){LIBS += -L$$OUT_PWD/../UserMapsDataLib/ -lUserMapsDataLib_$$ANDROID_TARGET_ARCH}
+else{LIBS += -L$$OUT_PWD/../UserMapsDataLib/ -lUserMapsDataLib}
 
-#INCLUDEPATH += $$PWD/../UserMapsDataLib
-#DEPENDPATH += $$PWD/../UserMapsDataLib
+INCLUDEPATH += $$PWD/../UserMapsDataLib
+DEPENDPATH += $$PWD/../UserMapsDataLib
 
 if(android){LIBS += -L$$OUT_PWD/../ShipDataLib/ -lShipDataLib_$$ANDROID_TARGET_ARCH}
 else{LIBS += -L$$OUT_PWD/../ShipDataLib/ -lShipDataLib}
