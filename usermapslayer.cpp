@@ -12,6 +12,21 @@ CUserMapsLayer::~CUserMapsLayer()
 
 }
 
+void CUserMapsLayer::mousePressEvent(QMouseEvent *event)
+{
+	Q_UNUSED(event);
+}
+
+void CUserMapsLayer::mouseMoveEvent(QMouseEvent *event)
+{
+	Q_UNUSED(event);
+}
+
+void CUserMapsLayer::mouseReleaseEvent(QMouseEvent *event)
+{
+	Q_UNUSED(event);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 /// \fn		QQuickFramebufferObject::Renderer* CUserMapsLayer::createRenderer() const
 ///
