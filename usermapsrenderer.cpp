@@ -18,7 +18,7 @@ void CUserMapsRenderer::render()
 
 void CUserMapsRenderer::synchronize(QQuickFramebufferObject *item)
 {
-
+    Q_UNUSED(item);
 }
 
 void CUserMapsRenderer::initializeGL()
@@ -28,7 +28,7 @@ void CUserMapsRenderer::initializeGL()
 
 void CUserMapsRenderer::renderPrimitives(QOpenGLFunctions *func)
 {
-
+    Q_UNUSED(func);
 }
 
 void CUserMapsRenderer::renderTextures()
