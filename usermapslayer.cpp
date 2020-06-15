@@ -12,6 +12,8 @@ CUserMapsLayer::CUserMapsLayer(QQuickItem *parent)
 	: CBaseLayer(parent)
 {
 	setAcceptedMouseButtons(Qt::AllButtons);
+	QObject::connect(CUserMapsManager::instance(), &CUserMapsManager::selectedObjTypeChanged, this, &CUserMapsLayer::selectedObjType);
+	m_selectedObjPoints = QVector<QPointF>();
 }
 
 CUserMapsLayer::~CUserMapsLayer()
@@ -19,13 +21,27 @@ CUserMapsLayer::~CUserMapsLayer()
 
 }
 
+////////////////////////////////////////////////////////////////////////////////
+/// \fn         CUserMapsLayer::mousePressEvent(QMouseEvent *event)
+///
+/// \brief      When user press on the UI.
+///
+/// \param		event Mouse event.
+////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::mousePressEvent(QMouseEvent *event)
 {
 	qDebug() << "Entered in mousePressEvent";
 	m_onPressTimer.start(2000);
-	Q_UNUSED(event);
+	m_startPoint = event->screenPos();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+/// \fn         CUserMapsLayer::mouseMoveEvent(QMouseEvent *event)
+///
+/// \brief      When user press and moves on UI.
+///
+/// \param		event Mouse event.
+////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::mouseMoveEvent(QMouseEvent *event)
 {
 	if(m_onPressTimer.isActive() || m_isMoving)
@@ -33,33 +49,23 @@ void CUserMapsLayer::mouseMoveEvent(QMouseEvent *event)
 		m_onPressTimer.stop();
 		m_isMoving = true;
 
-		CCoordinates c;
-		CPosition pixelPosition = c.convertPixelCoordsToGeoCoords(event->screenPos());
-
-		QSharedPointer<CUserMapEditor> pEditor = CUserMapsManager::getMapEditor().toStrongRef();
-
-		if(pEditor)
-		{
-			EUserMapObjectType objectType = pEditor->getSelectedObjectType();
-			switch (objectType)
-			{
-			case(EUserMapObjectType::Point):
-			case(EUserMapObjectType::Circle):
-				pEditor->setObjPosition(pixelPosition);
-				break;
-			case(EUserMapObjectType::Line):
-			case(EUserMapObjectType::Area):
-				//Function that accepts vector of points to set position
-				break;
-			}
-		}
+		//Check if this is correct
+		QPointF pointDifference = m_startPoint - event->screenPos();
+		for (int i = 0; i < m_selectedObjPoints.size(); i++)
+			m_selectedObjPoints[i] -= pointDifference;
 	}
-
-	Q_UNUSED(event);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+/// \fn         CUserMapsLayer::mouseReleaseEvent(QMouseEvent *event)
+///
+/// \brief      When user release.
+///
+/// \param		event Mouse event.
+////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::mouseReleaseEvent(QMouseEvent *event)
 {
+	setObjectPosition();
 	m_isMoving = false;
 	qDebug() << "Entered in mouseReleaseEvent";
 	Q_UNUSED(event);
@@ -75,4 +81,62 @@ void CUserMapsLayer::mouseReleaseEvent(QMouseEvent *event)
 QQuickFramebufferObject::Renderer *CUserMapsLayer::createRenderer() const
 {
 	return new CUserMapsRenderer();
+}
+
+void CUserMapsLayer::selectedObjType(EUserMapObjectType objType)
+{
+	m_objectType = objType;
+	switch (objType)
+	{
+	case EUserMapObjectType::Point:
+	case EUserMapObjectType::Circle:
+		convertGeoPointToPixelVector(CUserMapsManager::getObjPosition());
+		break;
+	case EUserMapObjectType::Area:
+	case EUserMapObjectType::Line:
+		convertGeoVectorToPixelVector(CUserMapsManager::getObjPointsVector());
+		break;
+	}
+}
+
+void CUserMapsLayer::convertGeoVectorToPixelVector(QVector<CPosition> objPoints)
+{
+	CCoordinates c;
+	m_selectedObjPoints.clear();
+	foreach (CPosition point, objPoints) {
+		m_selectedObjPoints.append(c.convertGeoCoordsToPixelCoords(point));
+	}
+}
+
+void CUserMapsLayer::convertGeoPointToPixelVector(CPosition objPoint)
+{
+	CCoordinates c;
+	m_selectedObjPoints.clear();
+	m_selectedObjPoints.append(c.convertGeoCoordsToPixelCoords(objPoint));
+}
+
+QVector<CPosition> CUserMapsLayer::convertPixelVectorToGeoVector()
+{
+	CCoordinates c;
+	QVector<CPosition> geoPoints;
+	foreach (QPointF point, m_selectedObjPoints)
+		geoPoints.append(c.convertPixelCoordsToGeoCoords(point));
+
+	return geoPoints;
+}
+
+void CUserMapsLayer::setObjectPosition()
+{
+	QVector<CPosition> objPosition = convertPixelVectorToGeoVector();
+	switch (m_objectType)
+	{
+	case EUserMapObjectType::Point:
+	case EUserMapObjectType::Circle:
+		CUserMapsManager::setObjPosition(objPosition[0]);
+		break;
+	case EUserMapObjectType::Area:
+	case EUserMapObjectType::Line:
+		CUserMapsManager::setObjPointsVector(objPosition);
+		break;
+	}
 }

@@ -4,6 +4,7 @@
 #include "usermapslayerlib_global.h"
 #include "../LayerLib/baselayer.h"
 #include "../NavUtilsLib/coordinates.h"
+#include "usermapsmanager.h"
 #include <QTimer>
 #include <QSharedPointer>
 
@@ -21,10 +22,21 @@ public:
 
 	QQuickFramebufferObject::Renderer* createRenderer() const override;
 
+
+public slots:
+		void selectedObjType(EUserMapObjectType objType);
 private:
+
+	void convertGeoVectorToPixelVector(QVector<CPosition> objPoints);
+	void convertGeoPointToPixelVector(CPosition objPoint);
+	QVector<CPosition> convertPixelVectorToGeoVector();
+	void setObjectPosition();
 
 	QTimer m_onPressTimer;
 	bool m_isMoving;
+	QVector<QPointF> m_selectedObjPoints;
+	QPointF m_startPoint;
+	EUserMapObjectType m_objectType;
 };
 
 #endif // CUSERMAPSLAYER_H
