@@ -3,7 +3,9 @@
 
 #include "usermapslayerlib_global.h"
 #include "../LayerLib/baselayer.h"
+#include "../NavUtilsLib/coordinates.h"
 #include <QTimer>
+#include <QSharedPointer>
 
 class USERMAPSLAYERLIB_API CUserMapsLayer : public CBaseLayer
 {
@@ -23,7 +25,6 @@ private:
 
 	QTimer m_onPressTimer;
 	bool m_isMoving;
-
 };
 
 #endif // CUSERMAPSLAYER_H

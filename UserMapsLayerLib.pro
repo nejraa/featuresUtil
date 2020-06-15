@@ -66,3 +66,9 @@ else{LIBS += -L$$OUT_PWD/../OpenGLBaseLib/ -lOpenGLBaseLib}
 
 INCLUDEPATH += $$PWD/../OpenGLBaseLib
 DEPENDPATH += $$PWD/../OpenGLBaseLib
+
+if(android){LIBS += -L$$OUT_PWD/../NavUtilsLib/ -lNavUtilsLib_$$ANDROID_TARGET_ARCH}
+else{LIBS += -L$$OUT_PWD/../NavUtilsLib/ -lNavUtilsLib}
+
+INCLUDEPATH += $$PWD/../NavUtilsLib
+DEPENDPATH += $$PWD/../NavUtilsLib
