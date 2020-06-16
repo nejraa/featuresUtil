@@ -9,6 +9,7 @@
 #include "usermappointeditor.h"
 
 const int TIME_LIMIT = 500;
+const int LONG_PRESS = 2000;
 
 CUserMapsLayer::CUserMapsLayer(QQuickItem *parent)
 	: CBaseLayer(parent)
@@ -36,6 +37,7 @@ void CUserMapsLayer::mousePressEvent(QMouseEvent *event)
 	m_startPoint = event->screenPos();
 	m_isMoving = false;
 	m_newTime = 0;
+	m_longPressTime = QDateTime::currentMSecsSinceEpoch();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -55,6 +57,7 @@ void CUserMapsLayer::mouseMoveEvent(QMouseEvent *event)
 		m_onPressTimer.stop();
 		m_isMoving = true;
 		m_newTime = QDateTime::currentMSecsSinceEpoch();
+		m_longPressTime = 0;
 
 		QPointF pointDifference = m_startPoint - event->screenPos();
 		m_startPoint = event->screenPos();
@@ -72,6 +75,13 @@ void CUserMapsLayer::mouseMoveEvent(QMouseEvent *event)
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::mouseReleaseEvent(QMouseEvent *event)
 {
+	if(QDateTime::currentMSecsSinceEpoch() - m_longPressTime >= LONG_PRESS && m_longPressTime != 0)
+	{
+		//TODO Delete the object?
+		//It needs to release button to came here!!!
+		qDebug() << "Long press!";
+	}
+
 	if(m_onPressTimer.isActive() && !m_isMoving)
 		onPositionClicked(event->screenPos());
 	setObjectPosition();
@@ -119,7 +129,8 @@ void CUserMapsLayer::selectedObjType(EUserMapObjectType objType)
 ///
 /// \brief	Converts vector of Geo coordinates into vector of pixel coordinates.
 ///
-/// \param	geoPoints, pixelPoints Vectro of points in Geo and pixel coordinates.
+/// \param	geoPoints Geo coordinates.
+/// \param  pixelPoints Pixel coordinates.
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::convertGeoVectorToPixelVector(const QVector<CPosition> &geoPoints, QVector<QPointF> &pixelPoints)
 {
@@ -136,7 +147,8 @@ void CUserMapsLayer::convertGeoVectorToPixelVector(const QVector<CPosition> &geo
 ///
 /// \brief      Converts Geo point into pixel vector.
 ///
-/// \param		geoPoint, pixelPoints.
+/// \param		geoPoint Geo coordinates.
+/// \param		pixelPoints Pixel coordinates.
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::convertGeoPointToPixelVector(const CPosition &geoPoint, QVector<QPointF> &pixelPoints)
 {

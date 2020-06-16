@@ -38,6 +38,7 @@ private:
 	EUserMapObjectType m_objectType;
 	QVector<QPointF> m_selectedObjPoints;
 	qint64 m_newTime;
+	qint64 m_longPressTime;
 };
 
 #endif // CUSERMAPSLAYER_H
