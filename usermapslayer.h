@@ -6,7 +6,6 @@
 #include "../NavUtilsLib/coordinates.h"
 #include "usermapsmanager.h"
 #include <QTimer>
-#include <QSharedPointer>
 
 class USERMAPSLAYERLIB_API CUserMapsLayer : public CBaseLayer
 {
@@ -16,27 +15,29 @@ public:
 	CUserMapsLayer(QQuickItem *parent = nullptr);
 	~CUserMapsLayer();
 
+	QQuickFramebufferObject::Renderer* createRenderer() const override;
+
+protected:
 	void mousePressEvent(QMouseEvent *event) override;
 	void mouseMoveEvent(QMouseEvent *event) override;
 	void mouseReleaseEvent(QMouseEvent *event) override;
-
-	QQuickFramebufferObject::Renderer* createRenderer() const override;
-
 
 public slots:
 		void selectedObjType(EUserMapObjectType objType);
 private:
 
-	void convertGeoVectorToPixelVector(QVector<CPosition> objPoints);
-	void convertGeoPointToPixelVector(CPosition objPoint);
-	QVector<CPosition> convertPixelVectorToGeoVector();
+	void convertGeoVectorToPixelVector(const QVector<CPosition> &geoPoints, QVector<QPointF> &pixelPoints);
+	void convertGeoPointToPixelVector(const CPosition &geoPoint, QVector<QPointF> &pixelPoints);
+	QVector<CPosition> convertPixelVectorToGeoVector(const QVector<QPointF> &pixelVector);
+	void onPositionClicked(const QPointF &clickedPosition);
 	void setObjectPosition();
 
 	QTimer m_onPressTimer;
 	bool m_isMoving;
-	QVector<QPointF> m_selectedObjPoints;
 	QPointF m_startPoint;
 	EUserMapObjectType m_objectType;
+	QVector<QPointF> m_selectedObjPoints;
+	qint64 m_newTime;
 };
 
 #endif // CUSERMAPSLAYER_H
