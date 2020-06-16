@@ -52,10 +52,8 @@ void CUserMapsLayer::mouseMoveEvent(QMouseEvent *event)
 
 	if(m_onPressTimer.isActive() || m_isMoving)
 	{
-		qDebug() << "MOVEEE";
 		m_onPressTimer.stop();
 		m_isMoving = true;
-
 		m_newTime = QDateTime::currentMSecsSinceEpoch();
 
 		QPointF pointDifference = m_startPoint - event->screenPos();
@@ -126,7 +124,7 @@ void CUserMapsLayer::selectedObjType(EUserMapObjectType objType)
 void CUserMapsLayer::convertGeoVectorToPixelVector(const QVector<CPosition> &geoPoints, QVector<QPointF> &pixelPoints)
 {
 	CCoordinates c;
-	m_selectedObjPoints.clear();
+	pixelPoints.clear();
 	foreach (CPosition point, geoPoints) {
 		pixelPoints.append(c.convertGeoCoordsToPixelCoords(point));
 	}
