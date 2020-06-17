@@ -17,13 +17,17 @@ public:
 
 	QQuickFramebufferObject::Renderer* createRenderer() const override;
 
+public slots:
+		void selectedObjType(EUserMapObjectType objType);
+
 protected:
 	void mousePressEvent(QMouseEvent *event) override;
 	void mouseMoveEvent(QMouseEvent *event) override;
 	void mouseReleaseEvent(QMouseEvent *event) override;
 
-public slots:
-		void selectedObjType(EUserMapObjectType objType);
+
+private slots:
+		void pressTimerTimeout();
 private:
 
 	void convertGeoVectorToPixelVector(const QVector<CPosition> &geoPoints, QVector<QPointF> &pixelPoints);
@@ -38,7 +42,6 @@ private:
 	EUserMapObjectType m_objectType;
 	QVector<QPointF> m_selectedObjPoints;
 	qint64 m_newTime;
-	qint64 m_longPressTime;
 };
 
 #endif // CUSERMAPSLAYER_H

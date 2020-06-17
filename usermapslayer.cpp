@@ -9,7 +9,6 @@
 #include "usermappointeditor.h"
 
 const int TIME_LIMIT = 500;
-const int LONG_PRESS = 2000;
 
 CUserMapsLayer::CUserMapsLayer(QQuickItem *parent)
 	: CBaseLayer(parent)
@@ -17,6 +16,7 @@ CUserMapsLayer::CUserMapsLayer(QQuickItem *parent)
 	setAcceptedMouseButtons(Qt::AllButtons);
 	QObject::connect(CUserMapsManager::instance(), &CUserMapsManager::selectedObjTypeChanged,
 					 this, &CUserMapsLayer::selectedObjType);
+	connect(&m_onPressTimer, &QTimer::timeout, this, &CUserMapsLayer::pressTimerTimeout);
 }
 
 CUserMapsLayer::~CUserMapsLayer()
@@ -37,7 +37,6 @@ void CUserMapsLayer::mousePressEvent(QMouseEvent *event)
 	m_startPoint = event->screenPos();
 	m_isMoving = false;
 	m_newTime = 0;
-	m_longPressTime = QDateTime::currentMSecsSinceEpoch();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -57,7 +56,6 @@ void CUserMapsLayer::mouseMoveEvent(QMouseEvent *event)
 		m_onPressTimer.stop();
 		m_isMoving = true;
 		m_newTime = QDateTime::currentMSecsSinceEpoch();
-		m_longPressTime = 0;
 
 		QPointF pointDifference = m_startPoint - event->screenPos();
 		m_startPoint = event->screenPos();
@@ -75,20 +73,18 @@ void CUserMapsLayer::mouseMoveEvent(QMouseEvent *event)
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::mouseReleaseEvent(QMouseEvent *event)
 {
-	if(QDateTime::currentMSecsSinceEpoch() - m_longPressTime >= LONG_PRESS && m_longPressTime != 0)
-	{	//Long press
-		//TODO Delete the object?
-		//It needs to release button to came here!!!
-		qDebug() << "Long press!";
-	}
-	else if(m_onPressTimer.isActive() && !m_isMoving)
-	{	//Short press
+	if(m_onPressTimer.isActive() && !m_isMoving)
 		onPositionClicked(event->screenPos());
-		qDebug() << "Fast click";
-	}
 	setObjectPosition();
 	m_isMoving = false;
 }
+
+void CUserMapsLayer::pressTimerTimeout()
+{
+	if(!m_isMoving)
+		qDebug() << "Long press";
+	m_onPressTimer.stop();
+ }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// \fn		QQuickFramebufferObject::Renderer* CUserMapsLayer::createRenderer() const
