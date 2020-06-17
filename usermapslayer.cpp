@@ -76,14 +76,16 @@ void CUserMapsLayer::mouseMoveEvent(QMouseEvent *event)
 void CUserMapsLayer::mouseReleaseEvent(QMouseEvent *event)
 {
 	if(QDateTime::currentMSecsSinceEpoch() - m_longPressTime >= LONG_PRESS && m_longPressTime != 0)
-	{
+	{	//Long press
 		//TODO Delete the object?
 		//It needs to release button to came here!!!
 		qDebug() << "Long press!";
 	}
-
-	if(m_onPressTimer.isActive() && !m_isMoving)
+	else if(m_onPressTimer.isActive() && !m_isMoving)
+	{	//Short press
 		onPositionClicked(event->screenPos());
+		qDebug() << "Fast click";
+	}
 	setObjectPosition();
 	m_isMoving = false;
 }
