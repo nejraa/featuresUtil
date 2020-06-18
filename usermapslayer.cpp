@@ -9,6 +9,7 @@
 #include "usermappointeditor.h"
 
 const int TIME_LIMIT = 500;
+const int LONT_PRESS_DURATION_MS = 2000;
 
 CUserMapsLayer::CUserMapsLayer(QQuickItem *parent)
 	: CBaseLayer(parent)
@@ -33,7 +34,7 @@ CUserMapsLayer::~CUserMapsLayer()
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::mousePressEvent(QMouseEvent *event)
 {
-	m_onPressTimer.start(2000);
+	m_onPressTimer.start(LONT_PRESS_DURATION_MS);
 	m_startPoint = event->screenPos();
 	m_isMoving = false;
 	m_newTime = 0;
@@ -184,7 +185,7 @@ QVector<CPosition> CUserMapsLayer::convertPixelVectorToGeoVector(const QVector<Q
 void CUserMapsLayer::onPositionClicked(const QPointF &clickedPosition)
 {
 	CCoordinates c;
-	CUserMapsManager::onPositionClicked(c.convertPixelCoordsToGeoCoords(clickedPosition));
+	CUserMapsManager::selectObject(c.convertPixelCoordsToGeoCoords(clickedPosition));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
