@@ -1,3 +1,14 @@
+////////////////////////////////////////////////////////////////////////////////
+///	\file   usermapsrenderer.h
+///
+///	\author Elreg
+///
+///	\brief	Definition of the CUserMapsLayer class which represents
+///			the user maps layer.
+///
+///	(C) Kelvin Hughes, 2019.
+////////////////////////////////////////////////////////////////////////////////
+
 #include "usermapslayer.h"
 #include "usermapsrenderer.h"
 #include <QDebug>
@@ -185,7 +196,7 @@ QVector<CPosition> CUserMapsLayer::convertPixelVectorToGeoVector(const QVector<Q
 void CUserMapsLayer::onPositionClicked(const QPointF &clickedPosition)
 {
 	CCoordinates c;
-	CUserMapsManager::selectObject(c.convertPixelCoordsToGeoCoords(clickedPosition));
+        CUserMapsManager::selectObject(c.convertPixelCoordsToGeoCoords(clickedPosition));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

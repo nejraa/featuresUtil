@@ -1,9 +1,9 @@
 ////////////////////////////////////////////////////////////////////////////////
-///	@file   usermapsrenderer.h
+///	\file   usermapsrenderer.h
 ///
-///	@author Armin Masic
+///	\author Elreg
 ///
-///	@brief	Declaration of the CUserMapsRenderer class which renders
+///	\brief	Declaration of the CUserMapsRenderer class which renders
 ///			the user maps layer.
 ///
 ///	(C) Kelvin Hughes, 2019.
