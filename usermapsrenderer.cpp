@@ -1,3 +1,14 @@
+////////////////////////////////////////////////////////////////////////////////
+///	\file   usermapsrenderer.h
+///
+///	\author Elreg
+///
+///	\brief	Definition of the CUserMapsRenderer class which renders
+///			the user maps layer.
+///
+///	(C) Kelvin Hughes, 2019.
+////////////////////////////////////////////////////////////////////////////////
+
 #include "usermapsrenderer.h"
 
 CUserMapsRenderer::CUserMapsRenderer()
