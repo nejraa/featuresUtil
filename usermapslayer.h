@@ -29,30 +29,29 @@ public:
 	QQuickFramebufferObject::Renderer* createRenderer() const override;
 
 public slots:
-		void selectedObjType(EUserMapObjectType objType);
+	void setSelectedObjType(EUserMapObjectType objType);
 
 protected:
 	void mousePressEvent(QMouseEvent *event) override;
 	void mouseMoveEvent(QMouseEvent *event) override;
 	void mouseReleaseEvent(QMouseEvent *event) override;
 
-
 private slots:
 		void pressTimerTimeout();
-private:
 
-	void convertGeoVectorToPixelVector(const QVector<CPosition> &geoPoints, QVector<QPointF> &pixelPoints);
-	void convertGeoPointToPixelVector(const CPosition &geoPoint, QVector<QPointF> &pixelPoints);
-	QVector<CPosition> convertPixelVectorToGeoVector(const QVector<QPointF> &pixelVector);
+private:
+	static void convertGeoVectorToPixelVector(const QVector<CPosition> &geoPoints, QVector<QPointF> &pixelPoints);
+	static void convertGeoPointToPixelVector(const CPosition &geoPoint, QVector<QPointF> &pixelPoints);
+	static void convertPixelVectorToGeoVector(const QVector<QPointF> &pixelVector, QVector<CPosition> &geoPoints);
 	void onPositionClicked(const QPointF &clickedPosition);
-	void setObjectPosition();
+	void updateObjectPosition();
 
 	QTimer m_onPressTimer;
-	bool m_isMoving;
-	QPointF m_startPoint;
+	bool m_isCursorMoving;
+	QPointF m_moveEvtStartPoint;
 	EUserMapObjectType m_objectType;
 	QVector<QPointF> m_selectedObjPoints;
-	qint64 m_newTime;
+	qint64 m_moveEvtTimestamp;
 };
 
 #endif // CUSERMAPSLAYER_H
