@@ -184,7 +184,7 @@ QVector<CPosition> CUserMapsLayer::convertPixelVectorToGeoVector(const QVector<Q
 void CUserMapsLayer::onPositionClicked(const QPointF &clickedPosition)
 {
 	CCoordinates c;
-	CUserMapsManager::onPositionClicked(c.convertPixelCoordsToGeoCoords(clickedPosition));
+        CUserMapsManager::selectObject(c.convertPixelCoordsToGeoCoords(clickedPosition));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
