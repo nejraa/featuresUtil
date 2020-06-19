@@ -27,8 +27,11 @@ CUserMapsLayer::CUserMapsLayer(QQuickItem *parent)
 	, m_moveEvtTimestamp(0)
 {
 	setAcceptedMouseButtons(Qt::AllButtons);
-	QObject::connect(CUserMapsManager::instance(), &CUserMapsManager::selectedObjTypeChanged,
-					 this, &CUserMapsLayer::setSelectedObjType);
+	QObject::connect(CUserMapsManager::instance(), &CUserMapsManager::selectedObjChanged,
+					 this, &CUserMapsLayer::setSelectedObject);
+
+	m_onPressTimer.setSingleShot(true);
+	m_onPressTimer.setInterval(LONG_PRESS_DURATION_MS);
 	connect(&m_onPressTimer, &QTimer::timeout, this, &CUserMapsLayer::pressTimerTimeout);
 }
 
@@ -46,7 +49,11 @@ CUserMapsLayer::~CUserMapsLayer()
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::mousePressEvent(QMouseEvent *event)
 {
-	m_onPressTimer.start(LONG_PRESS_DURATION_MS);
+	qDebug() << "PRESSED";
+	if (! CUserMapsManager::getEditModeOn())
+		return;
+
+	m_onPressTimer.start();
 	m_moveEvtStartPoint = event->screenPos();
 	m_isCursorMoving = false;
 }
@@ -60,6 +67,9 @@ void CUserMapsLayer::mousePressEvent(QMouseEvent *event)
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::mouseMoveEvent(QMouseEvent *event)
 {
+	if (! CUserMapsManager::getEditModeOn())
+		return;
+
 	const qint64 currentTimestamp = QDateTime::currentMSecsSinceEpoch();
 	if(currentTimestamp - m_moveEvtTimestamp < MOVE_EVT_TIME_LIMIT)
 		return;
@@ -86,19 +96,22 @@ void CUserMapsLayer::mouseMoveEvent(QMouseEvent *event)
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::mouseReleaseEvent(QMouseEvent *event)
 {
+	if (! CUserMapsManager::getEditModeOn())
+		return;
+
 	if(m_onPressTimer.isActive() && !m_isCursorMoving)
 		onPositionClicked(event->screenPos());
 
 	updateObjectPosition();
 	m_isCursorMoving = false;
+	m_onPressTimer.stop();
 }
 
 void CUserMapsLayer::pressTimerTimeout()
 {
 	if(!m_isCursorMoving)
 		qDebug() << "Long press";
-	m_onPressTimer.stop();
- }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 /// \fn		QQuickFramebufferObject::Renderer* CUserMapsLayer::createRenderer() const
@@ -119,8 +132,11 @@ QQuickFramebufferObject::Renderer *CUserMapsLayer::createRenderer() const
 ///
 /// \param		objType Type of object.
 ////////////////////////////////////////////////////////////////////////////////
-void CUserMapsLayer::setSelectedObjType(EUserMapObjectType objType)
+void CUserMapsLayer::setSelectedObject(bool isObjSelected, EUserMapObjectType objType)
 {
+	if (! isObjSelected)
+		return; //TODO: renderer needs this info.
+
 	m_objectType = objType;
 	switch (objType)
 	{
@@ -146,11 +162,15 @@ void CUserMapsLayer::setSelectedObjType(EUserMapObjectType objType)
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::convertGeoVectorToPixelVector(const QVector<CPosition> &geoPoints, QVector<QPointF> &pixelPoints)
 {
-	CCoordinates c;
+	//	CCoordinates c;
 	pixelPoints.clear();
 	pixelPoints.reserve(geoPoints.size());
 	for (const CPosition &point : geoPoints)
-		pixelPoints.append(c.convertGeoCoordsToPixelCoords(point));
+	{
+		//		pixelPoints.append(c.convertGeoCoordsToPixelCoords(point));
+
+		//TODO
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -164,9 +184,10 @@ void CUserMapsLayer::convertGeoVectorToPixelVector(const QVector<CPosition> &geo
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::convertGeoPointToPixelVector(const CPosition &geoPoint, QVector<QPointF> &pixelPoints)
 {
-	CCoordinates c;
+	//	CCoordinates c;
 	pixelPoints.clear();
-	pixelPoints.append(c.convertGeoCoordsToPixelCoords(geoPoint));
+	//	pixelPoints.append(c.convertGeoCoordsToPixelCoords(geoPoint));
+	//TODO
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -180,11 +201,31 @@ void CUserMapsLayer::convertGeoPointToPixelVector(const CPosition &geoPoint, QVe
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::convertPixelVectorToGeoVector(const QVector<QPointF> &pixelVector, QVector<CPosition> &geoPoints)
 {
-	CCoordinates c;
+	//	CCoordinates c;
 	geoPoints.clear();
 	geoPoints.reserve(pixelVector.size());
-	for (const QPointF &point : pixelVector)
-		geoPoints.append(c.convertPixelCoordsToGeoCoords(point));
+	for (const QPointF &pixelPoint : pixelVector)
+	{
+		//		GEOGRAPHICAL lat;
+		//		GEOGRAPHICAL lon;
+
+		//		//qDebug() << "!!!CCursorReadout::setMousePosition!!!";
+
+		//		//qDebug() << "cursor position  m_pos_x: " << m_pos_x << "  m_pos_y: "<<  m_pos_y;
+		//		CViewCoordinates::Instance()->Convert(PIXEL(point.x()), PIXEL(point.y()), lat, lon);
+
+		//		geoPoints.append(CPosition(double(lat), double(lon)));
+
+		geoPoints.append(convertPixelPointToGeoPoint(pixelPoint));
+	}
+}
+
+CPosition CUserMapsLayer::convertPixelPointToGeoPoint(const QPointF &pixelPoint)
+{
+	GEOGRAPHICAL lat;
+	GEOGRAPHICAL lon;
+	CViewCoordinates::Instance()->Convert(PIXEL(pixelPoint.x()), PIXEL(pixelPoint.y()), lat, lon);
+	return CPosition(double(lat), double(lon));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -196,8 +237,22 @@ void CUserMapsLayer::convertPixelVectorToGeoVector(const QVector<QPointF> &pixel
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::onPositionClicked(const QPointF &clickedPosition)
 {
-	CCoordinates c;
-	CUserMapsManager::selectObject(c.convertPixelCoordsToGeoCoords(clickedPosition));
+	CPosition pos = convertPixelPointToGeoPoint(clickedPosition);
+
+	if (CUserMapsManager::getCreatingNewObj())
+	{
+		CUserMapsManager::addObjPoint(pos);
+		return;
+	}
+
+	if (CUserMapsManager::isObjSelected())
+	{
+		//TODO: probably deselect on click?
+	}
+	else
+	{
+		CUserMapsManager::selectObject(pos);
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////

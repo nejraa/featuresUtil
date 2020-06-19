@@ -29,7 +29,7 @@ public:
 	QQuickFramebufferObject::Renderer* createRenderer() const override;
 
 public slots:
-	void setSelectedObjType(EUserMapObjectType objType);
+	void setSelectedObject(bool isObjSelected, EUserMapObjectType objType);
 
 protected:
 	void mousePressEvent(QMouseEvent *event) override;
@@ -37,12 +37,13 @@ protected:
 	void mouseReleaseEvent(QMouseEvent *event) override;
 
 private slots:
-		void pressTimerTimeout();
+	void pressTimerTimeout();
 
 private:
 	static void convertGeoVectorToPixelVector(const QVector<CPosition> &geoPoints, QVector<QPointF> &pixelPoints);
 	static void convertGeoPointToPixelVector(const CPosition &geoPoint, QVector<QPointF> &pixelPoints);
 	static void convertPixelVectorToGeoVector(const QVector<QPointF> &pixelVector, QVector<CPosition> &geoPoints);
+	static CPosition convertPixelPointToGeoPoint(const QPointF &pixelPoint);
 	void onPositionClicked(const QPointF &clickedPosition);
 	void updateObjectPosition();
 
