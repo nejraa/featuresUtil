@@ -15,9 +15,7 @@
 #include <QSharedPointer>
 #include "../NavUtilsLib/coordinates.h"
 #include <QDateTime>
-#include "usermapeditor.h"
 #include "usermapsmanager.h"
-#include "usermappointeditor.h"
 
 const int MOVE_EVT_TIME_LIMIT = 500;
 const int LONG_PRESS_DURATION_MS = 2000;
