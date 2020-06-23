@@ -24,6 +24,12 @@ public:
 	~CUserMapsLayer();
 
 	QQuickFramebufferObject::Renderer* createRenderer() const override;
+
+public slots:
+    void onOffsetChanged();
+protected:
+    virtual void initialise() override;
+
 };
 
 #endif // CUSERMAPSLAYER_H
