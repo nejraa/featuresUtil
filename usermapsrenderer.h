@@ -19,7 +19,8 @@
 #include "../OpenGLBaseLib/vertexbuffer.h"
 #include "../OpenGLBaseLib/imagetexture.h"
 #include "../OpenGLBaseLib/vertexbuffer.h"
-
+#include "../NavigationToolsLib/vrmshaderprogram.h"
+#include "../NavigationToolsLib/eblshaderprogram.h"
 class CUserMapsRenderer : public CBaseRenderer, public QObject
 {
 public:
@@ -35,13 +36,16 @@ public:
     void updatePoint();
     void updateLine();
     void updateCircle();
+    void updatefillCircle();
     void updatePolygon();
     // Draws
     void drawPoint( QOpenGLFunctions* func );
     void drawLine( QOpenGLFunctions* func );
     void drawCircle( QOpenGLFunctions* func );
+    void drawfilledCircle(QOpenGLFunctions* func );
     void drawPolygon( QOpenGLFunctions* func );
-
+    void drawInlinePolygon( QOpenGLFunctions* func );
+    void initShader();
 
 
 
@@ -59,10 +63,17 @@ private:
     //circle buffer
     QSharedPointer<CVertexBuffer> m_CircleBuf;  ///< OpenGL vertex buffer (vertices and colour) to draw circles
 
+    //circle buffer
+    QSharedPointer<CVertexBuffer> m_InlineCircleBuf;  ///< OpenGL vertex buffer (vertices and colour) to draw inline
+
     //polygon buffer
     QSharedPointer<CVertexBuffer> m_PolygonBuf;  ///< OpenGL vertex buffer (vertices and colour) to draw polygons
 
     QOpenGLDebugLogger *m_pOpenGLLogger;	///< OpenGL error logger
+
+    QSharedPointer<CVRMShaderProgram> m_pVRMShader; //shader used for circles
+
+    QSharedPointer<CEBLShaderProgram> m_pEBLShader;//shader used for lines
 
     void logOpenGLErrors();
 };

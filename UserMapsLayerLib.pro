@@ -24,13 +24,17 @@ CONFIG -= debug_and_release debug_and_release_target
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    eblshaderprogram.cpp \
     usermapslayer.cpp \
-    usermapsrenderer.cpp
+    usermapsrenderer.cpp \
+    vrmshaderprogram.cpp
 
 HEADERS += \
+    eblshaderprogram.h \
     usermapslayer.h \
     usermapslayerlib_global.h \ \
-    usermapsrenderer.h
+    usermapsrenderer.h \
+    vrmshaderprogram.h
 
 unix {
     target.path = /usr/lib
@@ -66,3 +70,6 @@ else{LIBS += -L$$OUT_PWD/../OpenGLBaseLib/ -lOpenGLBaseLib}
 
 INCLUDEPATH += $$PWD/../OpenGLBaseLib
 DEPENDPATH += $$PWD/../OpenGLBaseLib
+
+RESOURCES += \
+    usermapshader.qrc

@@ -24,7 +24,9 @@ CUserMapsRenderer::CUserMapsRenderer()
      m_PointBuf(nullptr),
      m_LineBuf(nullptr),
      m_CircleBuf(nullptr),
-     m_pOpenGLLogger(nullptr)
+     m_pOpenGLLogger(nullptr),
+     m_pVRMShader(nullptr),
+     m_pEBLShader(nullptr)
 
 {
 
@@ -59,11 +61,29 @@ void CUserMapsRenderer::render()
 
 }
 
+void CUserMapsRenderer::initShader()
+{
+    if( m_pVRMShader == nullptr )
+        m_pVRMShader = QSharedPointer<CVRMShaderProgram>(new CVRMShaderProgram());
+    if( m_pEBLShader == nullptr )
+        m_pEBLShader = QSharedPointer<CEBLShaderProgram>(new CEBLShaderProgram());
+
+}
+
+
 void CUserMapsRenderer::synchronize(QQuickFramebufferObject *item)
 {
     Q_UNUSED(item);
+
+
     updatePoint();
+
+    updatefillCircle();
+
     updateCircle();
+
+    updateLine();
+
 }
 
 void CUserMapsRenderer::initializeGL()
@@ -101,11 +121,16 @@ void CUserMapsRenderer::initializeGL()
 void CUserMapsRenderer::renderPrimitives(QOpenGLFunctions *func)
 {
 
+
    drawPoint(func);
+
+   drawfilledCircle(func);
+
    drawCircle(func);
-/*
+
+
    drawLine(func);
-*/
+
 }
 
 void CUserMapsRenderer::renderTextures()
@@ -158,7 +183,7 @@ void CUserMapsRenderer::updateLine() {
         m_LineBuf = nullptr;
     }
 
-    GenericVertexData vertices[6]; //izmijeniti
+    GenericVertexData vertices[2]; //izmijeniti
 
     // Get coordiante system data
     qreal originX = 0.0;
@@ -169,17 +194,17 @@ void CUserMapsRenderer::updateLine() {
     CViewCoordinates::Instance()->getGeoOriginOffsetPixel( offsetX, offsetY );
     int bufferIndex=0;
 
-    float x = static_cast<float>(originX + 6);
-    float y = static_cast<float>(originY + 6); //doraditi da uzima stavke iz singletona mapsmanager-a kad bude gotov
+    float x = static_cast<float>(originX + 10);
+    float y = static_cast<float>(originY + 10); //doraditi da uzima stavke iz singletona mapsmanager-a kad bude gotov
 
-    vertices[bufferIndex].setPosition(QVector4D(x, y, 0.0f, 1.0f));
-    vertices[bufferIndex].setColor(m_LineColour);
+    vertices[bufferIndex].setPosition(QVector4D(x,y, 0.0f, 1.0f));
+    vertices[bufferIndex].setColor(QVector4D(0.0f,1.0f,0.0f, 1.0f));
 
     bufferIndex++;
 
-    vertices[bufferIndex].setPosition(QVector4D(x+1, y+1, 0.0f, 1.0f));
-    vertices[bufferIndex].setColor(m_LineColour);
-
+    vertices[bufferIndex].setPosition(QVector4D(x+1000, 38.0f, 0.0f, 1.0f));
+    vertices[bufferIndex].setColor(QVector4D(0.0f,1.0f,0.0f, 1.0f));
+    bufferIndex++;
     m_LineBuf  = QSharedPointer<CVertexBuffer>( new CVertexBuffer(vertices, bufferIndex));
 
 }
@@ -213,12 +238,12 @@ void CUserMapsRenderer::updateCircle() {
     for ( bufferIndex=0; bufferIndex<=rbDegrees; bufferIndex++ )
     {
         double angle = 2 * M_PI * bufferIndex / rbDegrees;
-        float x = static_cast<float>(10+originX + (radius * std::sin(angle)));
+        float x = static_cast<float>(20+originX + (radius * std::sin(angle)));
         float y = static_cast<float>(originY - (radius * std::cos(angle)));
 
         // Set Vertex data
         vertices[bufferIndex].setPosition(QVector4D(x, y, 0.0f, 1.0f));
-        vertices[bufferIndex].setColor(QVector4D(1.0f,1.0f,1.0f, 1.0f));
+        vertices[bufferIndex].setColor(QVector4D(0.0f,0.0f,1.0f, 1.0f));
 
         // Check if it is the last point
         if( bufferIndex == rbDegrees )
@@ -226,11 +251,56 @@ void CUserMapsRenderer::updateCircle() {
             // Change to transparent colour at the same position
             bufferIndex++;
             vertices[bufferIndex].setPosition(QVector4D(x, y, 0.0f, 1.0f));
-            vertices[bufferIndex].setColor(QVector4D(0.0f,0.0f,0.0f,0.0f));
+            vertices[bufferIndex].setColor(QVector4D(0.0f,0.0f,1.0f,0.0f));
         }
     }
      m_CircleBuf = QSharedPointer<CVertexBuffer>( new CVertexBuffer(vertices, CIRCLE_BUFFER_SIZE));
 
+}
+
+void CUserMapsRenderer::updatefillCircle() {
+    if( !m_CircleBuf.isNull() )
+      {
+          m_CircleBuf.clear();
+          m_CircleBuf = nullptr;
+      }
+
+      GenericVertexData vertices[CIRCLE_BUFFER_SIZE];
+
+      // Get coordiante system data
+      qreal originX = 0.0;
+      qreal originY = 0.0;
+      CViewCoordinates::Instance()->getViewOriginPixel( originX, originY );
+      qreal offsetX = 0.0;
+      qreal offsetY = 0.0;
+      CViewCoordinates::Instance()->getGeoOriginOffsetPixel( offsetX, offsetY );
+      double radius = CViewCoordinates::Instance()->getRadiusPixels();
+
+      int bufferIndex = 0;
+
+      // Draw the circle (line strip)
+      for ( bufferIndex=0; bufferIndex<=rbDegrees; bufferIndex++ )
+      {
+          double angle = 2 * M_PI * bufferIndex / rbDegrees;
+          float x = static_cast<float>(20+originX + (radius * std::sin(angle)));
+          float y = static_cast<float>(originY - (radius * std::cos(angle)));
+
+          // Set Vertex data
+          vertices[bufferIndex].setPosition(QVector4D(x, y, 0.0f, 1.0f));
+          vertices[bufferIndex].setColor(QVector4D(1.0f,0.0f,0.0f, 0.5f));
+
+          // Check if it is the last point
+          if( bufferIndex == rbDegrees )
+          {
+              // Change to transparent colour at the same position
+
+              bufferIndex++;
+              vertices[bufferIndex].setPosition(QVector4D(originX, originY, 0.0f, 1.0f));
+              vertices[bufferIndex].setColor(QVector4D(1.0f,0.0f,0.0f, 0.5f));
+          }
+      }
+       m_InlineCircleBuf = QSharedPointer<CVertexBuffer>( new CVertexBuffer(vertices, CIRCLE_BUFFER_SIZE));
+       //colour fix required
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -341,11 +411,20 @@ void CUserMapsRenderer::drawLine(QOpenGLFunctions *func) {
     CViewCoordinates::Instance()->getViewDimensions( left, right, bottom, top );
     setProjection( left, right, bottom, top, projection );
 
+    initShader();
+
     // Bind the shader
-    m_primShader.bind();
+    m_pEBLShader->bind();
 
     // Set the projection and translation
-    m_primShader.setMVPMatrix(projection * translation);
+    m_pEBLShader->setMVPMatrix(projection * translation);
+
+    GLfloat winWidth = static_cast<float>(right-left);
+    GLfloat winHeight = static_cast<float>(bottom-top);
+
+    m_pEBLShader->setResolution(winWidth, winHeight);
+    m_pEBLShader->setDashSize(10.0f);
+    m_pEBLShader->setGapSize(10.0f);
 
     m_LineBuf->bind();
 
@@ -354,16 +433,17 @@ void CUserMapsRenderer::drawLine(QOpenGLFunctions *func) {
     if( e != GL_FRAMEBUFFER_COMPLETE)
         qDebug() << "CUserMapsRenderer::drawLine() failed! Not GL_FRAMEBUFFER_COMPLETE";
 
-    m_primShader.setupVertexState();
+    m_pEBLShader->setupVertexState();
 
    //ovdje crtati tacke ispitati kako se dobavljaju
+    func->glDrawArrays(GL_LINE_STRIP, 0, 2);
 
     // Tidy up
-    m_primShader.cleanupVertexState();
+    m_pEBLShader->cleanupVertexState();
 
     m_LineBuf->release();
 
-    m_primShader.release();
+   m_pEBLShader->release();
 
 }
 
@@ -417,13 +497,13 @@ void CUserMapsRenderer::drawPolygon(QOpenGLFunctions *func) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// fn     CUserMapsRenderer::drawCircle(QOpenGLFunctions *func)
+/// fn     CUserMapsRenderer::drawfilledCircle(QOpenGLFunctions *func)
 ///
 /// brief  Draws Circle.
 ///
 /// param  Pointer that points to QOpenGLFunctions.
 ////////////////////////////////////////////////////////////////////////////////
-void CUserMapsRenderer::drawCircle(QOpenGLFunctions *func) {
+void CUserMapsRenderer::drawfilledCircle(QOpenGLFunctions *func) {
 
 
     // Set translation matrix (no translation)
@@ -446,7 +526,7 @@ void CUserMapsRenderer::drawCircle(QOpenGLFunctions *func) {
     m_primShader.setMVPMatrix(projection * translation);
 
     // Tell OpenGL which VBOs to use
-    m_CircleBuf->bind();
+    m_InlineCircleBuf->bind();
 
     // Check Frame buffer is OK
     GLenum e = func->glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -455,19 +535,84 @@ void CUserMapsRenderer::drawCircle(QOpenGLFunctions *func) {
 
     m_primShader.setupVertexState();
 
-    // Draw the bearing scale lines from data in the VBOs
-    func->glDrawArrays(GL_LINE_STRIP, 0, CIRCLE_BUFFER_SIZE);
+    // Draw inline and outline circle from data in the VBOs
+    func->glDrawArrays(GL_TRIANGLE_FAN, 0, CIRCLE_BUFFER_SIZE);
     func->glLineWidth( 1 );
 
+
     // Tidy up
+    m_InlineCircleBuf->release();
+
     m_primShader.cleanupVertexState();
 
-    m_CircleBuf->release();
+
 
     m_primShader.release();
 
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+/// fn     CUserMapsRenderer::drawCircle(QOpenGLFunctions *func)
+///
+/// brief  Draws outline Circle.
+///
+/// param  Pointer that points to QOpenGLFunctions.
+////////////////////////////////////////////////////////////////////////////////
+void CUserMapsRenderer::drawCircle(QOpenGLFunctions *func) {
+
+
+    // Set translation matrix (no translation)
+    QMatrix4x4 translation;
+    translation.translate(0.0, 0.0, 0.0);
+
+    // Set projection matrix
+    QMatrix4x4 projection;
+    qreal left = 0;
+    qreal right = 0;
+    qreal top = 0;
+    qreal bottom = 0;
+    CViewCoordinates::Instance()->getViewDimensions( left, right, bottom, top);
+    setProjection( left, right, bottom, top, projection );
+
+    initShader();
+
+    // Bind the shader
+    m_pEBLShader->bind();
+
+    // Set the projection and translation
+    m_pEBLShader->setMVPMatrix(projection * translation);
+
+
+    GLfloat winWidth = static_cast<float>(right-left);
+    GLfloat winHeight = static_cast<float>(bottom-top);
+
+    m_pEBLShader->setResolution(winWidth, winHeight);
+    m_pEBLShader->setDashSize(10.0f);
+    m_pEBLShader->setGapSize(10.0f);
+
+    // Tell OpenGL which VBOs to use
+    m_CircleBuf->bind();
+
+    // Check Frame buffer is OK
+    GLenum e = func->glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if( e != GL_FRAMEBUFFER_COMPLETE)
+        qDebug() << "CBearingScaleRenderer::drawScale() failed! Not GL_FRAMEBUFFER_COMPLETE";
+
+     m_pEBLShader->setupVertexState();
+    func->glLineWidth( 2 );
+
+    func->glDrawArrays(GL_LINE_STRIP, 0, CIRCLE_BUFFER_SIZE);
+
+
+    // Tidy up
+     m_pEBLShader->cleanupVertexState();
+
+    m_CircleBuf->release();
+
+     m_pEBLShader->release();
+
+}
 
 
 

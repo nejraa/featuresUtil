@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/rr"/>
+    <qresource prefix="/">
+        <file>eblFragShader.glsl</file>
+        <file>eblVertexShader.glsl</file>
+        <file>vrmFragShader.glsl</file>
+        <file>vrmVertexShader.glsl</file>
+    </qresource>
+</RCC>
