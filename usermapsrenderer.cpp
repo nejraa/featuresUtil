@@ -24,9 +24,9 @@ CUserMapsRenderer::CUserMapsRenderer()
      m_PointBuf(nullptr),
      m_LineBuf(nullptr),
      m_CircleBuf(nullptr),
+     m_PolygonBuf(nullptr),
      m_pOpenGLLogger(nullptr),
-     m_pVRMShader(nullptr),
-     m_pEBLShader(nullptr)
+     m_pMapShader(nullptr)
 
 {
 
@@ -63,10 +63,8 @@ void CUserMapsRenderer::render()
 
 void CUserMapsRenderer::initShader()
 {
-    if( m_pVRMShader == nullptr )
-        m_pVRMShader = QSharedPointer<CVRMShaderProgram>(new CVRMShaderProgram());
-    if( m_pEBLShader == nullptr )
-        m_pEBLShader = QSharedPointer<CEBLShaderProgram>(new CEBLShaderProgram());
+    if( m_pMapShader == nullptr )
+        m_pMapShader = QSharedPointer<CMapShaderProgram>(new CMapShaderProgram());
 
 }
 
@@ -76,13 +74,11 @@ void CUserMapsRenderer::synchronize(QQuickFramebufferObject *item)
     Q_UNUSED(item);
 
 
-    updatePoint();
-
-    updatefillCircle();
-
-    updateCircle();
-
+    updatefillPolygon();
+    //updatefillCircle();
     updateLine();
+    updateCircle();
+    updatePolygon();
 
 }
 
@@ -122,14 +118,11 @@ void CUserMapsRenderer::renderPrimitives(QOpenGLFunctions *func)
 {
 
 
-   drawPoint(func);
-
-   drawfilledCircle(func);
-
-   drawCircle(func);
-
-
-   drawLine(func);
+    drawfilledPolygon(func);
+  // drawfilledCircle(func);
+    drawLine(func);
+    drawCircle(func);
+    drawPolygon(func);
 
 }
 
@@ -205,6 +198,7 @@ void CUserMapsRenderer::updateLine() {
     vertices[bufferIndex].setPosition(QVector4D(x+1000, 38.0f, 0.0f, 1.0f));
     vertices[bufferIndex].setColor(QVector4D(0.0f,1.0f,0.0f, 1.0f));
     bufferIndex++;
+
     m_LineBuf  = QSharedPointer<CVertexBuffer>( new CVertexBuffer(vertices, bufferIndex));
 
 }
@@ -233,26 +227,29 @@ void CUserMapsRenderer::updateCircle() {
     double radius = CViewCoordinates::Instance()->getRadiusPixels();
 
     int bufferIndex = 0;
+    int k=0;
 
     // Draw the circle (line strip)
-    for ( bufferIndex=0; bufferIndex<=rbDegrees; bufferIndex++ )
+    for ( bufferIndex=0; bufferIndex<=rbDegrees; bufferIndex+=8 )
     {
         double angle = 2 * M_PI * bufferIndex / rbDegrees;
         float x = static_cast<float>(20+originX + (radius * std::sin(angle)));
         float y = static_cast<float>(originY - (radius * std::cos(angle)));
 
         // Set Vertex data
-        vertices[bufferIndex].setPosition(QVector4D(x, y, 0.0f, 1.0f));
-        vertices[bufferIndex].setColor(QVector4D(0.0f,0.0f,1.0f, 1.0f));
+        vertices[k].setPosition(QVector4D(x, y, 0.0f, 1.0f));
+        vertices[k].setColor(QVector4D(0.0f,0.0f,1.0f, 1.0f));
 
         // Check if it is the last point
         if( bufferIndex == rbDegrees )
         {
             // Change to transparent colour at the same position
             bufferIndex++;
-            vertices[bufferIndex].setPosition(QVector4D(x, y, 0.0f, 1.0f));
-            vertices[bufferIndex].setColor(QVector4D(0.0f,0.0f,1.0f,0.0f));
+            k++;
+            vertices[k].setPosition(QVector4D(x, y, 0.0f, 1.0f));
+            vertices[k].setColor(QVector4D(0.0f,0.0f,1.0f,0.0f));
         }
+        k++;
     }
      m_CircleBuf = QSharedPointer<CVertexBuffer>( new CVertexBuffer(vertices, CIRCLE_BUFFER_SIZE));
 
@@ -306,7 +303,7 @@ void CUserMapsRenderer::updatefillCircle() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 /// @fn	CBearingScaleRenderer::updatePolygon()
 ///
-/// @brief	Generate the drawing data to draw the polygon.
+/// @brief	Generate the drawing data to draw a contour of the polygon.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CUserMapsRenderer::updatePolygon() {
     if( !m_PolygonBuf.isNull() )
@@ -315,7 +312,7 @@ void CUserMapsRenderer::updatePolygon() {
         m_PolygonBuf = nullptr;
     }
 
-    GenericVertexData vertices[6]; //izmijeniti
+    GenericVertexData vertices[4]; //izmijeniti
 
     // Get coordiante system data
     qreal originX = 0.0;
@@ -326,18 +323,98 @@ void CUserMapsRenderer::updatePolygon() {
     CViewCoordinates::Instance()->getGeoOriginOffsetPixel( offsetX, offsetY );
     int bufferIndex=0;
 
-    float x = static_cast<float>(originX + 6);
-    float y = static_cast<float>(originY + 6); //doraditi da uzima stavke iz singletona mapsmanager-a kad bude gotov
+    float x = static_cast<float>(originX + 400);
+    float y = static_cast<float>(originY); //doraditi da uzima stavke iz singletona mapsmanager-a kad bude gotov
 
-    vertices[bufferIndex].setPosition(QVector4D(x, y, 0.0f, 1.0f));
-    vertices[bufferIndex].setColor(m_LineColour);
+    vertices[bufferIndex].setPosition(QVector4D( x, y, 0.0f, 1.0f));
+    vertices[bufferIndex].setColor(QVector4D(0.0f,1.0f,0.0f, 1.0f));
 
     bufferIndex++;
 
-    vertices[bufferIndex].setPosition(QVector4D(x+1, y+1, 0.0f, 1.0f));
-    vertices[bufferIndex].setColor(m_LineColour);
+    vertices[bufferIndex].setPosition(QVector4D(x+100,y, 0.0f, 1.0f));
+    vertices[bufferIndex].setColor(QVector4D(0.0f,1.0f,0.0f, 1.0f));
+
+
+    bufferIndex++;
+    vertices[bufferIndex].setPosition(QVector4D(x+100, y+100, 0.0f, 1.0f));
+    vertices[bufferIndex].setColor(QVector4D(0.0f,1.0f,0.0f, 1.0f));
+
+
+    bufferIndex++;
+
+    vertices[bufferIndex].setPosition(QVector4D(x, y+100, 0.0f, 1.0f));
+    vertices[bufferIndex].setColor(QVector4D(0.0f,1.0f,0.0f, 1.0f));
+    bufferIndex++;
 
     m_PolygonBuf  = QSharedPointer<CVertexBuffer>( new CVertexBuffer(vertices, bufferIndex));
+
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// @fn	CBearingScaleRenderer::updatefillPolygon()
+///
+/// @brief	Generate the drawing data to draw the polygon.
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void CUserMapsRenderer::updatefillPolygon() {
+    if( !m_PolygonBuf.isNull() )
+    {
+        m_PolygonBuf.clear();
+        m_PolygonBuf = nullptr;
+    }
+
+    GenericVertexData vertices[4]; //izmijeniti
+
+    // Get coordiante system data
+    qreal originX = 0.0;
+    qreal originY = 0.0;
+    CViewCoordinates::Instance()->getViewOriginPixel( originX, originY );
+    qreal offsetX = 0.0;
+    qreal offsetY = 0.0;
+    CViewCoordinates::Instance()->getGeoOriginOffsetPixel( offsetX, offsetY );
+    int bufferIndex=0;
+
+    float x = static_cast<float>(originX + 400);
+    float y = static_cast<float>(originY); //doraditi da uzima stavke iz singletona mapsmanager-a kad bude gotov
+
+    vertices[bufferIndex].setPosition(QVector4D( x, y, 0.0f, 1.0f));
+    vertices[bufferIndex].setColor(QVector4D(0.0f,1.0f,0.0f, 1.0f));
+
+    bufferIndex++;
+
+    vertices[bufferIndex].setPosition(QVector4D(x+100,y, 0.0f, 1.0f));
+    vertices[bufferIndex].setColor(QVector4D(0.0f,1.0f,0.0f, 1.0f));
+
+
+    bufferIndex++;
+    vertices[bufferIndex].setPosition(QVector4D(x+100, y+100, 0.0f, 1.0f));
+    vertices[bufferIndex].setColor(QVector4D(0.0f,1.0f,0.0f, 1.0f));
+
+
+    bufferIndex++;
+
+    vertices[bufferIndex].setPosition(QVector4D(x, y+100, 0.0f, 1.0f));
+    vertices[bufferIndex].setColor(QVector4D(0.0f,1.0f,0.0f, 1.0f));
+    bufferIndex++;
+
+    for(int i=0;i<bufferIndex;i++) {
+        sortedelements.push_back(vertices[i]);
+    }
+    std::sort(sortedelements.begin(),sortedelements.end(), [ ]( const GenericVertexData& el1, const GenericVertexData& el2)
+    {
+       return el1.position().y() > el2.position().y();
+    });
+
+    std::vector<GenericVertexData>result;
+    Triangulate::Process(sortedelements,result);
+
+    GenericVertexData vertices2[result.size()];
+
+    for(std::vector<GenericVertexData>::size_type i=0;i<result.size();i++) {
+        vertices2[i]=result.at(i);
+    }
+
+    m_filledPolygonBuf  = QSharedPointer<CVertexBuffer>( new CVertexBuffer(vertices2, result.size()));
 
 }
 
@@ -414,17 +491,20 @@ void CUserMapsRenderer::drawLine(QOpenGLFunctions *func) {
     initShader();
 
     // Bind the shader
-    m_pEBLShader->bind();
+    m_pMapShader->bind();
 
     // Set the projection and translation
-    m_pEBLShader->setMVPMatrix(projection * translation);
+    m_pMapShader->setMVPMatrix(projection * translation);
 
     GLfloat winWidth = static_cast<float>(right-left);
     GLfloat winHeight = static_cast<float>(bottom-top);
 
-    m_pEBLShader->setResolution(winWidth, winHeight);
-    m_pEBLShader->setDashSize(10.0f);
-    m_pEBLShader->setGapSize(10.0f);
+    m_pMapShader->setResolution(winWidth, winHeight);
+
+    m_pMapShader->setDashSize(30.0f);
+    m_pMapShader->setGapSize(30.0f);
+    m_pMapShader->setDotSize(15.0f);
+   // m_pMapShader->setDotSize(5.0f);
 
     m_LineBuf->bind();
 
@@ -433,17 +513,17 @@ void CUserMapsRenderer::drawLine(QOpenGLFunctions *func) {
     if( e != GL_FRAMEBUFFER_COMPLETE)
         qDebug() << "CUserMapsRenderer::drawLine() failed! Not GL_FRAMEBUFFER_COMPLETE";
 
-    m_pEBLShader->setupVertexState();
+    m_pMapShader->setupVertexState();
 
    //ovdje crtati tacke ispitati kako se dobavljaju
-    func->glDrawArrays(GL_LINE_STRIP, 0, 2);
+    func->glDrawArrays(GL_LINES, 0, 2);
 
     // Tidy up
-    m_pEBLShader->cleanupVertexState();
+    m_pMapShader->cleanupVertexState();
 
     m_LineBuf->release();
 
-   m_pEBLShader->release();
+   m_pMapShader->release();
 
 }
 
@@ -470,13 +550,71 @@ void CUserMapsRenderer::drawPolygon(QOpenGLFunctions *func) {
     CViewCoordinates::Instance()->getViewDimensions( left, right, bottom, top );
     setProjection( left, right, bottom, top, projection );
 
+    initShader();
+    m_pMapShader->bind();
+
+    // Set the projection and translation
+    m_pMapShader->setMVPMatrix(projection * translation);
+
+    GLfloat winWidth = static_cast<float>(right-left);
+    GLfloat winHeight = static_cast<float>(bottom-top);
+
+    m_pMapShader->setResolution(winWidth, winHeight);
+
+    m_pMapShader->setDashSize(20.0f);
+    m_pMapShader->setGapSize(10.0f);
+    m_pMapShader->setDotSize(15.0f);
+   // m_pMapShader->setDotSize(5.0f);
+    m_PolygonBuf->bind();
+
+    // Check Frame buffer is OK
+    GLenum e = func->glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if( e != GL_FRAMEBUFFER_COMPLETE)
+        qDebug() << "COwnshipRenderer::drawPolygon() failed! Not GL_FRAMEBUFFER_COMPLETE";
+
+    m_pMapShader->setupVertexState();
+
+   //ovdje crtati tacke ispitati kako se dobavljaju
+    func->glDrawArrays(GL_LINE_LOOP, 0, 4);
+
+    // Tidy up
+    m_pMapShader->cleanupVertexState();
+
+    m_PolygonBuf->release();
+
+    m_pMapShader->release();
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// fn     CUserMapsRenderer::drawfilledPolygon(QOpenGLFunctions *func)
+///
+/// brief  Draws polygon.
+///
+/// param  Pointer that points to QOpenGLFunctions.
+////////////////////////////////////////////////////////////////////////////////
+void CUserMapsRenderer::drawfilledPolygon(QOpenGLFunctions *func) {
+
+    // Set translation matrix (no translation)
+    QMatrix4x4 translation;
+    translation.translate(0.0, 0.0, 0.0);
+
+    // Set projection matrix
+    QMatrix4x4 projection;
+    qreal left = 0;
+    qreal right = 0;
+    qreal top = 0;
+    qreal bottom = 0;
+    CViewCoordinates::Instance()->getViewDimensions( left, right, bottom, top );
+    setProjection( left, right, bottom, top, projection );
+
     // Bind the shader
     m_primShader.bind();
 
     // Set the projection and translation
     m_primShader.setMVPMatrix(projection * translation);
 
-    m_PolygonBuf->bind();
+    m_filledPolygonBuf->bind();
 
     // Check Frame buffer is OK
     GLenum e = func->glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -486,11 +624,12 @@ void CUserMapsRenderer::drawPolygon(QOpenGLFunctions *func) {
     m_primShader.setupVertexState();
 
    //ovdje crtati tacke ispitati kako se dobavljaju
+    func->glDrawArrays(GL_TRIANGLES, 0, 6);
 
     // Tidy up
     m_primShader.cleanupVertexState();
 
-    m_PolygonBuf->release();
+    m_filledPolygonBuf->release();
 
     m_primShader.release();
 
@@ -578,18 +717,19 @@ void CUserMapsRenderer::drawCircle(QOpenGLFunctions *func) {
     initShader();
 
     // Bind the shader
-    m_pEBLShader->bind();
+    m_pMapShader->bind();
 
     // Set the projection and translation
-    m_pEBLShader->setMVPMatrix(projection * translation);
+    m_pMapShader->setMVPMatrix(projection * translation);
 
 
     GLfloat winWidth = static_cast<float>(right-left);
     GLfloat winHeight = static_cast<float>(bottom-top);
 
-    m_pEBLShader->setResolution(winWidth, winHeight);
-    m_pEBLShader->setDashSize(10.0f);
-    m_pEBLShader->setGapSize(10.0f);
+    m_pMapShader->setResolution(winWidth, winHeight);
+    m_pMapShader->setDashSize(30.0f);
+    m_pMapShader->setGapSize(10.0f);
+    m_pMapShader->setDotSize(1.0f);
 
     // Tell OpenGL which VBOs to use
     m_CircleBuf->bind();
@@ -599,18 +739,18 @@ void CUserMapsRenderer::drawCircle(QOpenGLFunctions *func) {
     if( e != GL_FRAMEBUFFER_COMPLETE)
         qDebug() << "CBearingScaleRenderer::drawScale() failed! Not GL_FRAMEBUFFER_COMPLETE";
 
-     m_pEBLShader->setupVertexState();
-    func->glLineWidth( 2 );
+     m_pMapShader->setupVertexState();
+    func->glLineWidth(1);
 
     func->glDrawArrays(GL_LINE_STRIP, 0, CIRCLE_BUFFER_SIZE);
 
 
     // Tidy up
-     m_pEBLShader->cleanupVertexState();
+     m_pMapShader->cleanupVertexState();
 
     m_CircleBuf->release();
 
-     m_pEBLShader->release();
+     m_pMapShader->release();
 
 }
 

@@ -24,17 +24,17 @@ CONFIG -= debug_and_release debug_and_release_target
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    eblshaderprogram.cpp \
+    mapshaderprogram.cpp \
+    triangulate.cpp \
     usermapslayer.cpp \
-    usermapsrenderer.cpp \
-    vrmshaderprogram.cpp
+    usermapsrenderer.cpp
 
 HEADERS += \
-    eblshaderprogram.h \
+    mapshaderprogram.h \
+    triangulate.h \
     usermapslayer.h \
     usermapslayerlib_global.h \ \
-    usermapsrenderer.h \
-    vrmshaderprogram.h
+    usermapsrenderer.h
 
 unix {
     target.path = /usr/lib

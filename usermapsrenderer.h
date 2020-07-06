@@ -17,10 +17,9 @@
 #include <QOpenGLDebugLogger>
 #include "../OpenGLBaseLib/imagetexture.h"
 #include "../OpenGLBaseLib/vertexbuffer.h"
-#include "../OpenGLBaseLib/imagetexture.h"
-#include "../OpenGLBaseLib/vertexbuffer.h"
-#include "../NavigationToolsLib/vrmshaderprogram.h"
-#include "../NavigationToolsLib/eblshaderprogram.h"
+#include "mapshaderprogram.h"
+#include "triangulate.h"
+#include <vector>
 class CUserMapsRenderer : public CBaseRenderer, public QObject
 {
 public:
@@ -38,15 +37,15 @@ public:
     void updateCircle();
     void updatefillCircle();
     void updatePolygon();
+    void updatefillPolygon();
     // Draws
     void drawPoint( QOpenGLFunctions* func );
     void drawLine( QOpenGLFunctions* func );
     void drawCircle( QOpenGLFunctions* func );
     void drawfilledCircle(QOpenGLFunctions* func );
     void drawPolygon( QOpenGLFunctions* func );
-    void drawInlinePolygon( QOpenGLFunctions* func );
+    void drawfilledPolygon( QOpenGLFunctions* func );
     void initShader();
-
 
 
 private:
@@ -56,7 +55,7 @@ private:
     QVector4D m_PolygonColour;					///<Polygon colour
     QSharedPointer<CVertexBuffer> m_PointBuf;	///< OpenGL vertex buffer (vertices and colour) to draw points
     CImageTexture* m_pTexture;  ///< image used as a textures
-
+    std::vector<GenericVertexData>sortedelements;  //will be deleted
     // Lines buffer
     QSharedPointer<CVertexBuffer> m_LineBuf;	///< VBO used to draw Lines
 
@@ -69,11 +68,12 @@ private:
     //polygon buffer
     QSharedPointer<CVertexBuffer> m_PolygonBuf;  ///< OpenGL vertex buffer (vertices and colour) to draw polygons
 
+    //filled polygon buffer
+    QSharedPointer<CVertexBuffer> m_filledPolygonBuf;  ///< OpenGL vertex buffer (vertices and colour) to draw filled polygons
+
     QOpenGLDebugLogger *m_pOpenGLLogger;	///< OpenGL error logger
 
-    QSharedPointer<CVRMShaderProgram> m_pVRMShader; //shader used for circles
-
-    QSharedPointer<CEBLShaderProgram> m_pEBLShader;//shader used for lines
+    QSharedPointer<CMapShaderProgram> m_pMapShader;///shader
 
     void logOpenGLErrors();
 };

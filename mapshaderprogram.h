@@ -7,13 +7,13 @@
 #include "../OpenGLBaseLib/shaderprogramuniform.h"
 
 
-class CEBLShaderProgram : public CShaderProgram
+class CMapShaderProgram : public CShaderProgram
 {
 public:
-    CEBLShaderProgram();
-    virtual ~CEBLShaderProgram();
+    CMapShaderProgram();
+    virtual ~CMapShaderProgram();
 
-    void eblShaderSetup( );
+    void mapShaderSetup( );
 
     void bind();
     void release();
@@ -22,7 +22,7 @@ public:
     void setResolution(float nWidth, float nHeight);
     void setDashSize(float nDash);
     void setGapSize(float nGap);
-
+    void setDotSize(float nDot);
     void setupVertexState();
     void cleanupVertexState();
 
@@ -30,7 +30,9 @@ private:
     QSharedPointer<CShaderProgramUniform> m_shResolutionLoc;
     QSharedPointer<CShaderProgramUniform> m_shDashSizeLoc;
     QSharedPointer<CShaderProgramUniform> m_shGapSizeLoc;
+    QSharedPointer<CShaderProgramUniform> m_shDotSizeLoc;
     QSharedPointer<CShaderProgramUniform> m_shMvpMatrixLoc;
+
 
     // Attributes
     GLint m_shVertexLocation;

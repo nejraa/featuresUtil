@@ -1,40 +1,40 @@
-#include "vrmshaderprogram.h"
-#include "../OpenGLBaseLib/distancevertexdata.h"
+#include "mapshaderprogram.h"
+#include "../OpenGLBaseLib/genericvertexdata.h"
 
-#include <memory>
-
-CVRMShaderProgram::CVRMShaderProgram()
-    : CShaderProgram(new QOpenGLShaderProgram)
+CMapShaderProgram::CMapShaderProgram()
+    : CShaderProgram (new QOpenGLShaderProgram())
     , m_shResolutionLoc( nullptr )
     , m_shDashSizeLoc( nullptr )
     , m_shGapSizeLoc( nullptr )
+    ,m_shDotSizeLoc( nullptr )
     , m_shMvpMatrixLoc( nullptr )
 {
-    vrmShaderSetup();
+    mapShaderSetup();
 
     m_shResolutionLoc = QSharedPointer<CShaderProgramUniform>(new CShaderProgramUniform(CShaderProgram(m_pShaderProgram), "u_resolution"));
     m_shDashSizeLoc = QSharedPointer<CShaderProgramUniform>(new CShaderProgramUniform(CShaderProgram(m_pShaderProgram), "u_dashSize"));
     m_shGapSizeLoc = QSharedPointer<CShaderProgramUniform>(new CShaderProgramUniform(CShaderProgram(m_pShaderProgram), "u_gapSize"));
+    m_shDotSizeLoc = QSharedPointer<CShaderProgramUniform>(new CShaderProgramUniform(CShaderProgram(m_pShaderProgram), "u_dotSize"));
     m_shMvpMatrixLoc = QSharedPointer<CShaderProgramUniform>(new CShaderProgramUniform(CShaderProgram(m_pShaderProgram), "entityMvp"));
-
     m_shVertexLocation = m_pShaderProgram->attributeLocation("entityPos");
     m_shColLocation = m_pShaderProgram->attributeLocation("entityCol");
-    m_shDistanceLocation = m_pShaderProgram->attributeLocation("inDist");
-
 }
 
-CVRMShaderProgram::~CVRMShaderProgram()
+CMapShaderProgram::~CMapShaderProgram()
 {
 }
 
-void CVRMShaderProgram::vrmShaderSetup()
+void CMapShaderProgram::mapShaderSetup( )
 {
     // Compile vertex shader
-    if (!m_pShaderProgram->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/vrmVertexShader.glsl"))
+    if (!m_pShaderProgram->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/mapsVertexShader.glsl"))
+    {
+        qDebug() << m_pShaderProgram->log();
         qDebug() << "m_pShaderProgram->addShaderFromSourceFile QOpenGLShader::Vertex failed!";
+    }
 
     // Compile fragment shader
-    if (!m_pShaderProgram->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/vrmFragShader.glsl"))
+    if (!m_pShaderProgram->addShaderFromSourceFile(QOpenGLShader::Fragment, ":/mapsFragShader.glsl"))
         qDebug() << "m_pShaderProgram->addShaderFromSourceFile QOpenGLShader::Fragment failed!";
 
     // Link shader pipeline
@@ -42,63 +42,61 @@ void CVRMShaderProgram::vrmShaderSetup()
         qDebug() << "m_pShaderProgram->link() failed!";
 }
 
-void CVRMShaderProgram::bind()
+void CMapShaderProgram::bind()
 {
     m_pShaderProgram->bind();
 }
 
-void CVRMShaderProgram::release()
+void CMapShaderProgram::release()
 {
     m_pShaderProgram->release();
 }
 
-void CVRMShaderProgram::setResolution(float nWidth, float nHeight)
+void CMapShaderProgram::setResolution(float nWidth, float nHeight)
 {
     m_shResolutionLoc->setValue(nWidth,nHeight);
 }
 
-void CVRMShaderProgram::setDashSize(float nDash)
+void CMapShaderProgram::setDashSize(float nDash)
 {
     m_shDashSizeLoc->setValue(nDash);
 }
 
-void CVRMShaderProgram::setGapSize(float nGap)
+void CMapShaderProgram::setGapSize(float nGap)
 {
     m_shGapSizeLoc->setValue(nGap);
 }
 
-void CVRMShaderProgram::setMVPMatrix(QMatrix4x4 mvp)
+void CMapShaderProgram::setDotSize(float nDot)
+{
+    m_shDotSizeLoc->setValue(nDot);
+}
+
+void CMapShaderProgram::setMVPMatrix(QMatrix4x4 mvp)
 {
     m_shMvpMatrixLoc->setValue(mvp);
 }
 
-void CVRMShaderProgram::setupVertexState()
+void CMapShaderProgram::setupVertexState()
 {
     // Offset for position
     int offset = 0;
 
     // Tell OpenGL programmable pipeline how to locate vertex position data
     m_pShaderProgram->enableAttributeArray(m_shVertexLocation);
-    m_pShaderProgram->setAttributeBuffer(m_shVertexLocation, GL_FLOAT, offset, 4, sizeof(DistanceVertexData));
+    m_pShaderProgram->setAttributeBuffer(m_shVertexLocation, GL_FLOAT, offset, 4, sizeof(GenericVertexData));
 
     // Offset for position
     offset += sizeof(QVector4D);
 
     // Tell OpenGL programmable pipeline how to locate vertex texture coordinate data
     m_pShaderProgram->enableAttributeArray(m_shColLocation);
-    m_pShaderProgram->setAttributeBuffer(m_shColLocation, GL_FLOAT, offset, 4, sizeof(DistanceVertexData));
-
-    // Offset for Distance
-    offset += sizeof(QVector4D);
-
-    // Tell OpenGL programmable pipeline how to locate vertex texture coordinate data
-    m_pShaderProgram->enableAttributeArray(m_shDistanceLocation);
-    m_pShaderProgram->setAttributeBuffer(m_shDistanceLocation, GL_FLOAT, offset, 1, sizeof(DistanceVertexData));
+    m_pShaderProgram->setAttributeBuffer(m_shColLocation, GL_FLOAT, offset, 4, sizeof(GenericVertexData));
 }
 
-void CVRMShaderProgram::cleanupVertexState()
+void CMapShaderProgram::cleanupVertexState()
 {
     m_pShaderProgram->disableAttributeArray(m_shVertexLocation);
     m_pShaderProgram->disableAttributeArray(m_shColLocation);
-    m_pShaderProgram->disableAttributeArray(m_shDistanceLocation);
 }
+
