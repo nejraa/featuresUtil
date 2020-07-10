@@ -48,7 +48,7 @@ CUserMapsLayer::~CUserMapsLayer()
 void CUserMapsLayer::mousePressEvent(QMouseEvent *event)
 {
 	qDebug() << "PRESSED";
-	if (! CUserMapsManager::getEditModeOn())
+        if (! CUserMapsManager::getEditModeOnStat())
 		return;
 
 	m_onPressTimer.start();
@@ -65,7 +65,7 @@ void CUserMapsLayer::mousePressEvent(QMouseEvent *event)
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::mouseMoveEvent(QMouseEvent *event)
 {
-	if (! CUserMapsManager::getEditModeOn())
+        if (! CUserMapsManager::getEditModeOnStat())
 		return;
 
 	const qint64 currentTimestamp = QDateTime::currentMSecsSinceEpoch();
@@ -94,7 +94,7 @@ void CUserMapsLayer::mouseMoveEvent(QMouseEvent *event)
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::mouseReleaseEvent(QMouseEvent *event)
 {
-	if (! CUserMapsManager::getEditModeOn())
+        if (! CUserMapsManager::getEditModeOnStat())
 		return;
 
 	if(m_onPressTimer.isActive() && !m_isCursorMoving)
@@ -140,11 +140,11 @@ void CUserMapsLayer::setSelectedObject(bool isObjSelected, EUserMapObjectType ob
 	{
 	case EUserMapObjectType::Point:
 	case EUserMapObjectType::Circle:
-		convertGeoPointToPixelVector(CUserMapsManager::getObjPosition(), m_selectedObjPoints);
+                convertGeoPointToPixelVector(CUserMapsManager::getObjPositionStat(), m_selectedObjPoints);
 		break;
 	case EUserMapObjectType::Area:
 	case EUserMapObjectType::Line:
-		convertGeoVectorToPixelVector(CUserMapsManager::getObjPointsVector(), m_selectedObjPoints);
+                convertGeoVectorToPixelVector(CUserMapsManager::getObjPointsVectorStat(), m_selectedObjPoints);
 		break;
 	}
 }
@@ -237,19 +237,19 @@ void CUserMapsLayer::onPositionClicked(const QPointF &clickedPosition)
 {
 	CPosition pos = convertPixelPointToGeoPoint(clickedPosition);
 
-	if (CUserMapsManager::getCreatingNewObj())
+        if (CUserMapsManager::getCreatingNewObjStat())
 	{
-		CUserMapsManager::addObjPoint(pos);
+                CUserMapsManager::addObjPointStat(pos);
 		return;
 	}
 
-	if (CUserMapsManager::isObjSelected())
+        if (CUserMapsManager::getObjSelectedStat())
 	{
 		//TODO: probably deselect on click?
 	}
 	else
 	{
-		CUserMapsManager::selectObject(pos);
+                CUserMapsManager::selectObjectStat(pos);
 	}
 }
 
@@ -270,11 +270,11 @@ void CUserMapsLayer::updateObjectPosition()
 	{
 	case EUserMapObjectType::Point:
 	case EUserMapObjectType::Circle:
-		CUserMapsManager::setObjPosition(geoPoints[0]);
+                CUserMapsManager::setObjPositionStat(geoPoints[0]);
 		break;
 	case EUserMapObjectType::Area:
 	case EUserMapObjectType::Line:
-		CUserMapsManager::setObjPointsVector(geoPoints);
+                CUserMapsManager::setObjPointsVectorStat(geoPoints);
 		break;
 	}
 }
