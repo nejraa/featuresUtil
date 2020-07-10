@@ -26,9 +26,9 @@ public:
 	QQuickFramebufferObject::Renderer* createRenderer() const override;
 
 public slots:
-    void onOffsetChanged();
+	void onOffsetChanged();
 protected:
-    virtual void initialise() override;
+	virtual void initialise() override;
 
 };
 

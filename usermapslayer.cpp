@@ -50,22 +50,22 @@ CUserMapsLayer::~CUserMapsLayer()
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::initialise()
 {
-    if ( !m_initialised )
-    {
-        // Find the CoreLayer object. This will be a child of my parent (sibling)
-        CCoreLayer* pCoreLayer = parent()->parent()->findChild<CCoreLayer*>();
+	if ( !m_initialised )
+	{
+		// Find the CoreLayer object. This will be a child of my parent (sibling)
+		CCoreLayer* pCoreLayer = parent()->parent()->findChild<CCoreLayer*>();
 
-        // Connect to the CCoreLayer range changed signal
-        if ( pCoreLayer )
-        {
-            if ( connect( pCoreLayer, &CCoreLayer::offsetChanged, this, &CUserMapsLayer::onOffsetChanged ) )
-            {
-                qDebug() << "CUserMapLayer: Failed to connect to CCoreLayer offsetChanged signal";
-            }
-        }
+		// Connect to the CCoreLayer range changed signal
+		if ( pCoreLayer )
+		{
+			if ( connect( pCoreLayer, &CCoreLayer::offsetChanged, this, &CUserMapsLayer::onOffsetChanged ) )
+			{
+				qDebug() << "CUserMapLayer: Failed to connect to CCoreLayer offsetChanged signal";
+			}
+		}
 
-        m_initialised = true;
-    }
+		m_initialised = true;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -75,7 +75,7 @@ void CUserMapsLayer::initialise()
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::onOffsetChanged()
 {
-    update();
+	update();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
