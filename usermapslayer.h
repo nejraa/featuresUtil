@@ -18,6 +18,7 @@
 #include "usermapsmanager.h"
 #include "userpointpositiontype.h"
 #include <QTimer>
+#include "../NavUtilsLib/position.h"
 
 class USERMAPSLAYERLIB_API CUserMapsLayer : public CBaseLayer
 {

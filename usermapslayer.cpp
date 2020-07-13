@@ -16,6 +16,7 @@
 #include "../NavUtilsLib/coordinates.h"
 #include <QDateTime>
 #include "usermapsmanager.h"
+#include "../NavUtilsLib/position.h"
 
 const int MOVE_EVT_TIME_LIMIT = 500;
 const int LONG_PRESS_DURATION_MS = 2000;
