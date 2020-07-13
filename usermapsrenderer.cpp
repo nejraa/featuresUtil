@@ -14,6 +14,9 @@
 #include <QOpenGLFramebufferObject>
 #include "../OpenGLBaseLib/genericvertexdata.h"
 
+#ifndef GL_PRIMITIVE_RESTART_FIXED_INDEX
+#define GL_PRIMITIVE_RESTART_FIXED_INDEX  0x8D69
+#endif
 const int CIRCLE_BUFFER_SIZE = 362;
 const int POINT_BUFFER_SIZE = 100; // will be removed
 const bool LOG_OPENGL_ERRORS = false;
@@ -110,7 +113,7 @@ void CUserMapsRenderer::synchronize(QQuickFramebufferObject *item)
 	{
 		initializeGL();
 	}
-	 updatefillPolygon();
+	updatefillPolygon();
 	updatefillCircle();
 	updateLine();
 	updateCircle();
@@ -188,8 +191,8 @@ void CUserMapsRenderer::renderPrimitives(QOpenGLFunctions *func)
 {
 
 
-	 drawfilledPolygon(func);
-	 drawfilledCircle(func);
+	drawfilledPolygon(func);
+	drawfilledCircle(func);
 	drawLine(func);
 	drawCircle(func);
 	drawPolygon(func);
@@ -908,6 +911,6 @@ void CUserMapsRenderer::logOpenGLErrors()
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsRenderer::addText( QString text,double x, double y, QVector4D colour,TextAlignment alignment)
 {
-	 m_stringRenderer.addText( text, static_cast<int> (x ), static_cast<int> ( y ),FONT_PT_SIZE,QVector4D(0.0f,1.0f,0.0f, 1.0f), alignment );
+	m_stringRenderer.addText( text, static_cast<int> (x ), static_cast<int> ( y ),FONT_PT_SIZE,colour, alignment );
 }
 

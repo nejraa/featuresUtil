@@ -1,9 +1,9 @@
 ////////////////////////////////////////////////////////////////////////////////
-///	@file	triangulate.cpp
+///	\file	triangulate.cpp
 ///
-///	@author	ELREG, most of the code from https://www.flipcode.com/archives/Efficient_Polygon_Triangulation.shtml
+///	\author	ELREG, most of the code from https://www.flipcode.com/archives/Efficient_Polygon_Triangulation.shtml
 ///
-///	@brief	definition of the class that triangulates any polygon without hole
+///	\brief	definition of the class that triangulates any polygon without hole
 ///			.
 ///
 ///	(C) Kelvin Hughes, 2020.
@@ -18,11 +18,11 @@
 static const float EPSILON=0.0000000001f;
 
 ////////////////////////////////////////////////////////////////////////////////
-/// fn     float Triangulate::Area(const Vector2dVector &contour)
+/// \fn     float Triangulate::Area(const Vector2dVector &contour)
 ///
-/// brief   compute area of contour
+/// \brief   compute area of contour
 ///
-/// param  const Vector2dVector &contour
+/// \param  const Vector2dVector &contour
 ////////////////////////////////////////////////////////////////////////////////
 float Triangulate::Area(const Vector2dVector &contour)
 {
@@ -39,15 +39,15 @@ float Triangulate::Area(const Vector2dVector &contour)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// fn     bool Triangulate::InsideTriangle(float Ax, float Ay,
+/// \fn     bool Triangulate::InsideTriangle(float Ax, float Ay,
 ///                                         float Bx, float By,
 ///                                         float Cx, float Cy,
 ///                                         float Px, float Py)
 ///
-/// brief   InsideTriangle decides if a point P is Inside of the triangle
+/// \brief   InsideTriangle decides if a point P is Inside of the triangle
 ///         defined by A, B, C.
 ///
-/// param  bool Triangulate::InsideTriangle(float Ax, float Ay,float Bx, float By,
+/// \param  bool Triangulate::InsideTriangle(float Ax, float Ay,float Bx, float By,
 ///        float Cx, float Cy,float Px, float Py
 ////////////////////////////////////////////////////////////////////////////////
 bool Triangulate::InsideTriangle(float Ax, float Ay,
@@ -74,11 +74,11 @@ bool Triangulate::InsideTriangle(float Ax, float Ay,
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-/// fn     bool Triangulate::Snip(const Vector2dVector &contour,int u,int v,int w,int n,int *V)
+/// \fn     bool Triangulate::Snip(const Vector2dVector &contour,int u,int v,int w,int n,int *V)
 ///
-/// brief   check three consecutive points
+/// \brief   check three consecutive points
 ///
-/// param  const Vector2dVector &contour,int u,int v,int w,int n,int *V
+/// \param  const Vector2dVector &contour,int u,int v,int w,int n,int *V
 bool Triangulate::Snip(const Vector2dVector &contour,int u,int v,int w,int n,int *V)
 {
 	int p;
@@ -107,12 +107,12 @@ bool Triangulate::Snip(const Vector2dVector &contour,int u,int v,int w,int n,int
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// fn     bool Triangulate::Process(const Vector2dVector &contour,Vector2dVector &result)
+/// \fn     bool Triangulate::Process(const Vector2dVector &contour,Vector2dVector &result)
 ///
-/// brief   triangulate a contour/polygon, places results in STL vector
+/// \brief   triangulate a contour/polygon, places results in STL vector
 ///          as series of triangles.
 ///
-/// param  const Vector2dVector &contour ,const Vector2dVector &contour)
+/// \param  const Vector2dVector &contour ,const Vector2dVector &contour)
 ////////////////////////////////////////////////////////////////////////////////
 bool Triangulate::Process(const Vector2dVector &contour,Vector2dVector &result)
 {
