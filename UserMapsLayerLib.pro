@@ -24,13 +24,20 @@ CONFIG -= debug_and_release debug_and_release_target
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    mapshaderprogram.cpp \
+    triangulate.cpp \
     usermapslayer.cpp \
+    usermapsobjectutil.cpp \
     usermapsrenderer.cpp
 
 HEADERS += \
+    mapshaderprogram.h \
+    triangulate.h \
     usermapslayer.h \
     usermapslayerlib_global.h \ \
-    usermapsrenderer.h
+    usermapsobjectutil.h \
+    usermapsrenderer.h \
+    userpointpositiontype.h
 
 unix {
     target.path = /usr/lib
@@ -66,3 +73,12 @@ else{LIBS += -L$$OUT_PWD/../OpenGLBaseLib/ -lOpenGLBaseLib}
 
 INCLUDEPATH += $$PWD/../OpenGLBaseLib
 DEPENDPATH += $$PWD/../OpenGLBaseLib
+
+RESOURCES += \
+    usermapshader.qrc
+
+DISTFILES += \
+    README.md \
+    mapsFragShader.glsl \
+    mapsVertexShader.glsl \
+    vrmFragShader.glsl
