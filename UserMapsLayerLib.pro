@@ -27,14 +27,16 @@ SOURCES += \
     mapshaderprogram.cpp \
     triangulate.cpp \
     usermapslayer.cpp \
-    usermapsrenderer.cpp
+    usermapsrenderer.cpp \
+    usermapsvertexdata.cpp
 
 HEADERS += \
     mapshaderprogram.h \
     triangulate.h \
     usermapslayer.h \
     usermapslayerlib_global.h \ \
-    usermapsrenderer.h
+    usermapsrenderer.h \
+    usermapsvertexdata.h
 
 unix {
     target.path = /usr/lib
