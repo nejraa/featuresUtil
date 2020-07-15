@@ -1,9 +1,9 @@
 ////////////////////////////////////////////////////////////////////////////////
-///	@file	triangulate.h
+///	\file	triangulate.h
 ///
-///	@author	ELREG, most of the code from https://www.flipcode.com/archives/Efficient_Polygon_Triangulation.shtml
+///	\author	ELREG, most of the code from https://www.flipcode.com/archives/Efficient_Polygon_Triangulation.shtml
 ///
-///	@brief	definition of the class that triangulates any polygon without hole.
+///	\brief	definition of the class that triangulates any polygon without hole.
 ///
 ///
 ///	(C) Kelvin Hughes, 2020.

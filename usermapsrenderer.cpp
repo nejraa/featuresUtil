@@ -14,6 +14,9 @@
 #include <QOpenGLFramebufferObject>
 #include "../OpenGLBaseLib/genericvertexdata.h"
 
+#ifndef GL_PRIMITIVE_RESTART_FIXED_INDEX
+#define GL_PRIMITIVE_RESTART_FIXED_INDEX  0x8D69
+#endif
 const int CIRCLE_BUFFER_SIZE = 362;
 const int POINT_BUFFER_SIZE = 100; // will be removed
 const bool LOG_OPENGL_ERRORS = false;
@@ -68,7 +71,7 @@ void CUserMapsRenderer::render()
 	pFunctions->glEnable (GL_BLEND );
 
 	//enable fixed restart index so number of draw calls will be greatly reduced,and performance will be improved
-    //pFunctions->glEnable ( GL_PRIMITIVE_RESTART_FIXED_INDEX);
+	pFunctions->glEnable ( GL_PRIMITIVE_RESTART_FIXED_INDEX);
 	pFunctions->glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );	// Set The Blending Function For Translucency
 
 	renderPrimitives( pFunctions );
@@ -110,11 +113,11 @@ void CUserMapsRenderer::synchronize(QQuickFramebufferObject *item)
 	{
 		initializeGL();
 	}
-	 updatefillPolygon();
-	updatefillCircle();
+    //updatefillPolygon();
+    //updatefillCircle();
 	updateLine();
-	updateCircle();
-	updatePolygon();
+    //updateCircle();
+    updatePolygon();
 	//updateText();
 
 }
@@ -188,11 +191,11 @@ void CUserMapsRenderer::renderPrimitives(QOpenGLFunctions *func)
 {
 
 
-	 drawfilledPolygon(func);
-	 drawfilledCircle(func);
+    //drawfilledPolygon(func);
+    //drawfilledCircle(func);
 	drawLine(func);
-	drawCircle(func);
-	drawPolygon(func);
+    //drawCircle(func);
+    drawPolygon(func);
 
 }
 
@@ -267,19 +270,21 @@ void CUserMapsRenderer::updateLine() {
 	float x = static_cast<float>(originX + 10);
 	float y = static_cast<float>(originY + 10); //doraditi da uzima stavke iz singletona mapsmanager-a kad bude gotov
 
-	line.push_back( GenericVertexData(QVector4D( x, y, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
-	line.push_back( GenericVertexData(QVector4D( x+1000,38.0, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
+    line.push_back( GenericVertexData(QVector4D( 10.0, 350.0, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
+    line.push_back( GenericVertexData(QVector4D( 10.0,550.0, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
+
+    qDebug() << "coordinates " << x << " - " << y << 700 << 100;
 
 	line.push_back( GenericVertexData(QVector4D( 65535,65535 ,65535 , 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));//add end of the line
 	m_pLineData.push_back(line);
 
-	line2.push_back( GenericVertexData(QVector4D( x+600, y, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
-	line2.push_back( GenericVertexData(QVector4D( x+600, y+200, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
+    //line2.push_back( GenericVertexData(QVector4D( x+1200, y, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
+    //line2.push_back( GenericVertexData(QVector4D( x+1200, y+100, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
 
 	//addText("text",x+600,y,QVector4D(0.0f,1.0f,0.0f, 1.0f),TextAlignment::CENTRE);
 
-	m_pLineData.push_back(line2);
-	addText("text",x+600,y-200,QVector4D(0.0f,1.0f,0.0f, 1.0f),TextAlignment::CENTRE);
+    //m_pLineData.push_back(line2);
+    //addText("text",x+600,y-200,QVector4D(0.0f,1.0f,0.0f, 1.0f),TextAlignment::CENTRE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -403,13 +408,13 @@ void CUserMapsRenderer::updatePolygon() {
 	qreal offsetY = 0.0;
 	CViewCoordinates::Instance()->getGeoOriginOffsetPixel( offsetX, offsetY );
 
-	float x = static_cast<float>(originX + 400);
+    float x = static_cast<float>(originX + 400);
 	float y = static_cast<float>(originY); //doraditi da uzima stavke iz singletona mapsmanager-a kad bude gotov
 
 	polygon.push_back( GenericVertexData(QVector4D( x, y, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
-	polygon.push_back( GenericVertexData(QVector4D(x+100,y, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
-	polygon.push_back( GenericVertexData(QVector4D(x+100,y+100, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
-	polygon.push_back( GenericVertexData(QVector4D( x, y+100, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
+    polygon.push_back( GenericVertexData(QVector4D(x+100,y, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
+    polygon.push_back( GenericVertexData(QVector4D(x+100,y+100, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
+    polygon.push_back( GenericVertexData(QVector4D( x, y+100, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
 	polygon.push_back(polygon[0]);
 	polygon.push_back( GenericVertexData(QVector4D( 65535,65535 ,65535 , 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
 
@@ -908,6 +913,6 @@ void CUserMapsRenderer::logOpenGLErrors()
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsRenderer::addText( QString text,double x, double y, QVector4D colour,TextAlignment alignment)
 {
-	 m_stringRenderer.addText( text, static_cast<int> (x ), static_cast<int> ( y ),FONT_PT_SIZE,QVector4D(0.0f,1.0f,0.0f, 1.0f), alignment );
+	m_stringRenderer.addText( text, static_cast<int> (x ), static_cast<int> ( y ),FONT_PT_SIZE,colour, alignment );
 }
 

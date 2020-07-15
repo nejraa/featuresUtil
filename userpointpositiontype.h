@@ -19,6 +19,7 @@ enum class EPointPositionType
     InsideObject,
     OutsideObject,
     OnLine,
+    NotOnLine,
     AtSpecificPoint,
     Unknown
 };
