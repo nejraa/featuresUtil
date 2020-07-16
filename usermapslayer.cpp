@@ -139,11 +139,11 @@ EPointPositionType CUserMapsLayer::checkPointPosition(const QPointF &clickedPosi
     switch (m_objectType)
         {
         case EUserMapObjectType::Area:
-            return pointPositionToArea(clickedPosition);
+            // return pointPositionToArea(clickedPosition);
         case EUserMapObjectType::Circle:
             return pointPositionToCircle(clickedPosition);
         case EUserMapObjectType::Line:
-            return pointPositionToLine(clickedPosition);
+            // return pointPositionToLine(clickedPosition);
         case EUserMapObjectType::Point:
             return EPointPositionType::InsideObject;
         case EUserMapObjectType::Unkown_Object:
@@ -326,20 +326,45 @@ void CUserMapsLayer::updateObjectPosition()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn         EPointPositionType CUserMapsLayer::pointPositionToArea(const QPointF &clickedPosition)
+/// \fn         EPointPositionType CUserMapsLayer::pointPositionToArea(const QPointF &clickedPosition, QPointF &pointA, QPointF &pointB)
 ///
 /// \brief      Returns position of clicked point with respect to an area object.
 ///
-/// \param		clickedPosition Clicked position in pixel coordinates.
+/// \param		clickedPosition - Clicked position in pixel coordinates.
+///             pointA - First point on area object between segments where clicked position lies.
+///             pointB - Second point on area object between segments where clicked position lies.
 ///
 /// \return		EPointPositionType Selected point position with respect to an area.
-EPointPositionType CUserMapsLayer::pointPositionToArea(const QPointF &clickedPosition)
+EPointPositionType CUserMapsLayer::pointPositionToArea(const QPointF &clickedPosition, QPointF &pointA, QPointF &pointB)
 {
-    // TO DO
-    // CUserMapArea vector of points (public CUserMapComplexObject) QVector<CPosition>
+    // detection of inner/outer position of selected point
+    int    crossingNum = 0;
+    for (int i = 0; i < m_selectedObjPoints.size() - 1; i++)
+    {
+        if (m_selectedObjPoints[i].y() - clickedPosition.y() <= PIXEL_OFFSET)
+        {
+            return EPointPositionType::AtSpecificPoint;
+        }
 
-    m_selectedObjPoints;
-    return EPointPositionType::InsideObject;
+        // check two consequtive area points
+        if (((m_selectedObjPoints[i].y() <= clickedPosition.y()) && (m_selectedObjPoints[i+1].y() > clickedPosition.y()))
+            || ((m_selectedObjPoints[i].y() > clickedPosition.y()) && (m_selectedObjPoints[i+1].y() <=  clickedPosition.y())))
+        {
+                qreal intersectX = (clickedPosition.y()  - m_selectedObjPoints[i].y()) / (m_selectedObjPoints[i+1].y() - m_selectedObjPoints[i].y());
+                if (clickedPosition.x() < m_selectedObjPoints[i].x() + intersectX * (m_selectedObjPoints[i+1].x() - m_selectedObjPoints[i].x()))
+                    ++crossingNum;
+        }
+    }
+
+    if (crossingNum % 2 == 0)
+    {
+        return EPointPositionType::InsideObject;
+    }
+    else
+    {
+        return EPointPositionType::OutsideObject;
+    }
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -347,7 +372,7 @@ EPointPositionType CUserMapsLayer::pointPositionToArea(const QPointF &clickedPos
 ///
 /// \brief      Returns position of clicked point with respect to a circle object.
 ///
-/// \param		clickedPosition Clicked position in pixel coordinates.
+/// \param		clickedPosition - Clicked position in pixel coordinates.
 ///
 /// \return		EPointPositionType Selected point position with respect to a circle.
 EPointPositionType CUserMapsLayer::pointPositionToCircle(const QPointF &clickedPosition)
@@ -377,14 +402,16 @@ EPointPositionType CUserMapsLayer::pointPositionToCircle(const QPointF &clickedP
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn         EPointPositionType CUserMapsLayer::pointPositionToLine(const QPointF &clickedPosition)
+/// \fn         EPointPositionType CUserMapsLayer::pointPositionToLine(const QPointF &clickedPosition, QPointF &pointC, QPointF &pointD)
 ///
 /// \brief      Returns position of clicked point with respect to a line object.
 ///
-/// \param		clickedPosition Clicked position in pixel coordinates.
+/// \param		clickedPosition - Clicked position in pixel coordinates.
+///             pointC - First point on line object on segment where clicked position lies.
+///             pointD - Second point on line object on segment where clicked position lies.
 ///
 /// \return		EPointPositionType Selected point position with respect to a line.
-EPointPositionType CUserMapsLayer::pointPositionToLine(const QPointF &clickedPosition)
+EPointPositionType CUserMapsLayer::pointPositionToLine(const QPointF &clickedPosition, QPointF &pointC, QPointF &pointD)
 {
     QPointF pointA;
     QPointF pointB;
@@ -455,7 +482,7 @@ EPointPositionType CUserMapsLayer::pointPositionToLine(const QPointF &clickedPos
 ///
 /// \param		pointA - first point used to determine linear function equation.
 ///             pointB - second point used to determine linear function equation.
-///             clickedPoint Clicked point.
+///             clickedPoint - Clicked point.
 ///
 /// \return		qreal Value on YAxis calculated using linear function equation.
 qreal CUserMapsLayer::calculateYaxisValueOnLine(const QPointF &pointA, const QPointF &pointB, const QPointF clickedPoint)

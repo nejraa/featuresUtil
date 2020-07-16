@@ -49,9 +49,9 @@ private:
     static QPointF convertGeoPointToPixelPoint(const CPosition &geoPoint);
     void onPositionClicked(const QPointF &clickedPosition);
     void updateObjectPosition();
-    EPointPositionType pointPositionToArea(const QPointF &clickedPosition);
+    EPointPositionType pointPositionToArea(const QPointF &clickedPosition, QPointF &pointA, QPointF &pointB);
     EPointPositionType pointPositionToCircle(const QPointF &clickedPosition);
-    EPointPositionType pointPositionToLine(const QPointF &clickedPosition);
+    EPointPositionType pointPositionToLine(const QPointF &clickedPosition, QPointF &pointC, QPointF &pointD);
     qreal calculateYaxisValueOnLine(const QPointF &pointA, const QPointF &pointB, const QPointF clickedPoint);
 
     QTimer m_onPressTimer;
