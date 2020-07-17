@@ -28,7 +28,7 @@ public:
     ~CUserMapsLayer();
 
     QQuickFramebufferObject::Renderer* createRenderer() const override;
-    EPointPositionType checkPointPosition (const QPointF &clickedPosition);
+    EPointPositionType checkPointPosition (const QPointF &clickedPosition, QPointF &point1, QPointF &point2);
 
 public slots:
     void setSelectedObject(bool isObjSelected, EUserMapObjectType objType);

@@ -18,6 +18,11 @@
 #include <QDateTime>
 #include "usermapsmanager.h"
 
+#include "usermaparea.h"
+#include "usermapline.h"
+#include "usermapcircle.h"
+
+
 #define PIXEL_OFFSET 10
 const int MOVE_EVT_TIME_LIMIT = 500;
 const int LONG_PRESS_DURATION_MS = 2000;
@@ -53,9 +58,58 @@ void CUserMapsLayer::mousePressEvent(QMouseEvent *event)
     //if (! CUserMapsManager::getEditModeOn())
     //    return;
 
+    QPointF pontTest = QPointF(400.0, 800.0);
+    CPosition cpos = convertPixelPointToGeoPoint(pontTest);
+    // CUserMapCircle* circleTest = new CUserMapCircle ("test", 0.5, 198, 2.0, EUserMapLineStyle::Solid, cpos, 50.0, 159);
+    // CUserMapCircle(const QString &text, float transparency, int colour, float lineWidth,
+    //                      EUserMapLineStyle lineStyle, const CPosition &center, float radius, int outlineColour)
+    EUserMapObjectType m_objectType = EUserMapObjectType::Circle;
+    QVector<QPointF> linePoints1;
+    linePoints1.insert(0, pontTest);
+    QVector<QPointF> m_selectedObjPoints = linePoints1;
+
+    /*QPointF pontTest1 = QPointF(400.0, 800.0);
+    QPointF pontTest2 = QPointF(600.0, 800.0);
+    QPointF pontTest3 = QPointF(600.0, 900.0);
+    QVector<QPointF> linePoints;
+    linePoints.insert(0, pontTest1);
+    linePoints.insert(1, pontTest2);
+    linePoints.insert(2, pontTest3);
+    QVector<CPosition> geoLinePoints;
+    convertPixelVectorToGeoVector(linePoints, geoLinePoints);
+    //CUserMapLine(const QString &text, float transparency, int colour,
+    //			 float lineWidth, EUserMapLineStyle lineStyle, const QVector<CPosition> &points);
+    CUserMapLine* lineTest = new CUserMapLine("test", 1.0, 159, 4.0, EUserMapLineStyle::Solid, geoLinePoints);
+    EUserMapObjectType m_objectType = EUserMapObjectType::Line;
+    QVector<QPointF> m_selectedObjPoints = linePoints;*/
+
+
+    /*QPointF pontTest1 = QPointF(400.0, 800.0);
+    QPointF pontTest2 = QPointF(600.0, 800.0);
+    QPointF pontTest3 = QPointF(600.0, 900.0);
+    QPointF pontTest4 = QPointF(400.0, 800.0);
+    QVector<QPointF> linePoints;
+    linePoints.insert(0, pontTest1);
+    linePoints.insert(1, pontTest2);
+    linePoints.insert(2, pontTest3);
+    linePoints.insert(3, pontTest4);
+    QVector<CPosition> geoAreaPoints;
+    convertPixelVectorToGeoVector(linePoints, geoAreaPoints);
+    //CUserMapArea(const QString &text, float transparency, int colour, float lineWidth,
+                 EUserMapLineStyle lineStyle, const QVector<CPosition> &points, int outlineColour);
+    CUserMapArea* areaTest = new CUserMapArea("test", 1.0, 159, 4.0, EUserMapLineStyle::Solid, geoAreaPoints, 0);
+    EUserMapObjectType m_objectType = EUserMapObjectType::Area;
+    QVector<QPointF> m_selectedObjPoints = linePoints;*/
+
     m_onPressTimer.start();
     m_moveEvtStartPoint = event->screenPos();
     m_isCursorMoving = false;
+
+    //QPointF returnedPoint1, returnedPoint2;
+    EPointPositionType mltz = pointPositionToCircle(m_moveEvtStartPoint);
+    //EPointPositionType mltz = pointPositionToArea(m_moveEvtStartPoint, returnedPoint1, returnedPoint2);
+    //EPointPositionType mltz = pointPositionToLine(m_moveEvtStartPoint, returnedPoint1, returnedPoint2);
+    qDebug() << "POSITION ESTIMATION";
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -126,24 +180,26 @@ QQuickFramebufferObject::Renderer *CUserMapsLayer::createRenderer() const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn		EPointPositionType CUserMapsLayer::checkPointPosition(const QPointF &clickedPosition)
+/// \fn		EPointPositionType CUserMapsLayer::checkPointPosition(const QPointF &clickedPosition, QPointF &point1, QPointF &point2)
 ///
 /// \brief	Checks whether clicked point lies inside selected object boundaries.
 ///
-/// \param  clickedPoint Clicked point.
+/// \param  clickedPoint - Clicked point.
+/// \param  point1 - First point on line segment of area/line object where clicked position lies.
+/// \param  point2 - Second point on line segment of area/line object where clicked position lies.
 ///
 /// \return EPointPositionType Position of clicked point with respect to an object.
 ////////////////////////////////////////////////////////////////////////////////
-EPointPositionType CUserMapsLayer::checkPointPosition(const QPointF &clickedPosition)
+EPointPositionType CUserMapsLayer::checkPointPosition(const QPointF &clickedPosition, QPointF &point1, QPointF &point2)
 {
     switch (m_objectType)
         {
         case EUserMapObjectType::Area:
-            // return pointPositionToArea(clickedPosition);
+            return pointPositionToArea(clickedPosition, point1, point2);
         case EUserMapObjectType::Circle:
             return pointPositionToCircle(clickedPosition);
         case EUserMapObjectType::Line:
-            // return pointPositionToLine(clickedPosition);
+            return pointPositionToLine(clickedPosition, point1, point2);
         case EUserMapObjectType::Point:
             return EPointPositionType::InsideObject;
         case EUserMapObjectType::Unkown_Object:
@@ -169,7 +225,7 @@ void CUserMapsLayer::setSelectedObject(bool isObjSelected, EUserMapObjectType ob
     {
     case EUserMapObjectType::Point:
     case EUserMapObjectType::Circle:
-        //convertGeoPointToPixelVector(CUserMapsManager::getObjPosition(), m_selectedObjPoints);
+        // convertGeoPointToPixelVector(CUserMapsManager::getObjPosition(), m_selectedObjPoints);
         break;
     case EUserMapObjectType::Area:
     case EUserMapObjectType::Line:
@@ -189,14 +245,11 @@ void CUserMapsLayer::setSelectedObject(bool isObjSelected, EUserMapObjectType ob
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::convertGeoVectorToPixelVector(const QVector<CPosition> &geoPoints, QVector<QPointF> &pixelPoints)
 {
-    //	CCoordinates c;
     pixelPoints.clear();
     pixelPoints.reserve(geoPoints.size());
-    for (const CPosition &point : geoPoints)
+    for (const CPosition &geoPoint : geoPoints)
     {
-        //		pixelPoints.append(c.convertGeoCoordsToPixelCoords(point));
-
-        //TODO
+        pixelPoints.append(convertGeoPointToPixelPoint(geoPoint));
     }
 }
 
@@ -205,15 +258,14 @@ void CUserMapsLayer::convertGeoVectorToPixelVector(const QVector<CPosition> &geo
 ///														     QVector<QPointF> &pixelPoints)
 /// \brief      Converts Geo point into pixel vector.
 ///
-/// \param		geoPoint Geo coordinates.
-/// \param		pixelPoints Pixel coordinates.
+/// \param		geoPoint - Geo coordinates.
+/// \param  	pixelPoints - Pixel coordinates.
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::convertGeoPointToPixelVector(const CPosition &geoPoint, QVector<QPointF> &pixelPoints)
 {
-    //	CCoordinates c;
     pixelPoints.clear();
-    //	pixelPoints.append(c.convertGeoCoordsToPixelCoords(geoPoint));
-    //TODO
+    pixelPoints.reserve(1);
+    pixelPoints.append(convertGeoPointToPixelPoint(geoPoint));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -221,31 +273,29 @@ void CUserMapsLayer::convertGeoPointToPixelVector(const CPosition &geoPoint, QVe
 ///
 /// \brief      Converts vector of pixel coordinates into vector of geo coordinates.
 ///
-/// \param		pixelVector Vector of pixel coordinates.
+/// \param		pixelVector - Vector of pixel coordinates.
 ///
 /// \return		Vector with geo coordinates.
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::convertPixelVectorToGeoVector(const QVector<QPointF> &pixelVector, QVector<CPosition> &geoPoints)
 {
-    //	CCoordinates c;
     geoPoints.clear();
     geoPoints.reserve(pixelVector.size());
     for (const QPointF &pixelPoint : pixelVector)
     {
-        //		GEOGRAPHICAL lat;
-        //		GEOGRAPHICAL lon;
-
-        //		//qDebug() << "!!!CCursorReadout::setMousePosition!!!";
-
-        //		//qDebug() << "cursor position  m_pos_x: " << m_pos_x << "  m_pos_y: "<<  m_pos_y;
-        //		CViewCoordinates::Instance()->Convert(PIXEL(point.x()), PIXEL(point.y()), lat, lon);
-
-        //		geoPoints.append(CPosition(double(lat), double(lon)));
-
         geoPoints.append(convertPixelPointToGeoPoint(pixelPoint));
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+/// \fn         CPosition CUserMapsLayer::convertPixelPointToGeoPoint(const QPointF &pixelPoint)
+///
+/// \brief      Converts pixel point into geo point.
+///
+/// \param		pixelPoint - Pixel coordinate to be converted to geo coordinate.
+///
+/// \return		Geo coordinate.
+////////////////////////////////////////////////////////////////////////////////
 CPosition CUserMapsLayer::convertPixelPointToGeoPoint(const QPointF &pixelPoint)
 {
     GEOGRAPHICAL lat;
@@ -265,10 +315,9 @@ CPosition CUserMapsLayer::convertPixelPointToGeoPoint(const QPointF &pixelPoint)
 ////////////////////////////////////////////////////////////////////////////////
 QPointF CUserMapsLayer::convertGeoPointToPixelPoint(const CPosition &geoPoint)
 {
-    double x = 0.0;
-    double y = 0.0;
-    // CViewCoordinates::Instance()->Convert(GEOGRAPHICAL(geoPoint.Latitude()), GEOGRAPHICAL(geoPoint.Longitude()), PIXEL(x), PIXEL(y) ));
-    // TO DO - implementation of function above required
+    PIXEL x = 0.0;
+    PIXEL y = 0.0;
+    CViewCoordinates::Instance()->Convert(GEOGRAPHICAL(geoPoint.Latitude()), GEOGRAPHICAL(geoPoint.Longitude()), x, y);
     return QPointF(x,y);
 }
 
@@ -331,8 +380,8 @@ void CUserMapsLayer::updateObjectPosition()
 /// \brief      Returns position of clicked point with respect to an area object.
 ///
 /// \param		clickedPosition - Clicked position in pixel coordinates.
-///             pointA - First point on area object between segments where clicked position lies.
-///             pointB - Second point on area object between segments where clicked position lies.
+/// \param      pointA - First point on area object between segments where clicked position lies.
+/// \param      pointB - Second point on area object between segments where clicked position lies.
 ///
 /// \return		EPointPositionType Selected point position with respect to an area.
 EPointPositionType CUserMapsLayer::pointPositionToArea(const QPointF &clickedPosition, QPointF &pointA, QPointF &pointB)
@@ -407,8 +456,8 @@ EPointPositionType CUserMapsLayer::pointPositionToCircle(const QPointF &clickedP
 /// \brief      Returns position of clicked point with respect to a line object.
 ///
 /// \param		clickedPosition - Clicked position in pixel coordinates.
-///             pointC - First point on line object on segment where clicked position lies.
-///             pointD - Second point on line object on segment where clicked position lies.
+/// \param      pointC - First point on line object on segment where clicked position lies.
+/// \param      pointD - Second point on line object on segment where clicked position lies.
 ///
 /// \return		EPointPositionType Selected point position with respect to a line.
 EPointPositionType CUserMapsLayer::pointPositionToLine(const QPointF &clickedPosition, QPointF &pointC, QPointF &pointD)
@@ -481,8 +530,8 @@ EPointPositionType CUserMapsLayer::pointPositionToLine(const QPointF &clickedPos
 /// \brief      Calculates yAxis point value for given XAxis point of linear function.
 ///
 /// \param		pointA - first point used to determine linear function equation.
-///             pointB - second point used to determine linear function equation.
-///             clickedPoint - Clicked point.
+/// \param      pointB - second point used to determine linear function equation.
+/// \param      clickedPoint - Clicked point.
 ///
 /// \return		qreal Value on YAxis calculated using linear function equation.
 qreal CUserMapsLayer::calculateYaxisValueOnLine(const QPointF &pointA, const QPointF &pointB, const QPointF clickedPoint)
