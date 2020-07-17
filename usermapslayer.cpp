@@ -13,7 +13,7 @@
 #include "usermapsrenderer.h"
 #include <QDebug>
 #include <QSharedPointer>
-#include "../NavUtilsLib/coordinates.h"
+#include "../LayerLib/coordinates.h"
 #include <QDateTime>
 #include "usermapsmanager.h"
 

@@ -14,7 +14,6 @@
 
 #include "usermapslayerlib_global.h"
 #include "../LayerLib/baselayer.h"
-#include "../NavUtilsLib/coordinates.h"
 #include "usermapsmanager.h"
 #include <QTimer>
 
