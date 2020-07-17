@@ -11,6 +11,7 @@
 
 #include "usermapsrenderer.h"
 #include <QDebug>
+#include <QElapsedTimer>
 #include <QOpenGLFramebufferObject>
 #include "../OpenGLBaseLib/genericvertexdata.h"
 
@@ -39,6 +40,7 @@ CUserMapsRenderer::CUserMapsRenderer()
 	  m_pMapShader(nullptr)
 
 {
+	m_pTexture=nullptr;
 
 }
 
@@ -113,6 +115,11 @@ void CUserMapsRenderer::synchronize(QQuickFramebufferObject *item)
 	{
 		initializeGL();
 	}
+
+	m_pfilledPolygonData.clear();
+	m_pCircleData.clear();
+	m_pLineData.clear();
+	m_pPolygonData.clear();
 	updatefillPolygon();
 	updatefillCircle();
 	updateLine();
@@ -155,6 +162,9 @@ void CUserMapsRenderer::initializeGL()
 			}
 		}
 	}
+
+	QString qstrNum = QString(":/%7.png");
+	m_pTexture = new CImageTexture( qstrNum, QVector4D(0.0f,0.0f,1.0f, 1.0f));
 
 	// Initialise the string renderer
 	QOpenGLFunctions* openGL = QOpenGLContext::currentContext()->functions();
@@ -267,8 +277,8 @@ void CUserMapsRenderer::updateLine() {
 	qreal offsetY = 0.0;
 	CViewCoordinates::Instance()->getGeoOriginOffsetPixel( offsetX, offsetY );
 
-	float x = static_cast<float>(originX + 10);
-	float y = static_cast<float>(originY + 10); //doraditi da uzima stavke iz singletona mapsmanager-a kad bude gotov
+	float x = static_cast<float>(originX);
+	float y = static_cast<float>(originY); //instances should be taken from mapsmanager singleton
 
 	line.push_back( GenericVertexData(QVector4D( x, y, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
 	line.push_back( GenericVertexData(QVector4D( x+1000,38.0, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
@@ -285,7 +295,7 @@ void CUserMapsRenderer::updateLine() {
 
 	line2.push_back( GenericVertexData(QVector4D( x+600, y, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
 	line2.push_back( GenericVertexData(QVector4D( x+600, y+200, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
-
+	line2.push_back( GenericVertexData(QVector4D( 65535,65535 ,65535 , 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));//add end of the line
 	//addText("text",x+600,y,QVector4D(0.0f,1.0f,0.0f, 1.0f),TextAlignment::CENTRE);
 
 	CUserMapsVertexData tempData2;
@@ -294,6 +304,18 @@ void CUserMapsRenderer::updateLine() {
 	tempData2.setGapSize(0.0f);
 	tempData2.setDotSize(0.0f);
 	m_pLineData.push_back(tempData2);
+
+	line3.push_back( GenericVertexData(QVector4D( x+800, y, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
+	line3.push_back( GenericVertexData(QVector4D( x+800, y+200, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
+
+
+	CUserMapsVertexData tempData3;
+	tempData3.setVertexData(line3);
+	tempData3.setDashSize(30.0f);
+	tempData3.setGapSize(0.0f);
+	tempData3.setDotSize(0.0f);
+	m_pLineData.push_back(tempData3);
+
 
 	addText("text",x+600,y-200,QVector4D(0.0f,1.0f,0.0f, 1.0f),TextAlignment::CENTRE);
 }
@@ -342,7 +364,6 @@ void CUserMapsRenderer::updateCircle() {
 
 		}
 	}
-	//m_CircleBuf = QSharedPointer<CVertexBuffer>( new CVertexBuffer(vertices, CIRCLE_BUFFER_SIZE));
 	CUserMapsVertexData tempData;
 	tempData.setVertexData(circle);
 	tempData.setDashSize(30.0f);
@@ -368,13 +389,10 @@ void CUserMapsRenderer::updatefillCircle() {
 	CViewCoordinates::Instance()->getViewOriginPixel( originX, originY );
 
 
-
 	GenericVertexData vertices[CIRCLE_BUFFER_SIZE];
 	std::vector<GenericVertexData> circle;
 	std::vector<GenericVertexData> circle2; //test data,will be deleted
-	// Get coordiante system data
-	//qreal originX = 0.0;
-	//qreal originY = 0.0;
+	std::vector<GenericVertexData> circle3;
 	CViewCoordinates::Instance()->getViewOriginPixel( originX, originY );
 
 	double radius = CViewCoordinates::Instance()->getRadiusPixels()/2;
@@ -395,7 +413,7 @@ void CUserMapsRenderer::updatefillCircle() {
 	}
 	if( bufferIndex == rbDegrees )
 	{
-		// Change to transparent colour at the same position
+		//add center so triangle fan could be used for drawing
 
 		bufferIndex++;
 		circle.push_back(GenericVertexData(QVector4D(originX, originY, 0.0f, 1.0f),QVector4D(1.0f,0.0f,0.0f, 0.5f)));
@@ -419,26 +437,14 @@ void CUserMapsRenderer::updatefillCircle() {
 		// Check if it is the last point
 		if( bufferIndex == rbDegrees )
 		{
-			// Change to transparent colour at the same position
+			//add center so triangle fan could be used for drawing
 
 			bufferIndex++;
 			circle2.push_back(GenericVertexData(QVector4D(originX, originY, 0.0f, 1.0f),QVector4D(1.0f,0.0f,0.0f, 0.5f)));
 		}
 	}
-	m_pfilledCircleData.push_back(circle2);
-
 	m_pfilledCircleData.push_back(circle);
-
-	//colour update required
-
-
-	int i=0;
-//	while(i<originX) {
-//	testCircle(i,originY);
-//	testCircle(600,originY);
-	//i=i+30;
-	//}
-
+	m_pfilledCircleData.push_back(circle2);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -620,7 +626,6 @@ void CUserMapsRenderer::drawLine(QOpenGLFunctions *func) {
 	m_pMapShader->setDashSize(30.0f);
 	m_pMapShader->setGapSize(15.0f);
 	m_pMapShader->setDotSize(10.0f);
-	// m_pMapShader->setDotSize(5.0f);
 
 	int counter=drawMultipleElements(m_LineBuf,m_pLineData);
 
@@ -632,15 +637,11 @@ void CUserMapsRenderer::drawLine(QOpenGLFunctions *func) {
 		qDebug() << "CUserMapsRenderer::drawLine() failed! Not GL_FRAMEBUFFER_COMPLETE";
 
 	m_pMapShader->setupVertexState();
-
-	//draw lines
-	func->glDrawArrays(GL_LINE_STRIP, 0,3);
-
 	m_pMapShader->setDashSize(30.0f);
 	m_pMapShader->setGapSize(0.0f);
 	m_pMapShader->setDotSize(0.0f);
 
-	func->glDrawArrays(GL_LINE_STRIP, 3,2);
+	func->glDrawArrays(GL_LINE_STRIP,0 ,counter);
 
 	// Tidy up
 	m_pMapShader->cleanupVertexState();
@@ -688,7 +689,6 @@ void CUserMapsRenderer::drawPolygon(QOpenGLFunctions *func) {
 	m_pMapShader->setDashSize(20.0f);
 	m_pMapShader->setGapSize(10.0f);
 	m_pMapShader->setDotSize(15.0f);
-	// m_pMapShader->setDotSize(5.0f);
 
 	int counter=drawMultipleElements(m_PolygonBuf,m_pPolygonData);
 
@@ -750,7 +750,7 @@ void CUserMapsRenderer::drawfilledPolygon(QOpenGLFunctions *func) {
 
 	m_primShader.setupVertexState();
 
-	//ovdje crtati tacke ispitati kako se dobavljaju
+	//draw
 	func->glDrawArrays(GL_TRIANGLES, 0, counter);
 
 	// Tidy up
@@ -791,6 +791,7 @@ void CUserMapsRenderer::drawfilledCircle(QOpenGLFunctions *func) {
 	// Set the projection and translation
 	m_primShader.setMVPMatrix(projection * translation);
 
+
 	// Tell OpenGL which VBOs to use
 	int counter= drawMultipleElements(m_InlineCircleBuf,m_pfilledCircleData);
 	m_InlineCircleBuf->bind();
@@ -803,10 +804,13 @@ void CUserMapsRenderer::drawfilledCircle(QOpenGLFunctions *func) {
 
 	m_primShader.setupVertexState();
 	int offset=0; //offset
+
 	 //Draw inline and outline circle from data in the VBOs
+
+
 	for(std::vector<std::vector<GenericVertexData>>::size_type i=0;i<m_pfilledCircleData.size();i++) {
 	func->glDrawArrays(GL_TRIANGLE_FAN, offset, m_pfilledCircleData[i].size());
-	offset=+m_pfilledCircleData[i].size();
+	offset=offset + m_pfilledCircleData[i].size();
 	}
 	func->glLineWidth( 1 );
 
@@ -815,7 +819,6 @@ void CUserMapsRenderer::drawfilledCircle(QOpenGLFunctions *func) {
 	m_InlineCircleBuf->release();
 
 	m_primShader.cleanupVertexState();
-
 
 
 	m_primShader.release();
@@ -923,16 +926,16 @@ int CUserMapsRenderer::drawMultipleElements(QSharedPointer<CVertexBuffer> &buffe
 	}
 
 
-	GenericVertexData vertices[counter];
+	std::vector<GenericVertexData> vertices;
 	int a=0;
 
 	for(std::vector<std::vector<GenericVertexData>>::size_type  i=0;i<data.size();i++) {
 		for(std::vector<GenericVertexData>::size_type  j=0;j<data[i].size();j++) {
-			vertices[a]=data[i][j];
+			vertices.push_back(data[i][j]);
 			a++;
 		}
 	}
-	buffer=QSharedPointer<CVertexBuffer>(new CVertexBuffer(vertices,a));
+	buffer=QSharedPointer<CVertexBuffer>(new CVertexBuffer(vertices.data(),a));
 
 	return counter;
 }
@@ -947,17 +950,16 @@ int CUserMapsRenderer::drawMultipleElements(QSharedPointer<CVertexBuffer> &buffe
 		}
 	}
 
-
-	GenericVertexData vertices[counter];
+	std::vector<GenericVertexData> vertices;
 	int a=0;
 
 	for(std::vector<std::vector<GenericVertexData>>::size_type  i=0;i<data.size();i++) {
 		for(std::vector<GenericVertexData>::size_type  j=0;j<data[i].getVertexData().size();j++) {
-			vertices[a]=data[i].getVertexData().at(j);
+			vertices.push_back(data[i].getVertexData().at(j));
 			a++;
 		}
 	}
-	buffer=QSharedPointer<CVertexBuffer>(new CVertexBuffer(vertices,a));
+	buffer=QSharedPointer<CVertexBuffer>(new CVertexBuffer(vertices.data(),a));
 
 	return counter;
 }
@@ -985,7 +987,7 @@ void CUserMapsRenderer::logOpenGLErrors()
 ////////////////////////////////////////////////////////////////////////////////
 /// \fn     CUserMapsRenderer::addText( QString text,double x, double y, QVector4D colour,TextAlignment alignment)
 ///
-/// \brief  This function is used for writing text text
+/// \brief  This function is used for writing text
 ///
 /// \param  text-text that will be written
 ///        x-x position of text
@@ -998,8 +1000,17 @@ void CUserMapsRenderer::addText( QString text,double x, double y, QVector4D colo
 	m_stringRenderer.addText( text, static_cast<int> (x ), static_cast<int> ( y ),FONT_PT_SIZE,colour, alignment );
 }
 
+////////////////////////////////////////////////////////////////////////////////
+/// \fn     CUserMapsRenderer::testCircle(qreal originX, qreal originY)
+///
+/// \brief  This function is used for measuring drawing speed
+///
+/// \param  origin x - x-position of the center
+///        x-x position of the center
+///        y-y position of the center
+////////////////////////////////////////////////////////////////////////////////
 void CUserMapsRenderer::testCircle(qreal originX, qreal originY) {
-	double radius = CViewCoordinates::Instance()->getRadiusPixels()/64;
+	double radius = CViewCoordinates::Instance()->getRadiusPixels()/128;
 
 	int bufferIndex = 0;
 	std::vector<GenericVertexData> circle;
@@ -1014,55 +1025,30 @@ void CUserMapsRenderer::testCircle(qreal originX, qreal originY) {
 		float y = static_cast<float>(originY - (radius * std::cos(angle)));
 
 		// Set Vertex data
-		circle.push_back(GenericVertexData(QVector4D(x, y, 0.0f, 1.0f),QVector4D(1.0f,0.0f,0.0f, 0.5f)));
+		circle.push_back(GenericVertexData(QVector4D(x, y, 0.0f, 1.0f),QVector4D(1.0f,0.0f,0.0f, 1.0f)));
 
 		// Check if it is the last point
 	}
-
-		// Change to transparent colour at the same position
-
-			// Change to transparent colour at the same position
-
-			bufferIndex++;
-		//	circle.push_back(GenericVertexData(QVector4D(originX, originY, 0.0f, 1.0f),QVector4D(1.0f,0.0f,0.0f, 0.5f)));
-
-			bufferIndex=0;
-
-
-			// Draw 2nd circle (line strip)
-			for ( bufferIndex=0; bufferIndex<rbDegrees; bufferIndex+=8 )//if circle is not round enough use ++ instead of 8
-			{
-				double angle = 2 * M_PI * bufferIndex / rbDegrees;
-				float x = static_cast<float>(20+originX + (radius * std::sin(angle)));
-				float y = static_cast<float>(originY - (radius * std::cos(angle)));
-
-				x=x+600;
-
-				// Set Vertex data
-				circle2.push_back(GenericVertexData(QVector4D(x, y, 0.0f, 1.0f),QVector4D(1.0f,0.0f,0.0f, 0.5f)));
-
-			}
-
-			bufferIndex=0;
-
-			// Draw 3rd circle (line strip)
-			for ( bufferIndex=0; bufferIndex<=rbDegrees; bufferIndex+=8 )//if circle is not round enough use ++ instead of 8
-			{
-				double angle = 2 * M_PI * bufferIndex / rbDegrees;
-				float x = static_cast<float>(20+originX + (radius * std::sin(angle)));
-				float y = static_cast<float>(originY - (radius * std::cos(angle)));
-
-				x=x+600;
-
-				// Set Vertex data
-				circle3.push_back(GenericVertexData(QVector4D(x, y, 0.0f, 1.0f),QVector4D(1.0f,0.0f,0.0f, 0.5f)));
-
-			}
-
-
-	m_pfilledCircleData.push_back(circle2);
-	m_pfilledCircleData.push_back(circle3);
 	m_pfilledCircleData.push_back(circle);
-
 }
+
+////////////////////////////////////////////////////////////////////////////////
+/// \fn     CUserMapsRenderer::read(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid *pixels,QOpenGLFunctions *func)
+///
+/// \brief  This function should read colour data from pixel
+///
+/// \param x - x-coordinates of the first pixel
+///        y-y coordinates of the first pixel
+///        width-width of the pixel rectangle
+///        height-height of the pixel rectangle
+///        format-format of the pixel data
+///        type- data type of the pixel data
+///        pixels-returns pixels data
+///        func-pointer that points to qopenglfunctions
+////////////////////////////////////////////////////////////////////////////////
+void CUserMapsRenderer::read(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid *pixels,QOpenGLFunctions *func) {
+	func->glReadPixels(x,y, width,height,format,type, &pixels);
+}
+
+
 

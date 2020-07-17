@@ -21,6 +21,14 @@
 #include "triangulate.h"
 #include "usermapsvertexdata.h"
 #include <vector>
+
+struct Color {
+	GLfloat r;
+	GLfloat g;
+	GLfloat b;
+	GLfloat a;
+};
+
 class CUserMapsRenderer : public CBaseRenderer, public QObject
 {
 public:
@@ -99,6 +107,8 @@ private:
 	int drawMultipleElements(QSharedPointer<CVertexBuffer> &buffer ,const std::vector<CUserMapsVertexData> &data);
 
 	void testCircle(qreal originX, qreal originY);
+
+	void read(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid* pixels,QOpenGLFunctions *func);
 };
 
 #endif // CUSERMAPSRENDERER_H
