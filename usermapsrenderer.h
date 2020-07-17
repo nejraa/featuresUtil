@@ -64,7 +64,7 @@ private:
 	QVector4D m_PolygonColour;					///<Polygon colour
 	QVector4D m_TextColour;					    ///<Text colour
 	QSharedPointer<CVertexBuffer> m_PointBuf;	///< OpenGL vertex buffer (vertices and colour) to draw points
-	CImageTexture* m_pTexture;  ///< image used as a textures
+	std::vector<QSharedPointer<CImageTexture>>m_tgTexture;  ///< image used as a textures
 
 	// Lines buffer
 	QSharedPointer<CVertexBuffer> m_LineBuf;	///< VBO used to draw Lines

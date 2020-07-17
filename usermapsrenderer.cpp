@@ -40,8 +40,6 @@ CUserMapsRenderer::CUserMapsRenderer()
 	  m_pMapShader(nullptr)
 
 {
-	m_pTexture=nullptr;
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -110,11 +108,32 @@ void CUserMapsRenderer::synchronize(QQuickFramebufferObject *item)
 {
 	Q_UNUSED(item);
 
+	// Get the view dimensions
+	qreal left = 0, right = 0, top = 0, bottom = 0;
+	CViewCoordinates::Instance()->getViewDimensions( left, right, bottom, top );
+
+
 	// Initialise OpenGL if needed
 	if(!m_bGLinit)
 	{
 		initializeGL();
 	}
+
+	float pixelsInMm = static_cast<float>(CViewCoordinates::Instance()->getScreenMmToPixels());
+	if ( pixelsInMm == 0.0f )
+		return;
+
+
+	float imgWidthInMM = m_tgTexture[0]->imageWidth() /20.0f;	// Images are designed to be 20 texels/mm
+	float textureWidthInPixels = imgWidthInMM * pixelsInMm;	// Total width in pixels
+	float imgHeightInMM = m_tgTexture[0]->imageHeight() /20.0f;
+	float textureHeightInPixel = imgHeightInMM * pixelsInMm;
+
+
+	m_tgTexture[0]->setWidth(textureWidthInPixels/2.0f); // set width for one side (left/right)
+	m_tgTexture[0]->setHeight(textureHeightInPixel/2.0f);
+	m_tgTexture[0]->setProjection(left, right,bottom,top);
+
 
 	m_pfilledPolygonData.clear();
 	m_pCircleData.clear();
@@ -162,9 +181,13 @@ void CUserMapsRenderer::initializeGL()
 			}
 		}
 	}
+	for( int i = 0; i < 1; ++i )
+	{
+		// Create textures from .png files for each digit
+		QString qstrNum = QString(":/HENSOLDT_White.png");
+		m_tgTexture.push_back( QSharedPointer<CImageTexture>(new CImageTexture( qstrNum, QVector4D(0.0f,1.0f,0.0f, 1.0f))));
+	}
 
-	QString qstrNum = QString(":/%7.png");
-	m_pTexture = new CImageTexture( qstrNum, QVector4D(0.0f,0.0f,1.0f, 1.0f));
 
 	// Initialise the string renderer
 	QOpenGLFunctions* openGL = QOpenGLContext::currentContext()->functions();
@@ -179,13 +202,12 @@ void CUserMapsRenderer::initializeGL()
 		qreal top = 0;
 		qreal bottom = 0;
 		CViewCoordinates::Instance()->getViewDimensions( left, right, bottom, top );
-
 		m_stringRenderer.setScreenGeometry( QRect( static_cast<int> ( left ),
 												   static_cast<int> ( top ),
 												   static_cast<int> ( right ),
 												   static_cast<int> ( bottom ) ) );
-	}
 
+	}
 	m_bGLinit = true;
 
 }
@@ -216,7 +238,37 @@ void CUserMapsRenderer::renderPrimitives(QOpenGLFunctions *func)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CUserMapsRenderer::renderTextures()
 {
+
 	m_textureShader.bind();
+
+	QMatrix4x4 matrix;
+
+	// Set screen coordinates
+	matrix.translate(460.0f,240.0f, 0.0f );
+
+	float fScaleWidth = m_tgTexture[0]->getWidth();
+	float fScaleHeight = m_tgTexture[0]->getHeight();
+
+	matrix.scale(fScaleWidth,fScaleHeight, 0.0f);
+
+	// Bind the target texture
+	m_tgTexture[0]->bindTexure();
+
+	// Set the projection matrix
+	m_textureShader.setMVPMatrix(m_tgTexture[0]->getProjection() * matrix);
+
+	// Set the texture colour
+	m_textureShader.setTexUserColour( QVector4D(1.0f,1.0f,1.0f, 1.0f));
+
+	// Use texture unit 0 for the sampler
+	m_textureShader.setTextureSampler(0);
+
+	// Draw the target
+	m_tgTexture[0]->drawTexture(&m_textureShader);
+
+	// Release the texture now that we are finished with it
+	m_tgTexture[0]->releaseTexture();
+
 	m_stringRenderer.renderText();
 	m_textureShader.release();
 }
@@ -805,12 +857,12 @@ void CUserMapsRenderer::drawfilledCircle(QOpenGLFunctions *func) {
 	m_primShader.setupVertexState();
 	int offset=0; //offset
 
-	 //Draw inline and outline circle from data in the VBOs
+	//Draw inline and outline circle from data in the VBOs
 
 
 	for(std::vector<std::vector<GenericVertexData>>::size_type i=0;i<m_pfilledCircleData.size();i++) {
-	func->glDrawArrays(GL_TRIANGLE_FAN, offset, m_pfilledCircleData[i].size());
-	offset=offset + m_pfilledCircleData[i].size();
+		func->glDrawArrays(GL_TRIANGLE_FAN, offset, m_pfilledCircleData[i].size());
+		offset=offset + m_pfilledCircleData[i].size();
 	}
 	func->glLineWidth( 1 );
 
