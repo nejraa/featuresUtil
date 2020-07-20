@@ -973,6 +973,11 @@ void CUserMapsRenderer::addPointstoBuffer() {
 int CUserMapsRenderer::drawMultipleElements(QSharedPointer<CVertexBuffer> &buffer , const std::vector<std::vector<GenericVertexData>> &data) {
 	int counter=0;
 
+	//TODO: implement same as the other drawMultipleElements() function.
+	// Spaces should be used to make the code more readable, again as in the other drawMultipleElements() function.
+	// Using "uint" instead of "std::vector<std::vector<GenericVertexData>>::size_type" is better as well, and it will
+	// not show a warning.
+	//Remove this comment and thos in the other function as well.
 	for(std::vector<std::vector<GenericVertexData>>::size_type  i=0;i<data.size();i++) {
 
 		for(std::vector<GenericVertexData>::size_type  j=0;j<data[i].size();j++) {
@@ -995,28 +1000,26 @@ int CUserMapsRenderer::drawMultipleElements(QSharedPointer<CVertexBuffer> &buffe
 	return counter;
 }
 
-int CUserMapsRenderer::drawMultipleElements(QSharedPointer<CVertexBuffer> &buffer ,const std::vector<CUserMapsVertexData> &data) {
-	int counter=0;
-
-	for(std::vector<std::vector<GenericVertexData>>::size_type  i=0;i<data.size();i++) {
-
-		for(std::vector<GenericVertexData>::size_type  j=0;j<data[i].getVertexData().size();j++) {
-			counter++;
-		}
-	}
+int CUserMapsRenderer::drawMultipleElements(QSharedPointer<CVertexBuffer> &buffer, const std::vector<CUserMapsVertexData> &data)
+{
+	uint totalSize = 0;
+	for (uint i = 0; i < data.size(); i++)
+		totalSize += data[i].getVertexData().size(); // no need for two loops
 
 	std::vector<GenericVertexData> vertices;
-	int a=0;
+	// reserve() allocates needed memory immediately. If you do not use reserve(), when using push_back you will get vector resize
+	// which can be costly as it might have to move entire vector to another place in memory.
+	vertices.reserve(totalSize);
 
-	for(std::vector<std::vector<GenericVertexData>>::size_type  i=0;i<data.size();i++) {
-		for(std::vector<GenericVertexData>::size_type  j=0;j<data[i].getVertexData().size();j++) {
+	for (uint i = 0; i < data.size(); i++)
+	{
+		for (uint j = 0; j < data[i].getVertexData().size(); j++)
 			vertices.push_back(data[i].getVertexData().at(j));
-			a++;
-		}
 	}
-	buffer=QSharedPointer<CVertexBuffer>(new CVertexBuffer(vertices.data(),a));
 
-	return counter;
+	buffer = QSharedPointer<CVertexBuffer>(new CVertexBuffer(vertices.data(), totalSize));
+
+	return totalSize;
 }
 
 
