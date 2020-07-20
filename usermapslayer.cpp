@@ -427,9 +427,8 @@ EPointPositionType CUserMapsLayer::pointPositionToArea(const QPointF &clickedPos
             return EPointPositionType::AtSpecificPoint;
         }
 
-        // check two consequtive area points
         if (((pointC.y() <= clickedPosition.y() + PIXEL_OFFSET) && (pointD.y() + PIXEL_OFFSET > clickedPosition.y()))
-            || ((pointC.y() + PIXEL_OFFSET > pointD.y()) && (pointD.y() <=  clickedPosition.y() + PIXEL_OFFSET)))
+            || ((pointC.y() + PIXEL_OFFSET > clickedPosition.y()) && (pointD.y() <=  clickedPosition.y() + PIXEL_OFFSET)))
         {
                 qreal intersectX = (clickedPosition.y()  - pointC.y()) / (pointD.y() - pointC.y());
                 if (clickedPosition.x() < pointC.x() + intersectX * (pointD.x() - pointC.x()))
@@ -439,11 +438,11 @@ EPointPositionType CUserMapsLayer::pointPositionToArea(const QPointF &clickedPos
 
     if (crossingNum % 2 == 0)
     {
-        return EPointPositionType::InsideObject;
+        return EPointPositionType::OutsideObject;
     }
     else
     {
-        return EPointPositionType::OutsideObject;
+        return EPointPositionType::InsideObject;
     }
 }
 
