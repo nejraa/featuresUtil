@@ -23,6 +23,6 @@ void main()
                 discard;
         if ((u_dotSize!=0.0)&&(fract(dist / (u_dashSize + u_gapSize)) >0.05) && (fract(dist / (u_dashSize + u_gapSize)) < 0.15))
                 discard;
-    out_0 = col;
+        out_0 = col;
 }
 

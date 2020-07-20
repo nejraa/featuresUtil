@@ -108,7 +108,7 @@ private:
 
 	void testCircle(qreal originX, qreal originY);
 
-	void read(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid* pixels,QOpenGLFunctions *func);
+	void read(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type,QOpenGLFunctions *func);
 };
 
 #endif // CUSERMAPSRENDERER_H

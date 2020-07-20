@@ -139,6 +139,7 @@ void CUserMapsRenderer::synchronize(QQuickFramebufferObject *item)
 	m_pCircleData.clear();
 	m_pLineData.clear();
 	m_pPolygonData.clear();
+	updatePoint();
 	updatefillPolygon();
 	updatefillCircle();
 	updateLine();
@@ -222,12 +223,14 @@ void CUserMapsRenderer::initializeGL()
 void CUserMapsRenderer::renderPrimitives(QOpenGLFunctions *func)
 {
 
-
+	drawPoint(func);
 	drawfilledPolygon(func);
 	drawfilledCircle(func);
 	drawLine(func);
 	drawCircle(func);
 	drawPolygon(func);
+
+	read(960.0f,540.0f,1,1, GL_RGBA, GL_UNSIGNED_BYTE,func);
 
 }
 
@@ -243,7 +246,7 @@ void CUserMapsRenderer::renderTextures()
 
 	QMatrix4x4 matrix;
 
-	// Set screen coordinates
+	// Set position
 	matrix.translate(460.0f,240.0f, 0.0f );
 
 	float fScaleWidth = m_tgTexture[0]->getWidth();
@@ -300,8 +303,8 @@ void CUserMapsRenderer::updatePoint() {
 	float x = static_cast<float>(originX + 6);
 	float y = static_cast<float>(originY + 6);
 
-	vertices[bufferIndex].setPosition(QVector4D(x, y, 0.0f, 1.0f));
-	vertices[bufferIndex].setColor(m_PointColour);
+	vertices[bufferIndex].setPosition(QVector4D(1000.0f,2.0f, 0.0f, 1.0f));
+	vertices[bufferIndex].setColor(QVector4D(0.0f,1.0f,0.0f, 1.0f));
 	m_pPointData.push_back(vertices[0]);
 }
 
@@ -621,6 +624,8 @@ void CUserMapsRenderer::drawPoint(QOpenGLFunctions *func) {
 	// Set the projection and translation
 	m_primShader.setMVPMatrix(projection * translation);
 
+	m_PointBuf=QSharedPointer<CVertexBuffer>(new CVertexBuffer(m_pPointData.data(),m_pPointData.size()));
+
 	m_PointBuf->bind();
 
 	// Check Frame buffer is OK
@@ -630,7 +635,7 @@ void CUserMapsRenderer::drawPoint(QOpenGLFunctions *func) {
 
 	m_primShader.setupVertexState();
 
-	func->glDrawArrays(GL_POINTS, 0, CIRCLE_BUFFER_SIZE);
+	func->glDrawArrays(GL_POINTS, 0, m_pPointData.size());
 	// Tidy up
 	m_primShader.cleanupVertexState();
 
@@ -900,7 +905,6 @@ void CUserMapsRenderer::drawCircle(QOpenGLFunctions *func) {
 	qreal bottom = 0;
 	CViewCoordinates::Instance()->getViewDimensions( left, right, bottom, top);
 	setProjection( left, right, bottom, top, projection );
-
 	initShader();
 
 	// Bind the shader
@@ -939,7 +943,6 @@ void CUserMapsRenderer::drawCircle(QOpenGLFunctions *func) {
 	m_CircleBuf->release();
 
 	m_pMapShader->release();
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1085,7 +1088,7 @@ void CUserMapsRenderer::testCircle(qreal originX, qreal originY) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn     CUserMapsRenderer::read(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid *pixels,QOpenGLFunctions *func)
+/// \fn     CUserMapsRenderer::read(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type,QOpenGLFunctions *func)
 ///
 /// \brief  This function should read colour data from pixel
 ///
@@ -1095,11 +1098,18 @@ void CUserMapsRenderer::testCircle(qreal originX, qreal originY) {
 ///        height-height of the pixel rectangle
 ///        format-format of the pixel data
 ///        type- data type of the pixel data
-///        pixels-returns pixels data
 ///        func-pointer that points to qopenglfunctions
 ////////////////////////////////////////////////////////////////////////////////
-void CUserMapsRenderer::read(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid *pixels,QOpenGLFunctions *func) {
-	func->glReadPixels(x,y, width,height,format,type, &pixels);
+void CUserMapsRenderer::read(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type,QOpenGLFunctions *func) {
+	func->glFlush();
+	func->glFinish();
+	func->glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+	unsigned char data[4] = {0,0,0,0};
+
+	func->glReadPixels(x,y, 1,1,format,type, data);//TO DO:: figure out why line colours are not correctly picked
+
+	qDebug()<<"Colours are r:"<<data[0]<<" g"<<data[1]<<" b"<<data[2]<<" a"<<data[3];
 }
 
 
