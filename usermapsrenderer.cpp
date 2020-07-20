@@ -116,7 +116,7 @@ void CUserMapsRenderer::synchronize(QQuickFramebufferObject *item)
     //updatefillPolygon();
     //updatefillCircle();
 	updateLine();
-    //updateCircle();
+    updateCircle();
     updatePolygon();
 	//updateText();
 
@@ -194,7 +194,7 @@ void CUserMapsRenderer::renderPrimitives(QOpenGLFunctions *func)
     //drawfilledPolygon(func);
     //drawfilledCircle(func);
 	drawLine(func);
-    //drawCircle(func);
+    drawCircle(func);
     drawPolygon(func);
 
 }
@@ -270,20 +270,20 @@ void CUserMapsRenderer::updateLine() {
 	float x = static_cast<float>(originX + 10);
 	float y = static_cast<float>(originY + 10); //doraditi da uzima stavke iz singletona mapsmanager-a kad bude gotov
 
-    line.push_back( GenericVertexData(QVector4D( 10.0, 350.0, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
-    line.push_back( GenericVertexData(QVector4D( 10.0,550.0, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
+    line.push_back( GenericVertexData(QVector4D( 50.0, 250.0, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
+    line.push_back( GenericVertexData(QVector4D( 50.0, 350.0, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
 
     qDebug() << "coordinates " << x << " - " << y << 700 << 100;
 
 	line.push_back( GenericVertexData(QVector4D( 65535,65535 ,65535 , 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));//add end of the line
 	m_pLineData.push_back(line);
 
-    //line2.push_back( GenericVertexData(QVector4D( x+1200, y, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
-    //line2.push_back( GenericVertexData(QVector4D( x+1200, y+100, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
+    line2.push_back( GenericVertexData(QVector4D( 50.0, 350.0, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
+    line2.push_back( GenericVertexData(QVector4D( 200.0, 220.0, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
 
 	//addText("text",x+600,y,QVector4D(0.0f,1.0f,0.0f, 1.0f),TextAlignment::CENTRE);
 
-    //m_pLineData.push_back(line2);
+    m_pLineData.push_back(line2);
     //addText("text",x+600,y-200,QVector4D(0.0f,1.0f,0.0f, 1.0f),TextAlignment::CENTRE);
 }
 
@@ -309,7 +309,8 @@ void CUserMapsRenderer::updateCircle() {
 	qreal offsetX = 0.0;
 	qreal offsetY = 0.0;
 	CViewCoordinates::Instance()->getGeoOriginOffsetPixel( offsetX, offsetY );
-	double radius = CViewCoordinates::Instance()->getRadiusPixels();
+    //double radius = CViewCoordinates::Instance()->getRadiusPixels();
+    double radius = 100.0;
 
 	int bufferIndex = 0;
 
@@ -317,8 +318,11 @@ void CUserMapsRenderer::updateCircle() {
 	for ( bufferIndex=0; bufferIndex<=rbDegrees; bufferIndex+=8 )
 	{
 		double angle = 2 * M_PI * bufferIndex / rbDegrees;
-		float x = static_cast<float>(20+originX + (radius * std::sin(angle)));
-		float y = static_cast<float>(originY - (radius * std::cos(angle)));
+        //float x = static_cast<float>(20+originX + (radius * std::sin(angle)));
+        //float y = static_cast<float>(originY - (radius * std::cos(angle)));
+
+        float x = static_cast<float>(200.0 + (radius * std::sin(angle)));
+        float y = static_cast<float>(200.0 - (radius * std::cos(angle)));
 
 		// Set Vertex data
 		circle.push_back( GenericVertexData(QVector4D( x, y, 0.0f, 1.0f),QVector4D(0.0f,0.0f,1.0f, 1.0f)));
@@ -411,10 +415,10 @@ void CUserMapsRenderer::updatePolygon() {
     float x = static_cast<float>(originX + 400);
 	float y = static_cast<float>(originY); //doraditi da uzima stavke iz singletona mapsmanager-a kad bude gotov
 
-	polygon.push_back( GenericVertexData(QVector4D( x, y, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
-    polygon.push_back( GenericVertexData(QVector4D(x+100,y, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
-    polygon.push_back( GenericVertexData(QVector4D(x+100,y+100, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
-    polygon.push_back( GenericVertexData(QVector4D( x, y+100, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
+    polygon.push_back( GenericVertexData(QVector4D( 800, 300, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
+    polygon.push_back( GenericVertexData(QVector4D(900,300, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
+    polygon.push_back( GenericVertexData(QVector4D(900,400, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
+    polygon.push_back( GenericVertexData(QVector4D( 800, 400, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
 	polygon.push_back(polygon[0]);
 	polygon.push_back( GenericVertexData(QVector4D( 65535,65535 ,65535 , 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
 

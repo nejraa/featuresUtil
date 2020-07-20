@@ -58,19 +58,20 @@ void CUserMapsLayer::mousePressEvent(QMouseEvent *event)
     //if (! CUserMapsManager::getEditModeOn())
     //    return;
 
-    QPointF pontTest = QPointF(400.0, 800.0);
+    /*QPointF pontTest = QPointF(200.0, 200.0);
     CPosition cpos = convertPixelPointToGeoPoint(pontTest);
-    // CUserMapCircle* circleTest = new CUserMapCircle ("test", 0.5, 198, 2.0, EUserMapLineStyle::Solid, cpos, 50.0, 159);
+    // CUserMapCircle* circleTest = new CUserMapCircle ("test", 0.5, 198, 2.0, EUserMapLineStyle::Solid, cpos, 100.0, 159);
     // CUserMapCircle(const QString &text, float transparency, int colour, float lineWidth,
     //                      EUserMapLineStyle lineStyle, const CPosition &center, float radius, int outlineColour)
     EUserMapObjectType m_objectType = EUserMapObjectType::Circle;
     QVector<QPointF> linePoints1;
     linePoints1.insert(0, pontTest);
-    QVector<QPointF> m_selectedObjPoints = linePoints1;
+    QVector<QPointF> m_selectedObjPoints = linePoints1;*/
 
-    /*QPointF pontTest1 = QPointF(400.0, 800.0);
-    QPointF pontTest2 = QPointF(600.0, 800.0);
-    QPointF pontTest3 = QPointF(600.0, 900.0);
+
+    /*QPointF pontTest1 = QPointF(100.0, 350.0);
+    QPointF pontTest2 = QPointF(100.0, 450.0);
+    QPointF pontTest3 = QPointF(300.0, 420.0);
     QVector<QPointF> linePoints;
     linePoints.insert(0, pontTest1);
     linePoints.insert(1, pontTest2);
@@ -79,7 +80,7 @@ void CUserMapsLayer::mousePressEvent(QMouseEvent *event)
     convertPixelVectorToGeoVector(linePoints, geoLinePoints);
     //CUserMapLine(const QString &text, float transparency, int colour,
     //			 float lineWidth, EUserMapLineStyle lineStyle, const QVector<CPosition> &points);
-    CUserMapLine* lineTest = new CUserMapLine("test", 1.0, 159, 4.0, EUserMapLineStyle::Solid, geoLinePoints);
+    // CUserMapLine* lineTest = new CUserMapLine("test", 1.0, 159, 4.0, EUserMapLineStyle::Solid, geoLinePoints);
     EUserMapObjectType m_objectType = EUserMapObjectType::Line;
     QVector<QPointF> m_selectedObjPoints = linePoints;*/
 
@@ -105,9 +106,9 @@ void CUserMapsLayer::mousePressEvent(QMouseEvent *event)
     m_moveEvtStartPoint = event->screenPos();
     m_isCursorMoving = false;
 
-    //QPointF returnedPoint1, returnedPoint2;
-    EPointPositionType mltz = pointPositionToCircle(m_moveEvtStartPoint);
-    //EPointPositionType mltz = pointPositionToArea(m_moveEvtStartPoint, returnedPoint1, returnedPoint2);
+    QPointF returnedPoint1, returnedPoint2;
+    //EPointPositionType mltz = pointPositionToCircle(m_moveEvtStartPoint);
+    EPointPositionType mltz = pointPositionToArea(m_moveEvtStartPoint, returnedPoint1, returnedPoint2);
     //EPointPositionType mltz = pointPositionToLine(m_moveEvtStartPoint, returnedPoint1, returnedPoint2);
     qDebug() << "POSITION ESTIMATION";
 }
@@ -205,7 +206,6 @@ EPointPositionType CUserMapsLayer::checkPointPosition(const QPointF &clickedPosi
         case EUserMapObjectType::Unkown_Object:
             return EPointPositionType::Unknown;
         }
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -386,21 +386,53 @@ void CUserMapsLayer::updateObjectPosition()
 /// \return		EPointPositionType Selected point position with respect to an area.
 EPointPositionType CUserMapsLayer::pointPositionToArea(const QPointF &clickedPosition, QPointF &pointA, QPointF &pointB)
 {
+    /* // added for testing purposes
+    QPointF pontTest1 = QPointF(800.0, 300.0);
+    QPointF pontTest2 = QPointF(900.0, 300.0);
+    QPointF pontTest3 = QPointF(900.0, 400.0);
+    QPointF pontTest4 = QPointF(800.0, 400.0);
+    QVector<QPointF> linePoints;
+    linePoints.append(pontTest1);
+    linePoints.append(pontTest2);
+    linePoints.append(pontTest3);
+    linePoints.append(pontTest4);
+    linePoints.append(pontTest1);
+    m_selectedObjPoints = linePoints;*/
+
     // detection of inner/outer position of selected point
-    int    crossingNum = 0;
+    QPointF pointC;
+    QPointF pointD;
+    int crossingNum = 0;
     for (int i = 0; i < m_selectedObjPoints.size() - 1; i++)
     {
-        if (m_selectedObjPoints[i].y() - clickedPosition.y() <= PIXEL_OFFSET)
+        pointC = m_selectedObjPoints[i];
+        pointD = m_selectedObjPoints[i+1];
+
+        if ( qAbs(clickedPosition.x() - pointC.x()) <= PIXEL_OFFSET &&
+             qAbs(clickedPosition.y() - pointC.y()) <= PIXEL_OFFSET)
         {
+             // clicked close to pointC
+             // save in pointA and pointB this point and its sucessive point
+             pointA = QPointF(pointC.x(), pointC.y());
+             pointB = QPointF(pointD.x(), pointD.y());
+             return EPointPositionType::AtSpecificPoint;
+        }
+        else if ( qAbs(clickedPosition.x() - pointD.x()) <= PIXEL_OFFSET &&
+                  qAbs(clickedPosition.y() - pointD.y()) <= PIXEL_OFFSET)
+        {
+            // clicked close to pointD
+            // whereas the first saved point is the point where clicked
+            pointA = QPointF(pointD.x(), pointD.y());
+            pointB = QPointF(pointC.x(), pointC.y());
             return EPointPositionType::AtSpecificPoint;
         }
 
         // check two consequtive area points
-        if (((m_selectedObjPoints[i].y() <= clickedPosition.y()) && (m_selectedObjPoints[i+1].y() > clickedPosition.y()))
-            || ((m_selectedObjPoints[i].y() > clickedPosition.y()) && (m_selectedObjPoints[i+1].y() <=  clickedPosition.y())))
+        if (((pointC.y() <= clickedPosition.y() + PIXEL_OFFSET) && (pointD.y() + PIXEL_OFFSET > clickedPosition.y()))
+            || ((pointC.y() + PIXEL_OFFSET > pointD.y()) && (pointD.y() <=  clickedPosition.y() + PIXEL_OFFSET)))
         {
-                qreal intersectX = (clickedPosition.y()  - m_selectedObjPoints[i].y()) / (m_selectedObjPoints[i+1].y() - m_selectedObjPoints[i].y());
-                if (clickedPosition.x() < m_selectedObjPoints[i].x() + intersectX * (m_selectedObjPoints[i+1].x() - m_selectedObjPoints[i].x()))
+                qreal intersectX = (clickedPosition.y()  - pointC.y()) / (pointD.y() - pointC.y());
+                if (clickedPosition.x() < pointC.x() + intersectX * (pointD.x() - pointC.x()))
                     ++crossingNum;
         }
     }
@@ -413,7 +445,6 @@ EPointPositionType CUserMapsLayer::pointPositionToArea(const QPointF &clickedPos
     {
         return EPointPositionType::OutsideObject;
     }
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -430,19 +461,26 @@ EPointPositionType CUserMapsLayer::pointPositionToCircle(const QPointF &clickedP
     CPosition centerPoint = CUserMapsManager::getObjPositionStat();
     QPointF circleCenterPixel = convertGeoPointToPixelPoint(centerPoint);
 
+    /* // added for testing purposes
+    float radiusVal = 100.0;
+    QPointF circleCenterPixel = QPointF(200.0, 200.0);
+    QVector<QPointF> linePoints1;
+    linePoints1.insert(0, circleCenterPixel);
+    QVector<QPointF> m_selectedObjPoints = linePoints1;*/
+
+    qDebug() << "Radius" << radiusVal << "Center point: (" << circleCenterPixel.x() << "," << circleCenterPixel.y() << ")" ;
     qreal distance = qSqrt(qPow(clickedPosition.x() - circleCenterPixel.x(), 2) + qPow(clickedPosition.y() - circleCenterPixel.y(), 2));
-    if (distance < radiusVal )
+    if (qAbs(distance - radiusVal) <= PIXEL_OFFSET)
     {
-        return EPointPositionType::InsideObject;
+            return EPointPositionType::OnLine;
     }
     else if (distance > radiusVal)
     {
         return  EPointPositionType::OutsideObject;
     }
-    //else if ((distance <= radiusVal + PIXEL_OFFSET) && (distance >= radiusVal - PIXEL_OFFSET) )
-    else if (qAbs(distance - radiusVal) <= PIXEL_OFFSET)
+    else if ( distance < radiusVal )
     {
-        return EPointPositionType::OnLine;
+        return EPointPositionType::InsideObject;
     }
     else
     {
@@ -462,22 +500,52 @@ EPointPositionType CUserMapsLayer::pointPositionToCircle(const QPointF &clickedP
 /// \return		EPointPositionType Selected point position with respect to a line.
 EPointPositionType CUserMapsLayer::pointPositionToLine(const QPointF &clickedPosition, QPointF &pointC, QPointF &pointD)
 {
+    /* // added for testing purposes
+    QPointF pontTest1 = QPointF(50.0, 250.0);
+    QPointF pontTest2 = QPointF(50.0, 350.0);
+    QPointF pontTest3 = QPointF(200.0, 220.0);
+    QVector<QPointF> linePoints;
+    linePoints.insert(0, pontTest1);
+    linePoints.insert(1, pontTest2);
+    linePoints.insert(2, pontTest3);
+    m_selectedObjPoints = linePoints;*/
+
     QPointF pointA;
     QPointF pointB;
     qreal linePoint;
     int objPointsIndex;
 
-    for ( objPointsIndex = 0; objPointsIndex <= m_selectedObjPoints.size() - 1; objPointsIndex++ )
+    for ( objPointsIndex = 0; objPointsIndex < m_selectedObjPoints.size() - 1; objPointsIndex++ )
     {
         pointA = m_selectedObjPoints[objPointsIndex];
         pointB = m_selectedObjPoints[objPointsIndex+1];
 
-        if (pointA.x() <= pointB.x())
+        if ( qAbs(clickedPosition.x() - pointA.x()) <= PIXEL_OFFSET &&
+             qAbs(clickedPosition.y() - pointA.y()) <= PIXEL_OFFSET)
+        {
+             // clicked close to pointA
+             // save in pointC and pointD these two sucessive points
+             pointC = QPointF(pointA.x(), pointA.y());
+             pointD = QPointF(pointB.x(), pointB.y());
+             return EPointPositionType::AtSpecificPoint;
+        }
+        else if ( qAbs(clickedPosition.x() - pointB.x()) <= PIXEL_OFFSET &&
+                  qAbs(clickedPosition.y() - pointB.y()) <= PIXEL_OFFSET)
+        {
+            // clicked close to pointB
+            // saved in pointD and pointC these two points,
+            // whereas the first saved point is the point where clicked
+            pointC = QPointF(pointB.x(), pointB.y());
+            pointD = QPointF(pointA.x(), pointA.y());
+            return EPointPositionType::AtSpecificPoint;
+        }
+
+        if (pointA.x() <= pointB.x() + PIXEL_OFFSET)
         {
             // check whether selected point lies between pointA and pointB
-            if ((clickedPosition.x() >= pointA.x()) && (clickedPosition.x() <= pointB.x()) )
+            if ((clickedPosition.x() + PIXEL_OFFSET >= pointA.x()) && (clickedPosition.x() <= pointB.x() + PIXEL_OFFSET) )
             {
-                if ( (clickedPosition.y() >= pointA.y() && clickedPosition.y() <= pointB.y()) )
+                if ( (clickedPosition.y() + PIXEL_OFFSET >= pointA.y() && clickedPosition.y() <= pointB.y()) + PIXEL_OFFSET )
                 {
                     // clicked position lies between pointA and pointB
                     // clicked position lies between pointA and pointB
@@ -495,14 +563,13 @@ EPointPositionType CUserMapsLayer::pointPositionToLine(const QPointF &clickedPos
                     }
                 }
             }
-
         }
-        else if (pointA.x() >= pointB.x())
+        else if (pointA.x() + PIXEL_OFFSET > pointB.x())
         {
                 // check whether selected point lies between pointA and pointB
-                if ((clickedPosition.x() >= pointB.x()) && (clickedPosition.x() <= pointA.x()) )
+                if ((clickedPosition.x() + PIXEL_OFFSET >= pointB.x()) && (clickedPosition.x() <= pointA.x() + PIXEL_OFFSET) )
                 {
-                    if ( (clickedPosition.y() <= pointB.y() && clickedPosition.y() >= pointA.y()) )
+                    if ( (clickedPosition.y() <= pointB.y() + PIXEL_OFFSET && clickedPosition.y() + PIXEL_OFFSET >= pointA.y()) )
                     {
                         // clicked position lies between pointA and pointB
                         // check if clicked position lies on line
@@ -521,7 +588,7 @@ EPointPositionType CUserMapsLayer::pointPositionToLine(const QPointF &clickedPos
                 }
          }
     }
-    return EPointPositionType::Unknown;
+    return EPointPositionType::NotOnLine;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -537,10 +604,23 @@ EPointPositionType CUserMapsLayer::pointPositionToLine(const QPointF &clickedPos
 qreal CUserMapsLayer::calculateYaxisValueOnLine(const QPointF &pointA, const QPointF &pointB, const QPointF clickedPoint)
 {
     // line equation between two points
-    // m = (yB − yA)/(xB − xA)
-    // y = m (x − xA) + yA
-    qreal m = (pointB.y() - pointA.y())/(pointB.x() - pointA.x());
-    return m * (clickedPoint.x() - pointA.x()) + pointA.y();
+    // m = (yA − yB)/(xA − xB)
+    // y - yA = m (x − xA)
+    // y = mx - mxA + yA
+    // b= -mxA + yA
+    qreal m, b;
+    if (qAbs(pointA.x() - pointB.x()) > 0)
+    {
+        // not vertical line
+        m = (pointA.y() - pointB.y())/(pointA.x() - pointB.x());
+    }
+    else
+    {
+        // vertical line
+        return clickedPoint.y();
+    }
+    b = -m * pointA.x() + pointA.y();
+    return m * clickedPoint.x() + b;
 }
 
 
