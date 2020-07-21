@@ -154,9 +154,134 @@ QQuickFramebufferObject::Renderer *CUserMapsLayer::createRenderer() const
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// \fn		void CUserMapsLayer::handleObjAction()
+///
+/// \brief	Handling press/move events
+/// \brief  - if long mouse press at specific point (for line/area object) - deleting point,
+/// \brief  - if mouse press at specific point (for line/area object) - moving point,
+/// \brief  - if long press on line (for line/area object) - adding line point,
+/// \brief  - if mouse press on line (for line/area object) - moving line points???,
+/// \brief  - if mouse press on line (for circle object) - resize circle = change radius,
+/// \brief  - if mouse press inside object - moving object,
+/// \brief  - if mouse press outside object - no action.
+////////////////////////////////////////////////////////////////////////////////
+void CUserMapsLayer::handleObjAction(const QPointF &clickedPosition)
+{
+    switch (m_objectType)
+    {
+        case EUserMapObjectType::Area:
+            // adding/deleting/moving
+            handleAreaObj(clickedPosition);
+        case EUserMapObjectType::Line:
+            // adding/deleting/moving
+            handleLineObj(clickedPosition);
+        case EUserMapObjectType::Circle:
+            // resizing/moving
+            handleCircleObj(clickedPosition);
+        case EUserMapObjectType::Point:
+            // moving
+            handlePointObj(clickedPosition);
+        case EUserMapObjectType::Unkown_Object:
+            // no action
+            return;
+    }
+}
+
+void CUserMapsLayer::handleAreaObj(const QPointF &clickedPosition)
+{
+    int index1, index2;
+    EPointPositionType pos = pointPositionToArea(clickedPosition, index1, index2);
+
+    switch (pos)
+    {
+        case EPointPositionType::AtSpecificPoint:
+            {
+                if (m_isLongMousePress)
+                    addObjPoint(0,clickedPosition);
+                else
+                    moveObjPoint(index1);
+            }
+        case EPointPositionType::InsideObject:
+            moveObj();
+        case EPointPositionType::OnLine:
+            {
+                if (m_isLongMousePress)
+                    addObjPoint(index1, clickedPosition);
+                else
+                    moveObjPoints(index1, index2);
+            }
+        case EPointPositionType::OutsideObject:
+            // no action
+            return;
+        case EPointPositionType::Unknown:
+            // no action
+            return;
+    }
+}
+
+void CUserMapsLayer::handleLineObj(const QPointF &clickedPosition)
+{
+    int index1, index2;
+    EPointPositionType pos = pointPositionToArea(clickedPosition, index1, index2);
+
+    switch (pos)
+    {
+        case EPointPositionType::OnLine:
+            {
+                if (m_isLongMousePress)
+                    addObjPoint(0,clickedPosition);
+                else
+                    moveObjPoint(index1);
+            }
+        case EPointPositionType::NotOnLine:
+            // no action
+            return;
+        case EPointPositionType::Unknown:
+            // no action
+            return;
+    }
+}
+
+void CUserMapsLayer::handleCircleObj(const QPointF &clickedPosition)
+{
+
+}
+
+void CUserMapsLayer::handlePointObj(const QPointF &clickedPosition)
+{
+
+}
+
+void CUserMapsLayer::moveObj()
+{
+
+}
+
+void CUserMapsLayer::moveObjPoint(const int index)
+{
+
+}
+
+void CUserMapsLayer::moveObjPoints(const int index1, const int index2)
+{
+
+}
+
+
+void CUserMapsLayer::deleteObjPoint(const int index)
+{
+
+}
+
+void CUserMapsLayer::addObjPoint(const int index, const QPointF &clickedPoint)
+{
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
 /// \fn		EPointPositionType CUserMapsLayer::checkPointPosition(const QPointF &clickedPosition, int &index1, int &index2)
 ///
-/// \brief	Checks whether clicked point lies inside selected object boundaries.
+/// \brief	Checks whether clicked point lies inside selected object boundaries (Line and Area object).
 ///
 /// \param  clickedPoint - Clicked point.
 /// \param  index1 - Index of the first point on line segment of area/line object where clicked position lies.
@@ -167,18 +292,36 @@ QQuickFramebufferObject::Renderer *CUserMapsLayer::createRenderer() const
 EPointPositionType CUserMapsLayer::checkPointPosition(const QPointF &clickedPosition, int &index1, int &index2)
 {
     switch (m_objectType)
-        {
+    {
         case EUserMapObjectType::Area:
             return pointPositionToArea(clickedPosition, index1, index2);
-        case EUserMapObjectType::Circle:
-            return pointPositionToCircle(clickedPosition);
         case EUserMapObjectType::Line:
             return pointPositionToLine(clickedPosition, index1, index2);
+        case EUserMapObjectType::Unkown_Object:
+            return EPointPositionType::Unknown;
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// \fn		EPointPositionType CUserMapsLayer::checkPointPosition(const QPointF &clickedPosition)
+///
+/// \brief	Checks whether clicked point lies inside selected object boundaries (Circle and Point object).
+///
+/// \param  clickedPoint - Clicked point.
+///
+/// \return EPointPositionType Position of clicked point with respect to an object.
+////////////////////////////////////////////////////////////////////////////////
+EPointPositionType CUserMapsLayer::checkPointPosition(const QPointF &clickedPosition)
+{
+    switch (m_objectType)
+    {
+        case EUserMapObjectType::Circle:
+            return pointPositionToCircle(clickedPosition);
         case EUserMapObjectType::Point:
             return EPointPositionType::InsideObject;
         case EUserMapObjectType::Unkown_Object:
             return EPointPositionType::Unknown;
-        }
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
