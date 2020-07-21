@@ -129,7 +129,6 @@ void CUserMapsRenderer::synchronize(QQuickFramebufferObject *item)
 	float imgHeightInMM = m_tgTexture[0]->imageHeight() /20.0f;
 	float textureHeightInPixel = imgHeightInMM * pixelsInMm;
 
-
 	m_tgTexture[0]->setWidth(textureWidthInPixels/2.0f); // set width for one side (left/right)
 	m_tgTexture[0]->setHeight(textureHeightInPixel/2.0f);
 	m_tgTexture[0]->setProjection(left, right,bottom,top);
@@ -231,7 +230,6 @@ void CUserMapsRenderer::renderPrimitives(QOpenGLFunctions *func)
 	drawPolygon(func);
 
 	read(960.0f,540.0f,1,1, GL_RGBA, GL_UNSIGNED_BYTE,func);
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -352,6 +350,8 @@ void CUserMapsRenderer::updateLine() {
 	line2.push_back( GenericVertexData(QVector4D( x+600, y+200, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
 	line2.push_back( GenericVertexData(QVector4D( 65535,65535 ,65535 , 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));//add end of the line
 	//addText("text",x+600,y,QVector4D(0.0f,1.0f,0.0f, 1.0f),TextAlignment::CENTRE);
+
+	qDebug()<<"Line 2 x is "<<x+400<<"and y is "<<y;
 
 	CUserMapsVertexData tempData2;
 	tempData2.setVertexData(line2);
@@ -566,7 +566,7 @@ void CUserMapsRenderer::updatefillPolygon() {
 	CViewCoordinates::Instance()->getGeoOriginOffsetPixel( offsetX, offsetY );
 
 	float x = static_cast<float>(originX + 400);
-	float y = static_cast<float>(originY); //doraditi da uzima stavke iz singletona mapsmanager-a kad bude gotov
+	float y = static_cast<float>(originY); //should take data from singleton
 
 	std::vector<GenericVertexData>vertices; // test data
 
@@ -698,6 +698,7 @@ void CUserMapsRenderer::drawLine(QOpenGLFunctions *func) {
 	m_pMapShader->setGapSize(0.0f);
 	m_pMapShader->setDotSize(0.0f);
 
+	func->glLineWidth(100);
 	func->glDrawArrays(GL_LINE_STRIP,0 ,counter);
 
 	// Tidy up
@@ -971,31 +972,21 @@ void CUserMapsRenderer::addPointstoBuffer() {
 ///         data- points that form a shape
 ////////////////////////////////////////////////////////////////////////////////
 int CUserMapsRenderer::drawMultipleElements(QSharedPointer<CVertexBuffer> &buffer , const std::vector<std::vector<GenericVertexData>> &data) {
-	int counter=0;
+	uint counter=0;
 
-	//TODO: implement same as the other drawMultipleElements() function.
-	// Spaces should be used to make the code more readable, again as in the other drawMultipleElements() function.
-	// Using "uint" instead of "std::vector<std::vector<GenericVertexData>>::size_type" is better as well, and it will
-	// not show a warning.
-	//Remove this comment and thos in the other function as well.
-	for(std::vector<std::vector<GenericVertexData>>::size_type  i=0;i<data.size();i++) {
-
-		for(std::vector<GenericVertexData>::size_type  j=0;j<data[i].size();j++) {
-			counter++;
-		}
+	for(uint  i=0;i<data.size();i++) {
+		counter+=data[i].size();
 	}
-
 
 	std::vector<GenericVertexData> vertices;
-	int a=0;
+	vertices.reserve(counter);
 
-	for(std::vector<std::vector<GenericVertexData>>::size_type  i=0;i<data.size();i++) {
-		for(std::vector<GenericVertexData>::size_type  j=0;j<data[i].size();j++) {
+	for(uint  i=0;i<data.size();i++) {
+		for(uint j=0;j<data[i].size();j++) {
 			vertices.push_back(data[i][j]);
-			a++;
 		}
 	}
-	buffer=QSharedPointer<CVertexBuffer>(new CVertexBuffer(vertices.data(),a));
+	buffer=QSharedPointer<CVertexBuffer>(new CVertexBuffer(vertices.data(),counter));
 
 	return counter;
 }
@@ -1004,11 +995,9 @@ int CUserMapsRenderer::drawMultipleElements(QSharedPointer<CVertexBuffer> &buffe
 {
 	uint totalSize = 0;
 	for (uint i = 0; i < data.size(); i++)
-		totalSize += data[i].getVertexData().size(); // no need for two loops
+		totalSize += data[i].getVertexData().size();
 
 	std::vector<GenericVertexData> vertices;
-	// reserve() allocates needed memory immediately. If you do not use reserve(), when using push_back you will get vector resize
-	// which can be costly as it might have to move entire vector to another place in memory.
 	vertices.reserve(totalSize);
 
 	for (uint i = 0; i < data.size(); i++)
