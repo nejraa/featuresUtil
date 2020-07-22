@@ -53,12 +53,6 @@ private:
     void updateObjectPosition();
 
     // Handling press/move events
-    // if long mouse press at specific point (for line/area object) - deleting point
-    // if long mouse press on line (for line/area object) - adding point
-    // if mouse press on line (for line/area object) - moving line points???
-    // if mouse press on line (for circle object) - resize circle = change radius
-    // if mouse press inside object - moving object
-    // if mouse press outside object - no action
     void handleObjAction(const QPointF &clickedPosition);
     void handleAreaObj(const QPointF &clickedPosition);
     void handleLineObj(const QPointF &clickedPosition);
@@ -72,19 +66,23 @@ private:
 
     // Position estimation of clicked point
     EPointPositionType checkPointPosition (const QPointF &clickedPosition, int &index1, int &index2);
-    EPointPositionType checkPointPosition (const QPointF &clickedPosition);
     EPointPositionType pointPositionToArea(const QPointF &clickedPosition, int &index1, int &index2);
     EPointPositionType pointPositionToCircle(const QPointF &clickedPosition);
     EPointPositionType pointPositionToLine(const QPointF &clickedPosition, int &index1, int &index2);
     qreal calculateYaxisValueOnLine(const QPointF &pointA, const QPointF &pointB, const QPointF clickedPoint);
 
-    QTimer m_onPressTimer;                  ///< Timer for press event
-    bool m_isCursorMoving;                  ///< Flag describing whether the cursor is moving or not.
-    bool m_isLongMousePress;                  ///< Flag describing whether long mouse press occurred or not.
-    QPointF m_moveEvtStartPoint;            ///< Move event start point in pixels
-    EUserMapObjectType m_objectType;        ///< Type of object
-    QVector<QPointF> m_selectedObjPoints;   ///< Vector of points of selected object
-    qint64 m_moveEvtTimestamp;              ///< Timestamp for move event
+    QTimer m_onPressTimer;                   ///< Timer for press event.
+    bool m_isCursorMoving;                   ///< Flag describing whether the cursor is moving or not.
+    bool m_isLongMousePress;                 ///< Flag describing whether long mouse press occurred or not.
+    QPointF m_moveEvtStartPoint;             ///< Move event start point in pixels.
+    EUserMapObjectType m_objectType;         ///< Type of object.
+    QVector<QPointF> m_selectedObjPoints;    ///< Vector of points of selected object.
+    qint64 m_moveEvtTimestamp;               ///< Timestamp for move event.
+    EPointPositionType  m_pointPositionType; ///< Type of clicked point position.
+    int m_index1;                            ///< Index of the first point on line segment of
+                                             ///< area/line object where clicked position lies.
+    int m_index2;                            ///< Index of the second point on line segment of
+                                             ///< area/line object where clicked position lies.
 };
 
 #endif // CUSERMAPSLAYER_H
