@@ -53,14 +53,14 @@ private:
     void updateObjectPosition();
 
     // Handling press/move events
-    void handleObjAction(const QPointF &clickedPosition);
-    void handleAreaObj(const QPointF &clickedPosition);
-    void handleLineObj(const QPointF &clickedPosition);
-    void handleCircleObj(const QPointF &clickedPosition);
-    void handlePointObj(const QPointF &clickedPosition);
-    void moveObj(void);
-    void moveObjPoint(const int index);
-    void moveObjPoints(const int index1, const int index2);
+    void handleObjAction(const QPointF &clickedPosition, QMouseEvent *event);
+    void handleAreaObj(const QPointF &clickedPosition, QMouseEvent *event);
+    void handleLineObj(const QPointF &clickedPosition, QMouseEvent *event);
+    void handleCircleObj(const QPointF &clickedPosition,QMouseEvent *event);
+    void handlePointObj(const QPointF &clickedPosition, QMouseEvent *event);
+    void moveObj(const QPointF &clickedPosition, QMouseEvent *event);
+    void moveObjPoint(const QPointF &clickedPosition, QMouseEvent *event, const int index);
+    void moveObjPoints(const QPointF &clickedPosition, QMouseEvent *event, const int index1, const int index2);
     void deleteObjPoint(const int index);
     void addObjPoint(const int index, const QPointF &clickedPoint);
 

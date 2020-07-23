@@ -257,6 +257,7 @@ void CUserMapsRenderer::updateLine() {
 
 	std::vector<GenericVertexData> line;//test data,will be deleted
 	std::vector<GenericVertexData> line2;//test data,will be deleted
+    std::vector<GenericVertexData> line3;//test data,will be deleted
 
 
 	// Get coordiante system data
@@ -285,6 +286,11 @@ void CUserMapsRenderer::updateLine() {
 
     m_pLineData.push_back(line2);
     //addText("text",x+600,y-200,QVector4D(0.0f,1.0f,0.0f, 1.0f),TextAlignment::CENTRE);
+
+    line3.push_back( GenericVertexData(QVector4D( 200.0, 220.0, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
+    line3.push_back( GenericVertexData(QVector4D( 100.0, 220.0, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
+    m_pLineData.push_back(line3);
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -417,6 +423,7 @@ void CUserMapsRenderer::updatePolygon() {
 
     polygon.push_back( GenericVertexData(QVector4D( 800, 300, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
     polygon.push_back( GenericVertexData(QVector4D(900,300, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
+    polygon.push_back( GenericVertexData(QVector4D(850,350, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
     polygon.push_back( GenericVertexData(QVector4D(900,400, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
     polygon.push_back( GenericVertexData(QVector4D( 800, 400, 0.0f, 1.0f),QVector4D(0.0f,1.0f,0.0f, 1.0f)));
 	polygon.push_back(polygon[0]);
