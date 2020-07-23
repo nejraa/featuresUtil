@@ -75,3 +75,9 @@ DEPENDPATH += $$PWD/../OpenGLBaseLib
 
 RESOURCES += \
     usermapshader.qrc
+
+if(android){LIBS += -L$$OUT_PWD/../LoggingLib/ -lLoggingLib_$$ANDROID_TARGET_ARCH}
+else{LIBS += -L$$OUT_PWD/../LoggingLib/ -lLoggingLib}
+
+INCLUDEPATH += $$PWD/../LoggingLib
+DEPENDPATH += $$PWD/../LoggingLib

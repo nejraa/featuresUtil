@@ -21,7 +21,12 @@
 #include "triangulate.h"
 #include "usermapsvertexdata.h"
 #include <vector>
-
+#include "../UserMapsDataLib/usermap.h"
+#include "../UserMapsDataLib/usermappoint.h"
+#include "../UserMapsDataLib/usermaparea.h"
+#include "../UserMapsDataLib/usermapcircle.h"
+#include "../UserMapsDataLib/usermapline.h"
+#include "../ShipDataLib/shipdata.h"
 struct Color {
 	GLfloat r;
 	GLfloat g;
@@ -56,6 +61,7 @@ public:
 	void drawfilledPolygon( QOpenGLFunctions* func );
 	void initShader();
 	void addText( QString text,double x, double y, QVector4D colour,TextAlignment alignment);
+	void loadMaps();
 
 private:
 	QVector4D m_PointColour;					///< Point colour
@@ -97,6 +103,13 @@ private:
 
 	std::vector<std::vector<GenericVertexData>>m_pfilledPolygonData;///< Vector where polygons and their points with inline colour are stored
 
+	QSharedPointer<QList<CUserMapArea>> m_pAreas;			///< List of area objects contained in the map.
+	QSharedPointer<QList<CUserMapCircle>> m_pCircles;		///< vector whose elements are circle objects contained in the map.
+	QSharedPointer<QList<CUserMapLine>> m_pLines;			///< vector whose elements are line objects contained in the map.
+	QSharedPointer<QList<CUserMapPoint>> m_pPoints;			///< vector whose elements are lists of point objects contained in the map.
+
+	QMap<QString, QSharedPointer<CUserMap>> m_UserMaps;///< Map where loaded maps are stored
+
 	void logOpenGLErrors();
 
 	void addPointstoBuffer();
@@ -109,6 +122,8 @@ private:
 	void testCircle(qreal originX, qreal originY);
 
 	void read(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type,QOpenGLFunctions *func);
+
+	QTextStream out;
 };
 
 #endif // CUSERMAPSRENDERER_H
