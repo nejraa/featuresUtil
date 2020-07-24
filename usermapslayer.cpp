@@ -249,8 +249,7 @@ void CUserMapsLayer::onPositionClicked(const QPointF &clickedPosition)
 	}
 	else
 	{
-            //TODO:
-//                CUserMapsManager::selectObjectStat(pos);
+                CUserMapsManager::selectObjectStat(pos);
 	}
 }
 
