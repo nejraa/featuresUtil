@@ -14,7 +14,6 @@
 
 #include "usermapslayerlib_global.h"
 #include "../LayerLib/baselayer.h"
-#include "../NavUtilsLib/coordinates.h"
 #include "usermapsmanager.h"
 #include "userpointpositiontype.h"
 #include <QTimer>
@@ -53,14 +52,14 @@ private:
     void updateObjectPosition();
 
     // Handling press/move events
-    void handleObjAction(const QPointF &clickedPosition, QMouseEvent *event);
-    void handleAreaObj(const QPointF &clickedPosition, QMouseEvent *event);
-    void handleLineObj(const QPointF &clickedPosition, QMouseEvent *event);
-    void handleCircleObj(const QPointF &clickedPosition,QMouseEvent *event);
-    void handlePointObj(const QPointF &clickedPosition, QMouseEvent *event);
-    void moveObj(const QPointF &clickedPosition, QMouseEvent *event);
-    void moveObjPoint(const QPointF &clickedPosition, QMouseEvent *event, const int index);
-    void moveObjPoints(const QPointF &clickedPosition, QMouseEvent *event, const int index1, const int index2);
+    void handleObjAction(const QPointF &initialPosition, const QPointF &endPosition);
+    void handleAreaObj(const QPointF &initialPosition, const QPointF &endPosition);
+    void handleLineObj(const QPointF &initialPosition, const QPointF &endPosition);
+    void handleCircleObj(const QPointF &initialPosition, const QPointF &endPosition);
+    void handlePointObj(const QPointF &initialPosition, const QPointF &endPosition);
+    void moveObj(const QPointF &initialPosition, const QPointF &endPosition);
+    void moveObjPoint(const QPointF &initialPosition, const QPointF &endPosition, const int index);
+    void moveObjPoints(const QPointF &initialPosition, const QPointF &endPosition, const int index1, const int index2);
     void deleteObjPoint(const int index);
     void addObjPoint(const int index, const QPointF &clickedPoint);
 
