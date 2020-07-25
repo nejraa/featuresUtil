@@ -209,18 +209,22 @@ void CUserMapsLayer::handleObjAction(const QPointF &initialPosition, const QPoin
         case EUserMapObjectType::Area:
             // adding/deleting/moving
             handleAreaObj(initialPosition, endPosition);
+            break;
         case EUserMapObjectType::Line:
             // adding/deleting/moving
             handleLineObj(initialPosition, endPosition);
+            break;
         case EUserMapObjectType::Circle:
             // resizing/moving
             handleCircleObj(initialPosition, endPosition);
+            break;
         case EUserMapObjectType::Point:
             // moving
             handlePointObj(initialPosition, endPosition);
+            break;
         case EUserMapObjectType::Unkown_Object:
             // no action
-            return;
+            break;
     }
 }
 
@@ -246,6 +250,7 @@ void CUserMapsLayer::handleAreaObj(const QPointF &initialPosition, const QPointF
                     deleteObjPoint(m_index1);
                 else if (m_isCursorMoving && !m_isLongMousePress)
                     moveObjPoint(initialPosition, endPosition, m_index1);
+                break;
             }
         case EPointPositionType::OnLine:
             {
@@ -253,22 +258,24 @@ void CUserMapsLayer::handleAreaObj(const QPointF &initialPosition, const QPointF
                     addObjPoint(m_index1 + 1, initialPosition);
                 else if (m_isCursorMoving && !m_isLongMousePress)
                     moveObjPoints(initialPosition, endPosition, m_index1, m_index2);
+                break;
             }
         case EPointPositionType::InsideObject:
             {
                 if (m_isCursorMoving && !m_isLongMousePress)
                     moveObj(initialPosition, endPosition);
+                break;
             }
         case EPointPositionType::OutsideObject:
             {
                     /* TODO // deselect
                     if (CUserMapsManager::isObjSelectedStat())
                         CUserMapsManager::deselectObjectStat(); */
-                    return;
+                    break;
             }
         case EPointPositionType::Unknown:
             // no action
-            return;
+            break;
     }
 }
 
@@ -295,7 +302,7 @@ void CUserMapsLayer::handleLineObj(const QPointF &initialPosition, const QPointF
                 else if (m_isCursorMoving && !m_isLongMousePress)
                     moveObjPoint(initialPosition, endPosition, m_index1);
                     // TODO what if two ponts should be moved
-                return;
+                break;
             }
         case EPointPositionType::OnLine:
             {
@@ -303,16 +310,16 @@ void CUserMapsLayer::handleLineObj(const QPointF &initialPosition, const QPointF
                     addObjPoint(m_index1 + 1, initialPosition);
                 else if (m_isCursorMoving && !m_isLongMousePress)
                     moveObj(initialPosition, endPosition);
-                return;
+                break;
             }
         case EPointPositionType::NotOnLine:
             /* TODO // deselect
             if (CUserMapsManager::isObjSelectedStat())
                 CUserMapsManager::deselectObjectStat(); */
-            return;
+            break;
         case EPointPositionType::Unknown:
             // no action
-            return;
+            break;
     }
 }
 
@@ -335,7 +342,7 @@ void CUserMapsLayer::handleCircleObj(const QPointF &initialPosition, const QPoin
             {
                 if (m_isCursorMoving)
                     moveObj(initialPosition, endPosition);
-                return;
+                break;
             }
         case EPointPositionType::OnLine:
             {
@@ -346,16 +353,16 @@ void CUserMapsLayer::handleCircleObj(const QPointF &initialPosition, const QPoin
                     CUserMapsManager::setObjRadiusStat(updatedRadius);
                     // TODO check whether coordinates are in pixel units
                 }
-                return;
+                break;
             }
         case EPointPositionType::OutsideObject:
             /* TODO // deselect
             if (CUserMapsManager::isObjSelectedStat())
                 CUserMapsManager::deselectObjectStat(); */
-            return;
+            break;
         case EPointPositionType::Unknown:
             // no action
-            return;
+            break;
     }
 }
 
