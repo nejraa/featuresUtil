@@ -26,12 +26,26 @@
 #include "../UserMapsDataLib/usermaparea.h"
 #include "../UserMapsDataLib/usermapcircle.h"
 #include "../UserMapsDataLib/usermapline.h"
+#include "../UserMapsDataLib/usermapobject.h"
 #include "../ShipDataLib/shipdata.h"
+#include "../LayerLib/viewcoordinates.h"
+#include "../LayerLib/corelayer.h"			// For CCoreLayer
+
 struct Color {
 	GLfloat r;
 	GLfloat g;
 	GLfloat b;
 	GLfloat a;
+};
+
+
+struct MapPoint
+{
+	//todo use cimagetexture instead of genericvertexdata
+	MapPoint();
+	GenericVertexData m_vertexData;		///< Position and colour of the point
+	float m_iconSize;			    ///< Size of an icon.
+	int m_icon;
 };
 
 class CUserMapsRenderer : public CBaseRenderer, public QObject
@@ -47,11 +61,13 @@ public:
 	virtual void renderTextures() override;
 	// Updates
 	void updatePoint();
-	void updateLine();
-	void updateCircle();
+	void updateLine(const QMap<int, QSharedPointer<CUserMapLine> >& loadedLines);
+	void updateCircle(const QMap<int, QSharedPointer<CUserMapCircle> >& loadedCircles);
 	void updatefillCircle();
-	void updatePolygon();
+	void updatePolygon(const QMap<int, QSharedPointer<CUserMapArea> >& loadedAreas);
 	void updatefillPolygon();
+
+	void updatePointData(const QMap<int, QSharedPointer<CUserMapPoint> > &uPointData);
 	// Draws
 	void drawPoint( QOpenGLFunctions* func );
 	void drawLine( QOpenGLFunctions* func );
@@ -69,8 +85,9 @@ private:
 	QVector4D m_CircleColour;					///<Circle colour
 	QVector4D m_PolygonColour;					///<Polygon colour
 	QVector4D m_TextColour;					    ///<Text colour
+	CStringRenderer		m_tgtTextRenderer;	    ///<Used for rendering text
 	QSharedPointer<CVertexBuffer> m_PointBuf;	///< OpenGL vertex buffer (vertices and colour) to draw points
-	std::vector<QSharedPointer<CImageTexture>>m_tgTexture;  ///< image used as a textures
+	std::vector<QSharedPointer<CImageTexture>>m_pTexture;  ///< image used as a textures
 
 	// Lines buffer
 	QSharedPointer<CVertexBuffer> m_LineBuf;	///< VBO used to draw Lines
@@ -103,12 +120,7 @@ private:
 
 	std::vector<std::vector<GenericVertexData>>m_pfilledPolygonData;///< Vector where polygons and their points with inline colour are stored
 
-	QSharedPointer<QList<CUserMapArea>> m_pAreas;			///< List of area objects contained in the map.
-	QSharedPointer<QList<CUserMapCircle>> m_pCircles;		///< vector whose elements are circle objects contained in the map.
-	QSharedPointer<QList<CUserMapLine>> m_pLines;			///< vector whose elements are line objects contained in the map.
-	QSharedPointer<QList<CUserMapPoint>> m_pPoints;			///< vector whose elements are lists of point objects contained in the map.
-
-	QMap<QString, QSharedPointer<CUserMap>> m_UserMaps;///< Map where loaded maps are stored
+	QVector<MapPoint> m_pPoints;			///< vector whose elements are lists of point objects contained in the map.
 
 	void logOpenGLErrors();
 
@@ -122,8 +134,13 @@ private:
 	void testCircle(qreal originX, qreal originY);
 
 	void read(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type,QOpenGLFunctions *func);
+	QVector4D convertColour(int col);
 
 	QTextStream out;
+
+	int xPos;
+	int yPos;
+
 };
 
 #endif // CUSERMAPSRENDERER_H
