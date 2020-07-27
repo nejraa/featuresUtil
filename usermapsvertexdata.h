@@ -21,12 +21,14 @@ class CUserMapsVertexData
 {
 public:
 	CUserMapsVertexData();
-	float getDashSize()const;
+	float getDashSize() const;
 	void setDashSize(float dashSize);
-	float getDotSize()const;
+	float getDotSize() const;
 	void setDotSize(float dotSize);
-	float getGapSize()const;
+	float getGapSize() const;
 	void setGapSize(float gapSize);
+	float GetLineWidth() const;
+	void setLineWidth(float lineWidth);
 
 	std::vector<GenericVertexData> getVertexData() const;
 	void setVertexData(std::vector<GenericVertexData> vertexData);
@@ -37,6 +39,7 @@ private:
 	float m_DashSize;///< dash size of the line
 	float m_DotSize; ///<dot size of the line(1 if it is present and 0 if it is not
 	float m_GapSize;///<gap between elements
+	float m_LineWidth;///<gap between elements
 };
 
 #endif // USERMAPSVERTEXDATA_H

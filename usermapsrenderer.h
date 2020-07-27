@@ -27,6 +27,7 @@
 #include "../UserMapsDataLib/usermapcircle.h"
 #include "../UserMapsDataLib/usermapline.h"
 #include "../UserMapsDataLib/usermapobject.h"
+#include "../UserMapsDataLib/usermaplinestyle.h"
 #include "../ShipDataLib/shipdata.h"
 #include "../LayerLib/viewcoordinates.h"
 #include "../LayerLib/corelayer.h"			// For CCoreLayer
@@ -63,9 +64,7 @@ public:
 	void updatePoint();
 	void updateLine(const QMap<int, QSharedPointer<CUserMapLine> >& loadedLines);
 	void updateCircle(const QMap<int, QSharedPointer<CUserMapCircle> >& loadedCircles);
-	void updatefillCircle();
-	void updatePolygon(const QMap<int, QSharedPointer<CUserMapArea> >& loadedAreas);
-	void updatefillPolygon();
+	void updatePolygon(const QMap<int, QSharedPointer<CUserMapArea> >& loadedAreas); //soon will not be needed
 
 	void updatePointData(const QMap<int, QSharedPointer<CUserMapPoint> > &uPointData);
 	// Draws
@@ -135,6 +134,8 @@ private:
 
 	void read(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type,QOpenGLFunctions *func);
 	QVector4D convertColour(int col);
+
+	void setLineStyle(CUserMapsVertexData& tempData, EUserMapLineStyle lineStyle, float lineWidth);
 
 	QTextStream out;
 

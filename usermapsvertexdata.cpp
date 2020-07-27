@@ -20,7 +20,7 @@ float CUserMapsVertexData::getDashSize()const {
 }
 
 void CUserMapsVertexData::setDashSize(float dashSize) {
-	 m_DashSize=dashSize;
+	 m_DashSize = dashSize;
 }
 
 float CUserMapsVertexData::getDotSize()const {
@@ -28,7 +28,7 @@ float CUserMapsVertexData::getDotSize()const {
 }
 
 void CUserMapsVertexData::setDotSize(float dotSize) {
-	 m_DotSize=dotSize;
+	 m_DotSize = dotSize;
 }
 
 float CUserMapsVertexData::getGapSize()const {
@@ -36,7 +36,15 @@ float CUserMapsVertexData::getGapSize()const {
 }
 
 void CUserMapsVertexData::setGapSize(float gapSize) {
-	 m_GapSize=gapSize;
+	 m_GapSize = gapSize;
+}
+
+float CUserMapsVertexData::GetLineWidth() const {
+	return m_LineWidth;
+}
+
+void CUserMapsVertexData::setLineWidth(float lineWidth) {
+	 m_LineWidth = lineWidth;
 }
 
 std::vector<GenericVertexData> CUserMapsVertexData::getVertexData() const {
@@ -44,5 +52,5 @@ std::vector<GenericVertexData> CUserMapsVertexData::getVertexData() const {
 }
 
 void CUserMapsVertexData::setVertexData(std::vector<GenericVertexData> vertexData) {
-	m_pVertexData=vertexData;
+	m_pVertexData = vertexData;
 }
