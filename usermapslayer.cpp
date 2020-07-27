@@ -19,8 +19,8 @@
 #include "usermapsmanager.h"
 
 #define PIXEL_OFFSET 10
-const int MOVE_EVT_TIME_LIMIT = 400; // 500;
-const int LONG_PRESS_DURATION_MS = 2000;
+const int MOVE_EVT_TIME_LIMIT = 500;
+const int LONG_PRESS_DURATION_MS = 1000;
 
 ////////////////////////////////////////////////////////////////////////////////
 /// \fn     CUserMapsLayer::CUserMapsLayer(QQuickItem *parent)
@@ -63,8 +63,8 @@ CUserMapsLayer::~CUserMapsLayer()
 void CUserMapsLayer::mousePressEvent(QMouseEvent *event)
 {
     qDebug() << "PRESS EVENT";
-    //if (! CUserMapsManager::getEditModeOnStat())
-      //  return;
+    // TODO if (! CUserMapsManager::getEditModeOnStat())
+     //  return;
     m_onPressTimer.start();
     m_moveEvtStartPoint = event->screenPos();
     m_isCursorMoving = false;
@@ -120,7 +120,7 @@ void CUserMapsLayer::mousePressEvent(QMouseEvent *event)
 void CUserMapsLayer::mouseMoveEvent(QMouseEvent *event)
 {
     qDebug() << "MOUSE MOVE EVENT";
-    //if (! CUserMapsManager::getEditModeOnStat())
+    // TODO if (! CUserMapsManager::getEditModeOnStat())
     //    return;
 
     const qint64 currentTimestamp = QDateTime::currentMSecsSinceEpoch();
@@ -148,7 +148,7 @@ void CUserMapsLayer::mouseMoveEvent(QMouseEvent *event)
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::mouseReleaseEvent(QMouseEvent *event)
 {
-    //if (! CUserMapsManager::getEditModeOnStat())
+    //TODO if (! CUserMapsManager::getEditModeOnStat())
       //  return;
 
     if(m_onPressTimer.isActive() && !m_isCursorMoving)
@@ -269,7 +269,7 @@ void CUserMapsLayer::handleAreaObj(const QPointF &initialPosition, const QPointF
         case EPointPositionType::OutsideObject:
             {
                 if (CUserMapsManager::isObjSelectedStat())
-                        CUserMapsManager::deselectObjectStat();
+                    CUserMapsManager::deselectObjectStat();
                 break;
             }
         case EPointPositionType::Unknown:
@@ -349,8 +349,7 @@ void CUserMapsLayer::handleCircleObj(const QPointF &initialPosition, const QPoin
                 if (!m_isCursorMoving)
                 {
                     float updatedRadius = qSqrt( qPow(initialPosition.x() - endPosition.x(), 2) + qPow(initialPosition.y() - endPosition.y(), 2) );
-                    // TODO convert pixels to NM
-                    // radiusVal = CViewCoordinates::getPixelsToNauticalMiles(); ??
+                    // convert pixels to NM
                     updatedRadius = updatedRadius * CViewCoordinates::getPixelsToNauticalMiles();
                     CUserMapsManager::setObjRadiusStat(updatedRadius);
                 }
@@ -515,12 +514,9 @@ void CUserMapsLayer::deleteObjPoint(const int index)
     if ( m_objectType == EUserMapObjectType::Area)
     {
         // if area object composed of only three points
-        // (initial and final points has to be the same) = do not allow to delete it, otherwise an object becomes point
+        // (initial and final points has to be the same)
+        // = do not allow to delete it, otherwise an object becomes point object
         if ( m_selectedObjPoints.size() == 3)
-            return;
-
-        // TODO check for inital/end point required
-        if (index == 0 && index == m_selectedObjPoints.size() - 1 )
             return;
     }
 
@@ -593,11 +589,11 @@ void CUserMapsLayer::setSelectedObject(bool isObjSelected, EUserMapObjectType ob
     {
     case EUserMapObjectType::Point:
     case EUserMapObjectType::Circle:
-        // convertGeoPointToPixelVector(CUserMapsManager::getObjPosition(), m_selectedObjPoints);
+        convertGeoPointToPixelVector(CUserMapsManager::getObjPositionStat(), m_selectedObjPoints);
         break;
     case EUserMapObjectType::Area:
     case EUserMapObjectType::Line:
-        //convertGeoVectorToPixelVector(CUserMapsManager::getObjPointsVector(), m_selectedObjPoints);
+        convertGeoVectorToPixelVector(CUserMapsManager::getObjPointsVectorStat(), m_selectedObjPoints);
         break;
     }
 }
@@ -835,8 +831,7 @@ EPointPositionType CUserMapsLayer::pointPositionToCircle(const QPointF &clickedP
 {
     float radiusVal = CUserMapsManager::getObjRadiusStat();
     // radiusVal - radius of circle in nautical miles
-    // conversion to pixel coordinates TODO
-    // radiusVal = getNauticalMilesToPixels(radiusVal); ??
+    // conversion to pixel coordinates
     radiusVal = radiusVal * CViewCoordinates::getNauticalMilesToPixels();
     CPosition centerPoint = CUserMapsManager::getObjPositionStat();
     QPointF circleCenterPixel = convertGeoPointToPixelPoint(centerPoint);
