@@ -268,7 +268,7 @@ void CUserMapsLayer::handleAreaObj(const QPointF &initialPosition, const QPointF
             }
         case EPointPositionType::OutsideObject:
             {
-                if (CUserMapsManager::isObjSelectedStat())
+                if (CUserMapsManager::getObjSelectedStat())
                     CUserMapsManager::deselectObjectStat();
                 break;
             }
@@ -313,7 +313,7 @@ void CUserMapsLayer::handleLineObj(const QPointF &initialPosition, const QPointF
             }
         case EPointPositionType::NotOnLine:
             // deselect object
-            if (CUserMapsManager::isObjSelectedStat())
+            if (CUserMapsManager::getObjSelectedStat())
                 CUserMapsManager::deselectObjectStat();
             break;
         case EPointPositionType::Unknown:
@@ -357,7 +357,7 @@ void CUserMapsLayer::handleCircleObj(const QPointF &initialPosition, const QPoin
             }
         case EPointPositionType::OutsideObject:
             // deselect
-            if (CUserMapsManager::isObjSelectedStat())
+            if (CUserMapsManager::getObjSelectedStat())
                 CUserMapsManager::deselectObjectStat();
             break;
         case EPointPositionType::Unknown:
@@ -702,12 +702,11 @@ void CUserMapsLayer::onPositionClicked(const QPointF &clickedPosition)
         return;
     }
 
-    if (CUserMapsManager::isObjSelectedStat())
+    if (CUserMapsManager::getObjSelectedStat())
     {
         //TODO: probably deselect on click?
         // deselect object
-        if (CUserMapsManager::isObjSelectedStat())
-            CUserMapsManager::deselectObjectStat();
+        CUserMapsManager::deselectObjectStat();
     }
     else
     {
