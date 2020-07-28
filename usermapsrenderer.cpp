@@ -154,7 +154,7 @@ void CUserMapsRenderer::synchronize(QQuickFramebufferObject *item)
 	// Set the width, height and projection for each target texture
 	for( uint i = 0; i < m_pTexture.size(); ++i )
 	{
-		m_pTexture[i]->updateTexture(QVector4D(1.0f, 1.0f, 1.0f, 1.0f));
+		m_pTexture[i]->updateTexture(QVector4D(1.0f, 1.0f, 1.0f, 1.0f));//todo : should replace qvector4d colour vector
 		float imgWidthInMM = m_pTexture[i]->imageWidth() / 20.0f;	// Images are designed to be 20 texels/mm
 		float textureWidthInPixels = imgWidthInMM * pixelsInMm;	// Total width in pixels
 		float imgHeightInMM = m_pTexture[i]->imageHeight() / 20.0f;
@@ -172,13 +172,17 @@ void CUserMapsRenderer::synchronize(QQuickFramebufferObject *item)
 
 	foreach( QSharedPointer<CUserMap>pointer, CUserMapsManager::getLoadedMapsStat()) {
 
+		CUserMapObjectContainer<CUserMapPoint> points = pointer->getPoints();
+		CUserMapObjectContainer<CUserMapArea> areas = pointer->getAreas();
+		CUserMapObjectContainer<CUserMapLine> lines = pointer->getLines();
+		CUserMapObjectContainer<CUserMapCircle>circles = pointer->getCircles();
 		//updatePoint();
 		//updatefillPolygon();
 		//updatefillCircle();none of these above vould be needed
-		updatePointData(pointer->getLoadedPoints());
-		updateLine(pointer->getLoadedLines());
-		updateCircle(pointer->getLoadedCircles());
-		updatePolygon(pointer->getLoadedAreas());
+		updatePointData(points.map(EUserMapObjectStatus::Loaded));
+		updateLine(lines.map(EUserMapObjectStatus::Loaded));
+		updateCircle(circles.map(EUserMapObjectStatus::Loaded));
+		updatePolygon(areas.map(EUserMapObjectStatus::Loaded));
 		//updateText();
 	}
 

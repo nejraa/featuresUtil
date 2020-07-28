@@ -22,11 +22,11 @@
 #include "usermapsvertexdata.h"
 #include <vector>
 #include "../UserMapsDataLib/usermap.h"
-#include "../UserMapsDataLib/usermappoint.h"
-#include "../UserMapsDataLib/usermaparea.h"
-#include "../UserMapsDataLib/usermapcircle.h"
-#include "../UserMapsDataLib/usermapline.h"
-#include "../UserMapsDataLib/usermapobject.h"
+#include "../UserMapsDataLib/UserMapObjects/usermappoint.h"
+#include "../UserMapsDataLib/UserMapObjects/usermaparea.h"
+#include "../UserMapsDataLib/UserMapObjects/usermapcircle.h"
+#include "../UserMapsDataLib/UserMapObjects/usermapline.h"
+#include "../UserMapsDataLib/UserMapObjects/usermapobject.h"
 #include "../UserMapsDataLib/usermaplinestyle.h"
 #include "../ShipDataLib/shipdata.h"
 #include "../LayerLib/viewcoordinates.h"
@@ -64,7 +64,8 @@ public:
 	void updatePoint();
 	void updateLine(const QMap<int, QSharedPointer<CUserMapLine> >& loadedLines);
 	void updateCircle(const QMap<int, QSharedPointer<CUserMapCircle> >& loadedCircles);
-	void updatePolygon(const QMap<int, QSharedPointer<CUserMapArea> >& loadedAreas); //soon will not be needed
+	void updatePolygon(const QMap<int, QSharedPointer<CUserMapArea> >& loadedAreas);
+ //soon will not be needed
 
 	void updatePointData(const QMap<int, QSharedPointer<CUserMapPoint> > &uPointData);
 	// Draws
