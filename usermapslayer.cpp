@@ -18,9 +18,10 @@
 #include <QDateTime>
 #include "usermapsmanager.h"
 
-#define PIXEL_OFFSET 10
-const int MOVE_EVT_TIME_LIMIT = 500;
-const int LONG_PRESS_DURATION_MS = 1000;
+const int PIXEL_OFFSET				= 10;
+const int MOVE_EVT_TIME_LIMIT		= 20;
+const int LONG_PRESS_DURATION_MS	= 1000;
+const int MOVE_EVT_PIXEL_THRESHOLD	= 20;
 
 ////////////////////////////////////////////////////////////////////////////////
 /// \fn     CUserMapsLayer::CUserMapsLayer(QQuickItem *parent)
@@ -31,16 +32,16 @@ const int LONG_PRESS_DURATION_MS = 1000;
 ///         m_moveEvtTimestamp - Object which the editor will operate on.
 ////////////////////////////////////////////////////////////////////////////////
 CUserMapsLayer::CUserMapsLayer(QQuickItem *parent)
-    : CBaseLayer(parent)
-    , m_moveEvtTimestamp(0)
+	: CBaseLayer(parent)
+	, m_moveEvtTimestamp(0)
 {
-    setAcceptedMouseButtons(Qt::AllButtons);
-    QObject::connect(CUserMapsManager::instance(), &CUserMapsManager::selectedObjChanged,
-                     this, &CUserMapsLayer::setSelectedObject);
+	setAcceptedMouseButtons(Qt::AllButtons);
+	QObject::connect(CUserMapsManager::instance(), &CUserMapsManager::selectedObjChanged,
+					 this, &CUserMapsLayer::setSelectedObject);
 
-    m_onPressTimer.setSingleShot(true);
-    m_onPressTimer.setInterval(LONG_PRESS_DURATION_MS);
-    connect(&m_onPressTimer, &QTimer::timeout, this, &CUserMapsLayer::pressTimerTimeout);
+	m_onPressTimer.setSingleShot(true);
+	m_onPressTimer.setInterval(LONG_PRESS_DURATION_MS);
+	connect(&m_onPressTimer, &QTimer::timeout, this, &CUserMapsLayer::pressTimerTimeout);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -62,52 +63,52 @@ CUserMapsLayer::~CUserMapsLayer()
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::mousePressEvent(QMouseEvent *event)
 {
-    qDebug() << "PRESS EVENT";
-    // TODO if (! CUserMapsManager::getEditModeOnStat())
-     //  return;
-    m_onPressTimer.start();
-    m_moveEvtStartPoint = event->screenPos();
-    m_isCursorMoving = false;
-    m_isLongMousePress = false;
+	qDebug() << "PRESS EVENT";
+	// TODO if (! CUserMapsManager::getEditModeOnStat())
+	//  return;
+	m_onPressTimer.start();
+	m_moveEvtStartPoint = event->screenPos();
+	m_isCursorMoving = false;
+	m_isLongMousePress = false;
 
-    // added for testing purposes - Area Object
-    QPointF pontTest1 = QPointF(800.0, 300.0);
-    QPointF pontTest2 = QPointF(900.0, 300.0);
-    QPointF pontTest3 = QPointF(850.0, 350.0);
-    QPointF pontTest4 = QPointF(900.0, 400.0);
-    QPointF pontTest5 = QPointF(800.0, 400.0);
-    QVector<QPointF> linePoints;
-    linePoints.append(pontTest1);
-    linePoints.append(pontTest2);
-    linePoints.append(pontTest3);
-    linePoints.append(pontTest4);
-    linePoints.append(pontTest5);
-    linePoints.append(pontTest1);
-    m_selectedObjPoints = linePoints;
-    m_objectType = EUserMapObjectType::Area;
-    //int returnedIndex1, returnedindex2;
-    //EPointPositionType mltz = pointPositionToArea(m_moveEvtStartPoint, returnedIndex1, returnedindex2);
+	// added for testing purposes - Area Object
+	QPointF pontTest1 = QPointF(800.0, 300.0);
+	QPointF pontTest2 = QPointF(900.0, 300.0);
+	QPointF pontTest3 = QPointF(850.0, 350.0);
+	QPointF pontTest4 = QPointF(900.0, 400.0);
+	QPointF pontTest5 = QPointF(800.0, 400.0);
+	QVector<QPointF> linePoints;
+	linePoints.append(pontTest1);
+	linePoints.append(pontTest2);
+	linePoints.append(pontTest3);
+	linePoints.append(pontTest4);
+	linePoints.append(pontTest5);
+	linePoints.append(pontTest1);
+	m_selectedObjPoints = linePoints;
+	m_objectType = EUserMapObjectType::Area;
+	//int returnedIndex1, returnedindex2;
+	//EPointPositionType mltz = pointPositionToArea(m_moveEvtStartPoint, returnedIndex1, returnedindex2);
 
-    /* // added for testing purposes - Line object
-    QPointF pontTest1 = QPointF(50.0, 250.0);
-    QPointF pontTest2 = QPointF(50.0, 350.0);
-    QPointF pontTest3 = QPointF(200.0, 220.0);
-    QPointF pontTest4 = QPointF(80.0, 220.0);
-    QVector<QPointF> linePoints;
-    linePoints.insert(0, pontTest1);
-    linePoints.insert(1, pontTest2);
-    linePoints.insert(2, pontTest3);
-    linePoints.append(pontTest4);
-    m_selectedObjPoints = linePoints;
-    m_objectType = EUserMapObjectType::Line;
-    int returnedIndex1, returnedindex2;
-    EPointPositionType mltz = pointPositionToLine(m_moveEvtStartPoint, returnedIndex1, returnedindex2); */
+	/* // added for testing purposes - Line object
+	QPointF pontTest1 = QPointF(50.0, 250.0);
+	QPointF pontTest2 = QPointF(50.0, 350.0);
+	QPointF pontTest3 = QPointF(200.0, 220.0);
+	QPointF pontTest4 = QPointF(80.0, 220.0);
+	QVector<QPointF> linePoints;
+	linePoints.insert(0, pontTest1);
+	linePoints.insert(1, pontTest2);
+	linePoints.insert(2, pontTest3);
+	linePoints.append(pontTest4);
+	m_selectedObjPoints = linePoints;
+	m_objectType = EUserMapObjectType::Line;
+	int returnedIndex1, returnedindex2;
+	EPointPositionType mltz = pointPositionToLine(m_moveEvtStartPoint, returnedIndex1, returnedindex2); */
 
-    //EPointPositionType mltz = pointPositionToCircle(m_moveEvtStartPoint);
+	//EPointPositionType mltz = pointPositionToCircle(m_moveEvtStartPoint);
 
-    // sets member varaibles for clicked point position estimation
-    m_pointPositionType = checkPointPosition(m_moveEvtStartPoint, m_index1, m_index2);
-    qDebug() << "END PRESS EVENT";
+	// sets member varaibles for clicked point position estimation
+	m_pointPositionType = checkPointPosition(m_moveEvtStartPoint, m_index1, m_index2);
+	qDebug() << "Position type: " << (int)m_pointPositionType;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -119,24 +120,31 @@ void CUserMapsLayer::mousePressEvent(QMouseEvent *event)
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::mouseMoveEvent(QMouseEvent *event)
 {
-    qDebug() << "MOUSE MOVE EVENT";
-    // TODO if (! CUserMapsManager::getEditModeOnStat())
-    //    return;
+	// TODO if (! CUserMapsManager::getEditModeOnStat())
+	//    return;
 
-    const qint64 currentTimestamp = QDateTime::currentMSecsSinceEpoch();
-    if(currentTimestamp - m_moveEvtTimestamp < MOVE_EVT_TIME_LIMIT)
-        return;
+	// Checking whether cursor has moved enough since press event for this to be considered an intentional move event.
+	const QPointF currentPos = event->screenPos();
+	const bool cursorMoved = qAbs(m_moveEvtStartPoint.x() - currentPos.x()) > MOVE_EVT_PIXEL_THRESHOLD ||
+			qAbs(m_moveEvtStartPoint.y() - currentPos.y()) > MOVE_EVT_PIXEL_THRESHOLD;
 
-    if(m_onPressTimer.isActive() || m_isCursorMoving)
-    {
-        m_onPressTimer.stop();
-        m_isCursorMoving = true;
-        m_isLongMousePress = false;
-        m_moveEvtTimestamp = currentTimestamp;
+	// Checking whether enough time has passed since processing the move event last time.
+	const qint64 currentTimestamp = QDateTime::currentMSecsSinceEpoch();
+	const bool updateAllowed = currentTimestamp - m_moveEvtTimestamp > MOVE_EVT_TIME_LIMIT;
 
-        handleObjAction(m_moveEvtStartPoint, event->screenPos());
-        m_moveEvtStartPoint = event->screenPos();
-    }
+	bool processMoveEvent = (cursorMoved || m_isCursorMoving) && updateAllowed && ! m_isLongMousePress;
+	if (! processMoveEvent)
+		return;
+
+	qDebug() << "MOUSE MOVE EVENT";
+
+	m_onPressTimer.stop();
+	m_isCursorMoving = true;
+	m_isLongMousePress = false;
+	m_moveEvtTimestamp = currentTimestamp;
+
+	handleObjAction(m_moveEvtStartPoint, currentPos);
+	m_moveEvtStartPoint = currentPos;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -148,16 +156,16 @@ void CUserMapsLayer::mouseMoveEvent(QMouseEvent *event)
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::mouseReleaseEvent(QMouseEvent *event)
 {
-    //TODO if (! CUserMapsManager::getEditModeOnStat())
-      //  return;
+	//TODO if (! CUserMapsManager::getEditModeOnStat())
+	//  return;
 
-    if(m_onPressTimer.isActive() && !m_isCursorMoving)
-        onPositionClicked(event->screenPos());
+	if(m_onPressTimer.isActive() && !m_isCursorMoving)
+		onPositionClicked(event->screenPos());
 
-    updateObjectPosition();
-    m_isCursorMoving = false;
-    m_isLongMousePress = false;
-    m_onPressTimer.stop();
+	updateObjectPosition();
+	m_isCursorMoving = false;
+	m_isLongMousePress = false;
+	m_onPressTimer.stop();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -167,11 +175,11 @@ void CUserMapsLayer::mouseReleaseEvent(QMouseEvent *event)
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::pressTimerTimeout()
 {
-    if(!m_isCursorMoving)
-    {
-        qDebug() << "LONG PRESS EVENT";
-        m_isLongMousePress = true;
-    }
+	if(!m_isCursorMoving)
+	{
+		qDebug() << "LONG PRESS EVENT";
+		m_isLongMousePress = true;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -183,7 +191,7 @@ void CUserMapsLayer::pressTimerTimeout()
 ////////////////////////////////////////////////////////////////////////////////
 QQuickFramebufferObject::Renderer *CUserMapsLayer::createRenderer() const
 {
-    return new CUserMapsRenderer();
+	return new CUserMapsRenderer();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -203,29 +211,29 @@ QQuickFramebufferObject::Renderer *CUserMapsLayer::createRenderer() const
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::handleObjAction(const QPointF &initialPosition, const QPointF &endPosition)
 {
-    qDebug() << "HANDLE OBJ ACTION";
-    switch (m_objectType)
-    {
-        case EUserMapObjectType::Area:
-            // adding/deleting/moving
-            handleAreaObj(initialPosition, endPosition);
-            break;
-        case EUserMapObjectType::Line:
-            // adding/deleting/moving
-            handleLineObj(initialPosition, endPosition);
-            break;
-        case EUserMapObjectType::Circle:
-            // resizing/moving
-            handleCircleObj(initialPosition, endPosition);
-            break;
-        case EUserMapObjectType::Point:
-            // moving
-            handlePointObj(initialPosition, endPosition);
-            break;
-        case EUserMapObjectType::Unkown_Object:
-            // no action
-            break;
-    }
+	qDebug() << "HANDLE OBJ ACTION";
+	switch (m_objectType)
+	{
+	case EUserMapObjectType::Area:
+		// adding/deleting/moving
+		handleAreaObj(initialPosition, endPosition);
+		break;
+	case EUserMapObjectType::Line:
+		// adding/deleting/moving
+		handleLineObj(initialPosition, endPosition);
+		break;
+	case EUserMapObjectType::Circle:
+		// resizing/moving
+		handleCircleObj(initialPosition, endPosition);
+		break;
+	case EUserMapObjectType::Point:
+		// moving
+		handlePointObj(initialPosition, endPosition);
+		break;
+	case EUserMapObjectType::Unkown_Object:
+		// no action
+		break;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -238,44 +246,44 @@ void CUserMapsLayer::handleObjAction(const QPointF &initialPosition, const QPoin
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::handleAreaObj(const QPointF &initialPosition, const QPointF &endPosition)
 {
-    qDebug() << "HANDLE AREA OBJ";
-    // int index1, index2;
-    // EPointPositionType pos = pointPositionToArea(clickedPosition, index1, index2);
+	qDebug() << "HANDLE AREA OBJ";
+	// int index1, index2;
+	// EPointPositionType pos = pointPositionToArea(clickedPosition, index1, index2);
 
-    switch (m_pointPositionType)
-    {
-        case EPointPositionType::AtSpecificPoint:
-            {
-                if (m_isLongMousePress && !m_isCursorMoving)
-                    deleteObjPoint(m_index1);
-                else if (m_isCursorMoving && !m_isLongMousePress)
-                    moveObjPoint(initialPosition, endPosition, m_index1);
-                break;
-            }
-        case EPointPositionType::OnLine:
-            {
-                if (m_isLongMousePress && !m_isCursorMoving)
-                    addObjPoint(m_index1 + 1, initialPosition);
-                else if (m_isCursorMoving && !m_isLongMousePress)
-                    moveObjPoints(initialPosition, endPosition, m_index1, m_index2);
-                break;
-            }
-        case EPointPositionType::InsideObject:
-            {
-                if (m_isCursorMoving && !m_isLongMousePress)
-                    moveObj(initialPosition, endPosition);
-                break;
-            }
-        case EPointPositionType::OutsideObject:
-            {
-                if (CUserMapsManager::getObjSelectedStat())
-                    CUserMapsManager::deselectObjectStat();
-                break;
-            }
-        case EPointPositionType::Unknown:
-            // no action
-            break;
-    }
+	switch (m_pointPositionType)
+	{
+	case EPointPositionType::AtSpecificPoint:
+	{
+		if (m_isLongMousePress)
+			deleteObjPoint(m_index1);
+		else if (m_isCursorMoving)
+			moveObjPoint(initialPosition, endPosition, m_index1);
+		break;
+	}
+	case EPointPositionType::OnLine:
+	{
+		if (m_isLongMousePress)
+			insertObjPoint(m_index1 + 1, initialPosition);
+		else if (m_isCursorMoving)
+			moveObjPoints(initialPosition, endPosition, m_index1, m_index2);
+		break;
+	}
+	case EPointPositionType::InsideObject:
+	{
+		if (m_isCursorMoving)
+			moveObj(initialPosition, endPosition);
+		break;
+	}
+	case EPointPositionType::OutsideObject:
+	{
+		if (CUserMapsManager::getObjSelectedStat())
+			CUserMapsManager::deselectObjectStat();
+		break;
+	}
+	case EPointPositionType::Unknown:
+		// no action
+		break;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -288,38 +296,39 @@ void CUserMapsLayer::handleAreaObj(const QPointF &initialPosition, const QPointF
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::handleLineObj(const QPointF &initialPosition, const QPointF &endPosition)
 {
-    qDebug() << "HANDLE LINE OBJ";
-    // int index1, index2;
-    // EPointPositionType pos = pointPositionToLine(clickedPosition, index1, index2);
+	qDebug() << "HANDLE LINE OBJ";
+	// int index1, index2;
+	// EPointPositionType pos = pointPositionToLine(clickedPosition, index1, index2);
 
-    switch (m_pointPositionType)
-    {
-        case EPointPositionType::AtSpecificPoint:
-            {
-                if (m_isLongMousePress && !m_isCursorMoving)
-                    deleteObjPoint(m_index1);
-                else if (m_isCursorMoving && !m_isLongMousePress)
-                    moveObjPoint(initialPosition, endPosition, m_index1);
-                    // TODO what if two points should be moved
-                break;
-            }
-        case EPointPositionType::OnLine:
-            {
-                if (m_isLongMousePress && !m_isCursorMoving)
-                    addObjPoint(m_index1 + 1, initialPosition);
-                else if (m_isCursorMoving && !m_isLongMousePress)
-                    moveObj(initialPosition, endPosition);
-                break;
-            }
-        case EPointPositionType::NotOnLine:
-            // deselect object
-            if (CUserMapsManager::getObjSelectedStat())
-                CUserMapsManager::deselectObjectStat();
-            break;
-        case EPointPositionType::Unknown:
-            // no action
-            break;
-    }
+	switch (m_pointPositionType)
+	{
+	case EPointPositionType::AtSpecificPoint:
+	{
+		//TODO AM: long press and cursor moving should never happen at the same time?
+		if (m_isLongMousePress)
+			deleteObjPoint(m_index1);
+		else if (m_isCursorMoving)
+			moveObjPoint(initialPosition, endPosition, m_index1);
+		// TODO what if two points should be moved
+		break;
+	}
+	case EPointPositionType::OnLine:
+	{
+		if (m_isLongMousePress)
+			insertObjPoint(m_index1 + 1, initialPosition);
+		else if (m_isCursorMoving)
+			moveObj(initialPosition, endPosition);
+		break;
+	}
+	case EPointPositionType::NotOnLine:
+		// deselect object
+		if (CUserMapsManager::getObjSelectedStat())
+			CUserMapsManager::deselectObjectStat();
+		break;
+	case EPointPositionType::Unknown:
+		// no action
+		break;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -332,38 +341,39 @@ void CUserMapsLayer::handleLineObj(const QPointF &initialPosition, const QPointF
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::handleCircleObj(const QPointF &initialPosition, const QPointF &endPosition)
 {
-    qDebug() << "HANDLE CIRCLE OBJ";
-    // EPointPositionType pos = pointPositionToCircle(clickedPosition);
+	qDebug() << "HANDLE CIRCLE OBJ";
+	// EPointPositionType pos = pointPositionToCircle(clickedPosition);
 
-    switch (m_pointPositionType)
-    {
-        case EPointPositionType::InsideObject:
-            {
-                if (m_isCursorMoving)
-                    moveObj(initialPosition, endPosition);
-                break;
-            }
-        case EPointPositionType::OnLine:
-            {
-                // resize object
-                if (!m_isCursorMoving)
-                {
-                    float updatedRadius = qSqrt( qPow(initialPosition.x() - endPosition.x(), 2) + qPow(initialPosition.y() - endPosition.y(), 2) );
-                    // convert pixels to NM
-                    updatedRadius = updatedRadius * CViewCoordinates::getPixelsToNauticalMiles();
-                    CUserMapsManager::setObjRadiusStat(updatedRadius);
-                }
-                break;
-            }
-        case EPointPositionType::OutsideObject:
-            // deselect
-            if (CUserMapsManager::getObjSelectedStat())
-                CUserMapsManager::deselectObjectStat();
-            break;
-        case EPointPositionType::Unknown:
-            // no action
-            break;
-    }
+	switch (m_pointPositionType)
+	{
+	case EPointPositionType::InsideObject:
+	{
+		if (m_isCursorMoving)
+			moveObj(initialPosition, endPosition);
+		break;
+	}
+	case EPointPositionType::OnLine:
+	{
+		// resize object
+		if (m_isCursorMoving)
+		{
+			//TODO AM: We should probably calculate the distance between endPosition and center point and use that as radius?
+			float updatedRadius = qSqrt( qPow(initialPosition.x() - endPosition.x(), 2) + qPow(initialPosition.y() - endPosition.y(), 2) );
+			// convert pixels to NM
+			updatedRadius = updatedRadius * CViewCoordinates::getPixelsToNauticalMiles();
+			CUserMapsManager::setObjRadiusStat(updatedRadius);
+		}
+		break;
+	}
+	case EPointPositionType::OutsideObject:
+		// deselect
+		if (CUserMapsManager::getObjSelectedStat())
+			CUserMapsManager::deselectObjectStat();
+		break;
+	case EPointPositionType::Unknown:
+		// no action
+		break;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -376,14 +386,13 @@ void CUserMapsLayer::handleCircleObj(const QPointF &initialPosition, const QPoin
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::handlePointObj(const QPointF &initialPosition, const QPointF &endPosition)
 {
-    qDebug() << "HANDLE POINT OBJ";
-    if (!m_isCursorMoving)
-        return;
+	qDebug() << "HANDLE POINT OBJ";
+	if (!m_isCursorMoving)
+		return;
 
-    // moves point object
-    if (m_isCursorMoving)
-        moveObj(initialPosition, endPosition);
-    return;
+	// moves point object
+	moveObj(initialPosition, endPosition);
+	return;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -396,25 +405,25 @@ void CUserMapsLayer::handlePointObj(const QPointF &initialPosition, const QPoint
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::moveObj(const QPointF &initialPosition, const QPointF &endPosition)
 {
-    // TODO delete after testing
-    QString mjk;
-    if (m_objectType == EUserMapObjectType::Area)
-        mjk = "Area object";
-                else if (m_objectType == EUserMapObjectType::Line)
-        mjk = "Line object";
-    else if (m_objectType == EUserMapObjectType::Circle)
-        mjk = "Circle object)";
-    else if (m_objectType == EUserMapObjectType::Point)
-        mjk = "Point object";
-    qDebug() << "MoveObjPoint initialPos: (" << initialPosition.x() << "," << initialPosition.y() << ")" << mjk;
-    qDebug() << "MoveObjPoint endPosition: (" << endPosition.x() << "," << endPosition.y() << ")" << mjk;
+	// TODO delete after testing
+	QString mjk;
+	if (m_objectType == EUserMapObjectType::Area)
+		mjk = "Area object";
+	else if (m_objectType == EUserMapObjectType::Line)
+		mjk = "Line object";
+	else if (m_objectType == EUserMapObjectType::Circle)
+		mjk = "Circle object)";
+	else if (m_objectType == EUserMapObjectType::Point)
+		mjk = "Point object";
+	qDebug() << "MoveObjPoint initialPos: (" << initialPosition.x() << "," << initialPosition.y() << ")" << mjk;
+	qDebug() << "MoveObjPoint endPosition: (" << endPosition.x() << "," << endPosition.y() << ")" << mjk;
 
-    if ( m_selectedObjPoints.isEmpty())
-        return;
+	if ( m_selectedObjPoints.isEmpty())
+		return;
 
-    QPointF pointDifference = endPosition - initialPosition;
-    for (int i = 0; i < m_selectedObjPoints.size(); i++)
-        m_selectedObjPoints[i] -= pointDifference;
+	QPointF pointDifference = endPosition - initialPosition;
+	for (int i = 0; i < m_selectedObjPoints.size(); i++)
+		m_selectedObjPoints[i] += pointDifference;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -428,27 +437,27 @@ void CUserMapsLayer::moveObj(const QPointF &initialPosition, const QPointF &endP
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::moveObjPoint(const QPointF &initialPosition, const QPointF &endPosition, const int index)
 {
-    // TODO delete after testing
-    QString mjk;
-    if (m_objectType == EUserMapObjectType::Area)
-        mjk = "Area object";
-                else if (m_objectType == EUserMapObjectType::Line)
-        mjk = "Line object";
-    else if (m_objectType == EUserMapObjectType::Circle)
-        mjk = "Circle object)";
-    else if (m_objectType == EUserMapObjectType::Point)
-        mjk = "Point object";
-    qDebug() << "MoveObjPoint initialPos: (" << initialPosition.x() << "," << initialPosition.y() << ")" << mjk;
-    qDebug() << "MoveObjPoint endPosition: (" << endPosition.x() << "," << endPosition.y() << ")" << mjk;
+	// TODO delete after testing
+	QString mjk;
+	if (m_objectType == EUserMapObjectType::Area)
+		mjk = "Area object";
+	else if (m_objectType == EUserMapObjectType::Line)
+		mjk = "Line object";
+	else if (m_objectType == EUserMapObjectType::Circle)
+		mjk = "Circle object)";
+	else if (m_objectType == EUserMapObjectType::Point)
+		mjk = "Point object";
+	qDebug() << "MoveObjPoint initialPos: (" << initialPosition.x() << "," << initialPosition.y() << ")" << mjk;
+	qDebug() << "MoveObjPoint endPosition: (" << endPosition.x() << "," << endPosition.y() << ")" << mjk;
 
-    if ( m_selectedObjPoints.isEmpty() )
-        return;
+	if ( m_selectedObjPoints.isEmpty() )
+		return;
 
-    if (index > m_selectedObjPoints.size() || index < 0 )
-        return;
+	if (index > m_selectedObjPoints.size() || index < 0 )
+		return;
 
-    QPointF pointDifference = endPosition - initialPosition;
-    m_selectedObjPoints[index] -= pointDifference;
+	QPointF pointDifference = endPosition - initialPosition;
+	m_selectedObjPoints[index] += pointDifference;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -463,31 +472,31 @@ void CUserMapsLayer::moveObjPoint(const QPointF &initialPosition, const QPointF 
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::moveObjPoints(const QPointF &initialPosition, const QPointF &endPosition, const int index1, const int index2)
 {
-    // TODO delete after testing
-    QString mjk;
-    if (m_objectType == EUserMapObjectType::Area)
-        mjk = "Area object";
-                else if (m_objectType == EUserMapObjectType::Line)
-        mjk = "Line object";
-    else if (m_objectType == EUserMapObjectType::Circle)
-        mjk = "Circle object)";
-    else if (m_objectType == EUserMapObjectType::Point)
-        mjk = "Point object";
-    qDebug() << "MoveObjPoint initialPos: (" << initialPosition.x() << "," << initialPosition.y() << ")" << mjk;
-    qDebug() << "MoveObjPoint endPosition: (" << endPosition.x() << "," << endPosition.y() << ")" << mjk;
+	// TODO delete after testing
+	QString mjk;
+	if (m_objectType == EUserMapObjectType::Area)
+		mjk = "Area object";
+	else if (m_objectType == EUserMapObjectType::Line)
+		mjk = "Line object";
+	else if (m_objectType == EUserMapObjectType::Circle)
+		mjk = "Circle object)";
+	else if (m_objectType == EUserMapObjectType::Point)
+		mjk = "Point object";
+	qDebug() << "MoveObjPoint initialPos: (" << initialPosition.x() << "," << initialPosition.y() << ")" << mjk;
+	qDebug() << "MoveObjPoint endPosition: (" << endPosition.x() << "," << endPosition.y() << ")" << mjk;
 
-    if ( m_selectedObjPoints.isEmpty() )
-        return;
+	if ( m_selectedObjPoints.isEmpty() )
+		return;
 
-    if ( ( qAbs(index1 - index2) != 1 ) || index1 > m_selectedObjPoints.size()
-         || index2 > m_selectedObjPoints.size()
-         || index1 < 0 || index2 < 0)
-        // check if consequtive points
-        return;
+	if ( ( qAbs(index1 - index2) != 1 ) || index1 > m_selectedObjPoints.size()
+		 || index2 > m_selectedObjPoints.size()
+		 || index1 < 0 || index2 < 0)
+		// check if consequtive points
+		return;
 
-    QPointF pointDifference = endPosition - initialPosition;
-    m_selectedObjPoints[index1] -= pointDifference;
-    m_selectedObjPoints[index2] -= pointDifference;
+	QPointF pointDifference = endPosition - initialPosition;
+	m_selectedObjPoints[index1] += pointDifference;
+	m_selectedObjPoints[index2] += pointDifference;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -499,46 +508,39 @@ void CUserMapsLayer::moveObjPoints(const QPointF &initialPosition, const QPointF
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::deleteObjPoint(const int index)
 {    
-    qDebug() << "DeleteObjPoint";
+	qDebug() << "DeleteObjPoint";
 
-    if ( m_selectedObjPoints.isEmpty() )
-        return;
+	if ( m_selectedObjPoints.isEmpty() )
+		return;
 
-    if ( (index < 0) || ( index > m_selectedObjPoints.size() ) )
-        return;
+	if ( (index < 0) || ( index > m_selectedObjPoints.size() ) )
+		return;
 
-    // if line object composed of only two points = do not allow to delete it
-    if ( m_objectType == EUserMapObjectType::Line && m_selectedObjPoints.size() == 2)
-        return;
+	// Not allowing point removal if line object is composed of only less than 3 points.
+	if ( m_objectType == EUserMapObjectType::Line && m_selectedObjPoints.size() < 3)
+		return;
 
-    if ( m_objectType == EUserMapObjectType::Area)
-    {
-        // if area object composed of only three points
-        // (initial and final points has to be the same)
-        // = do not allow to delete it, otherwise an object becomes point object
-        if ( m_selectedObjPoints.size() == 3)
-            return;
-    }
+	// Not allowing point removal if area object is composed of only less than 4 points.
+	if ( m_objectType == EUserMapObjectType::Area && m_selectedObjPoints.size() < 4)
+		return;
 
-    m_selectedObjPoints.removeAt(index);
+	m_selectedObjPoints.removeAt(index);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn         void CUserMapsLayer::addObjPoint(const int index, const QPointF &clickedPoint)
+/// \fn         void CUserMapsLayer::insertObjPoint(const int index, const QPointF &pos)
 ///
 /// \brief      Inserts point at index position.
 ///
-/// \param		index - vector index
-///             clickedPosition - Point to be added.
+/// \param		index - vector index.
+///				pos - Position of point to be added.
 ////////////////////////////////////////////////////////////////////////////////
-void CUserMapsLayer::addObjPoint(const int index, const QPointF &clickedPoint)
+void CUserMapsLayer::insertObjPoint(const int index, const QPointF &pos)
 {
-    qDebug() << "AddObjPoint";
+	qDebug() << "AddObjPoint";
 
-    if (index > 0 && index < m_selectedObjPoints.size() + 1 )
-        m_selectedObjPoints.insert(index, clickedPoint);
-    else
-        return;
+	if (index > 0 && index < m_selectedObjPoints.size() + 1 )
+		m_selectedObjPoints.insert(index, pos);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -554,21 +556,21 @@ void CUserMapsLayer::addObjPoint(const int index, const QPointF &clickedPoint)
 ////////////////////////////////////////////////////////////////////////////////
 EPointPositionType CUserMapsLayer::checkPointPosition(const QPointF &clickedPosition, int &index1, int &index2)
 {
-    index1 = -1;
-    index2 = -1;
-    switch (m_objectType)
-    {
-        case EUserMapObjectType::Area:
-            return pointPositionToArea(clickedPosition, index1, index2);
-        case EUserMapObjectType::Line:
-            return pointPositionToLine(clickedPosition, index1, index2);
-        case EUserMapObjectType::Circle:
-            return pointPositionToCircle(clickedPosition);
-        case EUserMapObjectType::Point:
-            return EPointPositionType::InsideObject;
-        case EUserMapObjectType::Unkown_Object:
-            return EPointPositionType::Unknown;
-    }
+	index1 = -1;
+	index2 = -1;
+	switch (m_objectType)
+	{
+	case EUserMapObjectType::Area:
+		return pointPositionToArea(clickedPosition, index1, index2);
+	case EUserMapObjectType::Line:
+		return pointPositionToLine(clickedPosition, index1, index2);
+	case EUserMapObjectType::Circle:
+		return pointPositionToCircle(clickedPosition);
+	case EUserMapObjectType::Point:
+		return EPointPositionType::InsideObject; //TODO AM: implement checking this using fixed pixel offset around the point. Maybe consider offset dependant on icon size.
+	case EUserMapObjectType::Unkown_Object:
+		return EPointPositionType::Unknown;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -581,21 +583,23 @@ EPointPositionType CUserMapsLayer::checkPointPosition(const QPointF &clickedPosi
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::setSelectedObject(bool isObjSelected, EUserMapObjectType objType)
 {
-    if (! isObjSelected)
-        return; //TODO: renderer needs this info.
+	if (! isObjSelected)
+		return; //TODO: renderer needs this info.
 
-    m_objectType = objType;
-    switch (objType)
-    {
-    case EUserMapObjectType::Point:
-    case EUserMapObjectType::Circle:
-        convertGeoPointToPixelVector(CUserMapsManager::getObjPositionStat(), m_selectedObjPoints);
-        break;
-    case EUserMapObjectType::Area:
-    case EUserMapObjectType::Line:
-        convertGeoVectorToPixelVector(CUserMapsManager::getObjPointsVectorStat(), m_selectedObjPoints);
-        break;
-    }
+	m_objectType = objType;
+	switch (objType)
+	{
+	case EUserMapObjectType::Point:
+	case EUserMapObjectType::Circle:
+		convertGeoPointToPixelVector(CUserMapsManager::getObjPositionStat(), m_selectedObjPoints);
+		break;
+	case EUserMapObjectType::Area:
+	case EUserMapObjectType::Line:
+		convertGeoVectorToPixelVector(CUserMapsManager::getObjPointsVectorStat(), m_selectedObjPoints);
+		break;
+	default:
+		break;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -609,12 +613,10 @@ void CUserMapsLayer::setSelectedObject(bool isObjSelected, EUserMapObjectType ob
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::convertGeoVectorToPixelVector(const QVector<CPosition> &geoPoints, QVector<QPointF> &pixelPoints)
 {
-    pixelPoints.clear();
-    pixelPoints.reserve(geoPoints.size());
-    for (const CPosition &geoPoint : geoPoints)
-    {
-        pixelPoints.append(convertGeoPointToPixelPoint(geoPoint));
-    }
+	pixelPoints.clear();
+	pixelPoints.reserve(geoPoints.size());
+	for (const CPosition &geoPoint : geoPoints)
+		pixelPoints.append(convertGeoPointToPixelPoint(geoPoint));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -627,9 +629,8 @@ void CUserMapsLayer::convertGeoVectorToPixelVector(const QVector<CPosition> &geo
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::convertGeoPointToPixelVector(const CPosition &geoPoint, QVector<QPointF> &pixelPoints)
 {
-    pixelPoints.clear();
-    pixelPoints.reserve(1);
-    pixelPoints.append(convertGeoPointToPixelPoint(geoPoint));
+	pixelPoints.clear();
+	pixelPoints.append(convertGeoPointToPixelPoint(geoPoint));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -643,12 +644,10 @@ void CUserMapsLayer::convertGeoPointToPixelVector(const CPosition &geoPoint, QVe
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::convertPixelVectorToGeoVector(const QVector<QPointF> &pixelVector, QVector<CPosition> &geoPoints)
 {
-    geoPoints.clear();
-    geoPoints.reserve(pixelVector.size());
-    for (const QPointF &pixelPoint : pixelVector)
-    {
-        geoPoints.append(convertPixelPointToGeoPoint(pixelPoint));
-    }
+	geoPoints.clear();
+	geoPoints.reserve(pixelVector.size());
+	for (const QPointF &pixelPoint : pixelVector)
+		geoPoints.append(convertPixelPointToGeoPoint(pixelPoint));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -662,10 +661,10 @@ void CUserMapsLayer::convertPixelVectorToGeoVector(const QVector<QPointF> &pixel
 ////////////////////////////////////////////////////////////////////////////////
 CPosition CUserMapsLayer::convertPixelPointToGeoPoint(const QPointF &pixelPoint)
 {
-    GEOGRAPHICAL lat;
-    GEOGRAPHICAL lon;
-    CViewCoordinates::Instance()->Convert(PIXEL(pixelPoint.x()), PIXEL(pixelPoint.y()), lat, lon);
-    return CPosition(double(lat), double(lon));
+	GEOGRAPHICAL lat;
+	GEOGRAPHICAL lon;
+	CViewCoordinates::Instance()->Convert(PIXEL(pixelPoint.x()), PIXEL(pixelPoint.y()), lat, lon);
+	return CPosition(double(lat), double(lon));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -679,10 +678,10 @@ CPosition CUserMapsLayer::convertPixelPointToGeoPoint(const QPointF &pixelPoint)
 ////////////////////////////////////////////////////////////////////////////////
 QPointF CUserMapsLayer::convertGeoPointToPixelPoint(const CPosition &geoPoint)
 {
-    PIXEL x = 0.0;
-    PIXEL y = 0.0;
-    CViewCoordinates::Instance()->Convert(GEOGRAPHICAL(geoPoint.Latitude()), GEOGRAPHICAL(geoPoint.Longitude()), x, y);
-    return QPointF(x,y);
+	PIXEL x = 0.0;
+	PIXEL y = 0.0;
+	CViewCoordinates::Instance()->Convert(GEOGRAPHICAL(geoPoint.Latitude()), GEOGRAPHICAL(geoPoint.Longitude()), x, y);
+	return QPointF(x,y);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -694,24 +693,24 @@ QPointF CUserMapsLayer::convertGeoPointToPixelPoint(const CPosition &geoPoint)
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::onPositionClicked(const QPointF &clickedPosition)
 {
-    CPosition pos = convertPixelPointToGeoPoint(clickedPosition);
+	CPosition pos = convertPixelPointToGeoPoint(clickedPosition);
 
-    if (CUserMapsManager::getCreatingNewObjStat())
-    {
-        CUserMapsManager::addObjPointStat(pos);
-        return;
-    }
+	if (CUserMapsManager::getCreatingNewObjStat())
+	{
+		CUserMapsManager::addObjPointStat(pos);
+		return;
+	}
 
-    if (CUserMapsManager::getObjSelectedStat())
-    {
-        //TODO: probably deselect on click?
-        // deselect object
-        CUserMapsManager::deselectObjectStat();
-    }
-    else
-    {
-        // CUserMapsManager::selectObjectStat(); // TODO
-    }
+	if (CUserMapsManager::getObjSelectedStat())
+	{
+		//TODO: probably deselect on click?
+		// deselect object
+		CUserMapsManager::deselectObjectStat();
+	}
+	else
+	{
+		// CUserMapsManager::selectObjectStat(); // TODO
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -721,23 +720,25 @@ void CUserMapsLayer::onPositionClicked(const QPointF &clickedPosition)
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::updateObjectPosition()
 {
-    if (m_selectedObjPoints.isEmpty())
-        return;
+	if (m_selectedObjPoints.isEmpty())
+		return;
 
-    QVector<CPosition> geoPoints;
-    convertPixelVectorToGeoVector(m_selectedObjPoints, geoPoints);
+	QVector<CPosition> geoPoints;
+	convertPixelVectorToGeoVector(m_selectedObjPoints, geoPoints);
 
-    switch (m_objectType)
-    {
-    case EUserMapObjectType::Point:
-    case EUserMapObjectType::Circle:
-        CUserMapsManager::setObjPositionStat(geoPoints[0]);
-        break;
-    case EUserMapObjectType::Area:
-    case EUserMapObjectType::Line:
-        CUserMapsManager::setObjPointsVectorStat(geoPoints);
-        break;
-    }
+	switch (m_objectType)
+	{
+	case EUserMapObjectType::Point:
+	case EUserMapObjectType::Circle:
+		CUserMapsManager::setObjPositionStat(geoPoints[0]);
+		break;
+	case EUserMapObjectType::Area:
+	case EUserMapObjectType::Line:
+		CUserMapsManager::setObjPointsVectorStat(geoPoints);
+		break;
+	default:
+		break;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -752,70 +753,70 @@ void CUserMapsLayer::updateObjectPosition()
 /// \return		EPointPositionType Selected point position with respect to an area.
 EPointPositionType CUserMapsLayer::pointPositionToArea(const QPointF &clickedPosition, int &index1, int &index2)
 {
-    // detection of inner/outer position of selected point
-    QPointF pointC;
-    QPointF pointD;
-    int crossingNum = 0;
-    for (int i = 0; i < m_selectedObjPoints.size() - 1; i++)
-    {
-        pointC = m_selectedObjPoints[i];
-        pointD = m_selectedObjPoints[i+1];
+	// detection of inner/outer position of selected point
+	QPointF pointC;
+	QPointF pointD;
+	int crossingNum = 0;
+	for (int i = 0; i < m_selectedObjPoints.size() - 1; i++)
+	{
+		pointC = m_selectedObjPoints[i];
+		pointD = m_selectedObjPoints[i+1];
 
-        if ( qAbs(clickedPosition.x() - pointC.x()) <= PIXEL_OFFSET &&
-             qAbs(clickedPosition.y() - pointC.y()) <= PIXEL_OFFSET)
-        {
-            // clicked close to pointC
-            // saves indices of pointC and pointD
-            // (whereas the first saved index is an index of a point where clicked)
-            index1 = i;
-            index2 = i+1;
-            return EPointPositionType::AtSpecificPoint;
-        }
-        else if ( qAbs(clickedPosition.x() - pointD.x()) <= PIXEL_OFFSET &&
-                  qAbs(clickedPosition.y() - pointD.y()) <= PIXEL_OFFSET)
-        {
-            // clicked close to pointD
-            // saves indices of pointD and pointC in index1 and index2
-            // (whereas the first saved index is an index of a point where clicked)
-            index1 = i+1;
-            index2 = i;
-            return EPointPositionType::AtSpecificPoint;
-        }
+		if ( qAbs(clickedPosition.x() - pointC.x()) <= PIXEL_OFFSET &&
+			 qAbs(clickedPosition.y() - pointC.y()) <= PIXEL_OFFSET)
+		{
+			// clicked close to pointC
+			// saves indices of pointC and pointD
+			// (whereas the first saved index is an index of a point where clicked)
+			index1 = i;
+			index2 = i+1;
+			return EPointPositionType::AtSpecificPoint;
+		}
+		else if ( qAbs(clickedPosition.x() - pointD.x()) <= PIXEL_OFFSET &&
+				  qAbs(clickedPosition.y() - pointD.y()) <= PIXEL_OFFSET)
+		{
+			// clicked close to pointD
+			// saves indices of pointD and pointC in index1 and index2
+			// (whereas the first saved index is an index of a point where clicked)
+			index1 = i+1;
+			index2 = i;
+			return EPointPositionType::AtSpecificPoint;
+		}
 
-        qreal yPointCalc = calculateYaxisValueOnLine(pointC, pointD, clickedPosition);
-        if ( qAbs(clickedPosition.y() - yPointCalc ) < PIXEL_OFFSET  &&
-             //( qAbs(clickedPosition.x() - pointC.x() ) < PIXEL_OFFSET || qAbs(clickedPosition.x() - pointD.x()) < PIXEL_OFFSET) )
-              ( (clickedPosition.x() < PIXEL_OFFSET + pointC.x() && clickedPosition.x() + PIXEL_OFFSET > pointD.x()) ||
-                (clickedPosition.x() + PIXEL_OFFSET > pointC.x() && clickedPosition.x() < pointD.x() + PIXEL_OFFSET ) ) )
-        {
-                index1 = i;
-                index2 = i+1;
-                return EPointPositionType::OnLine;
-        }
+		qreal yPointCalc = calculateYaxisValueOnLine(pointC, pointD, clickedPosition);
+		if ( qAbs(clickedPosition.y() - yPointCalc ) < PIXEL_OFFSET  &&
+			 //( qAbs(clickedPosition.x() - pointC.x() ) < PIXEL_OFFSET || qAbs(clickedPosition.x() - pointD.x()) < PIXEL_OFFSET) )
+			 ( (clickedPosition.x() < PIXEL_OFFSET + pointC.x() && clickedPosition.x() + PIXEL_OFFSET > pointD.x()) ||
+			   (clickedPosition.x() + PIXEL_OFFSET > pointC.x() && clickedPosition.x() < pointD.x() + PIXEL_OFFSET ) ) )
+		{
+			index1 = i;
+			index2 = i+1;
+			return EPointPositionType::OnLine;
+		}
 
 
-        if (((pointC.y() <= clickedPosition.y() + PIXEL_OFFSET) && (pointD.y() + PIXEL_OFFSET > clickedPosition.y()))
-            || ((pointC.y() + PIXEL_OFFSET > clickedPosition.y()) && (pointD.y() <=  clickedPosition.y() + PIXEL_OFFSET)))
-        {
-                qreal intersectX = (clickedPosition.y()  - pointC.y()) / (pointD.y() - pointC.y());
-                if (clickedPosition.x() < pointC.x() + intersectX * (pointD.x() - pointC.x()))
-                    ++crossingNum;
-        }
+		if (((pointC.y() <= clickedPosition.y() + PIXEL_OFFSET) && (pointD.y() + PIXEL_OFFSET > clickedPosition.y()))
+			|| ((pointC.y() + PIXEL_OFFSET > clickedPosition.y()) && (pointD.y() <=  clickedPosition.y() + PIXEL_OFFSET)))
+		{
+			qreal intersectX = (clickedPosition.y()  - pointC.y()) / (pointD.y() - pointC.y());
+			if (clickedPosition.x() < pointC.x() + intersectX * (pointD.x() - pointC.x()))
+				++crossingNum;
+		}
 
-    }
+	}
 
-    if (crossingNum % 2 == 0)
-    {
-        index1 = -1;
-        index2 = -1;
-        return EPointPositionType::OutsideObject;
-    }
-    else
-    {
-        index1 = -1;
-        index2 = -1;
-        return EPointPositionType::InsideObject;
-    }
+	if (crossingNum % 2 == 0)
+	{
+		index1 = -1;
+		index2 = -1;
+		return EPointPositionType::OutsideObject;
+	}
+	else
+	{
+		index1 = -1;
+		index2 = -1;
+		return EPointPositionType::InsideObject;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -828,39 +829,31 @@ EPointPositionType CUserMapsLayer::pointPositionToArea(const QPointF &clickedPos
 /// \return		EPointPositionType Selected point position with respect to a circle.
 EPointPositionType CUserMapsLayer::pointPositionToCircle(const QPointF &clickedPosition)
 {
-    float radiusVal = CUserMapsManager::getObjRadiusStat();
-    // radiusVal - radius of circle in nautical miles
-    // conversion to pixel coordinates
-    radiusVal = radiusVal * CViewCoordinates::getNauticalMilesToPixels();
-    CPosition centerPoint = CUserMapsManager::getObjPositionStat();
-    QPointF circleCenterPixel = convertGeoPointToPixelPoint(centerPoint);
+	float radiusVal = CUserMapsManager::getObjRadiusStat();
+	// radiusVal - radius of circle in nautical miles
+	// conversion to pixel coordinates
+	radiusVal = radiusVal * CViewCoordinates::getNauticalMilesToPixels();
+	CPosition centerPoint = CUserMapsManager::getObjPositionStat();
+	QPointF circleCenterPixel = convertGeoPointToPixelPoint(centerPoint);
 
-    /* // added for testing purposes
-    float radiusVal = 100.0;
-    QPointF circleCenterPixel = QPointF(200.0, 200.0);
-    QVector<QPointF> linePoints1;
-    linePoints1.insert(0, circleCenterPixel);
-    QVector<QPointF> m_selectedObjPoints = linePoints1;
-    m_objectType = EUserMapObjectType::Circle;*/
+	/* // added for testing purposes
+	float radiusVal = 100.0;
+	QPointF circleCenterPixel = QPointF(200.0, 200.0);
+	QVector<QPointF> linePoints1;
+	linePoints1.insert(0, circleCenterPixel);
+	QVector<QPointF> m_selectedObjPoints = linePoints1;
+	m_objectType = EUserMapObjectType::Circle;*/
 
-    qDebug() << "Radius" << radiusVal << "Center point: (" << circleCenterPixel.x() << "," << circleCenterPixel.y() << ")" ;
-    qreal distance = qSqrt(qPow(clickedPosition.x() - circleCenterPixel.x(), 2) + qPow(clickedPosition.y() - circleCenterPixel.y(), 2));
-    if (qAbs(distance - radiusVal) <= PIXEL_OFFSET)
-    {
-            return EPointPositionType::OnLine;
-    }
-    else if (distance > radiusVal)
-    {
-        return  EPointPositionType::OutsideObject;
-    }
-    else if ( distance < radiusVal )
-    {
-        return EPointPositionType::InsideObject;
-    }
-    else
-    {
-        return EPointPositionType::Unknown;
-    }
+	qDebug() << "Radius" << radiusVal << "Center point: (" << circleCenterPixel.x() << "," << circleCenterPixel.y() << ")" ;
+	qreal distance = qSqrt(qPow(clickedPosition.x() - circleCenterPixel.x(), 2) + qPow(clickedPosition.y() - circleCenterPixel.y(), 2));
+	if (qAbs(distance - radiusVal) <= PIXEL_OFFSET)
+		return EPointPositionType::OnLine;
+	else if (distance > radiusVal)
+		return  EPointPositionType::OutsideObject;
+	else if ( distance < radiusVal )
+		return EPointPositionType::InsideObject;
+	else
+		return EPointPositionType::Unknown;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -875,83 +868,83 @@ EPointPositionType CUserMapsLayer::pointPositionToCircle(const QPointF &clickedP
 /// \return		EPointPositionType Selected point position with respect to a line.
 EPointPositionType CUserMapsLayer::pointPositionToLine(const QPointF &clickedPosition, int &index1, int &index2)
 {
-    QPointF pointA;
-    QPointF pointB;
-    qreal linePoint;
-    int objPointsIndex;
+	QPointF pointA;
+	QPointF pointB;
+	qreal linePoint;
+	int objPointsIndex;
 
-    for ( objPointsIndex = 0; objPointsIndex < m_selectedObjPoints.size() - 1; objPointsIndex++ )
-    {
-        pointA = m_selectedObjPoints[objPointsIndex];
-        pointB = m_selectedObjPoints[objPointsIndex+1];
+	for ( objPointsIndex = 0; objPointsIndex < m_selectedObjPoints.size() - 1; objPointsIndex++ )
+	{
+		pointA = m_selectedObjPoints[objPointsIndex];
+		pointB = m_selectedObjPoints[objPointsIndex+1];
 
-        if ( qAbs(clickedPosition.x() - pointA.x()) <= PIXEL_OFFSET &&
-             qAbs(clickedPosition.y() - pointA.y()) <= PIXEL_OFFSET)
-        {
-             // clicked close to pointA
-             // save indices of pointA and pointB in index1 and index2
-             index1 = objPointsIndex;
-             index2 = objPointsIndex + 1;
-             return EPointPositionType::AtSpecificPoint;
-        }
-        else if ( qAbs(clickedPosition.x() - pointB.x()) <= PIXEL_OFFSET &&
-                  qAbs(clickedPosition.y() - pointB.y()) <= PIXEL_OFFSET)
-        {
-            // clicked close to pointB
-            // saves indices of pointB and pointA in index1 and index2
-            // (whereas the first saved point is the point where clicked)
-            index1 = objPointsIndex + 1;
-            index2 = objPointsIndex;
-            return EPointPositionType::AtSpecificPoint;
-        }
+		if ( qAbs(clickedPosition.x() - pointA.x()) <= PIXEL_OFFSET &&
+			 qAbs(clickedPosition.y() - pointA.y()) <= PIXEL_OFFSET)
+		{
+			// clicked close to pointA
+			// save indices of pointA and pointB in index1 and index2
+			index1 = objPointsIndex;
+			index2 = objPointsIndex + 1;
+			return EPointPositionType::AtSpecificPoint;
+		}
+		else if ( qAbs(clickedPosition.x() - pointB.x()) <= PIXEL_OFFSET &&
+				  qAbs(clickedPosition.y() - pointB.y()) <= PIXEL_OFFSET)
+		{
+			// clicked close to pointB
+			// saves indices of pointB and pointA in index1 and index2
+			// (whereas the first saved point is the point where clicked)
+			index1 = objPointsIndex + 1;
+			index2 = objPointsIndex;
+			return EPointPositionType::AtSpecificPoint;
+		}
 
-        if (pointA.x() <= pointB.x() + PIXEL_OFFSET)
-        {
-            // check whether selected point lies between pointA and pointB
-            if ((clickedPosition.x() + PIXEL_OFFSET >= pointA.x()) && (clickedPosition.x() <= pointB.x() + PIXEL_OFFSET) )
-            {
-                if ( (clickedPosition.y() + PIXEL_OFFSET >= pointA.y() && clickedPosition.y() <= pointB.y()) + PIXEL_OFFSET )
-                {
-                    // clicked position lies between pointA and pointB
-                    // clicked position lies between pointA and pointB
-                    // check if clicked position lies on line
-                    linePoint = calculateYaxisValueOnLine(pointA, pointB, clickedPosition);
+		if (pointA.x() <= pointB.x() + PIXEL_OFFSET)
+		{
+			// check whether selected point lies between pointA and pointB
+			if ((clickedPosition.x() + PIXEL_OFFSET >= pointA.x()) && (clickedPosition.x() <= pointB.x() + PIXEL_OFFSET) )
+			{
+				if ( (clickedPosition.y() + PIXEL_OFFSET >= pointA.y() && clickedPosition.y() <= pointB.y()) + PIXEL_OFFSET )
+				{
+					// clicked position lies between pointA and pointB
+					// clicked position lies between pointA and pointB
+					// check if clicked position lies on line
+					linePoint = calculateYaxisValueOnLine(pointA, pointB, clickedPosition);
 
-                    // check if calculated point lies around selected line
-                    if (qAbs(clickedPosition.y() - linePoint) <= PIXEL_OFFSET)
-                    {
-                        index1 = objPointsIndex;
-                        index2 = objPointsIndex + 1;
-                        return EPointPositionType::OnLine;                        
-                    }
-                }
-            }
-        }
-        else if (pointA.x() + PIXEL_OFFSET > pointB.x())
-        {
-                // check whether selected point lies between pointA and pointB
-                if ((clickedPosition.x() + PIXEL_OFFSET >= pointB.x()) && (clickedPosition.x() <= pointA.x() + PIXEL_OFFSET) )
-                {
-                    if ( (clickedPosition.y() <= pointB.y() + PIXEL_OFFSET && clickedPosition.y() + PIXEL_OFFSET >= pointA.y()) )
-                    {
-                        // clicked position lies between pointA and pointB
-                        // check if clicked position lies on line
-                        linePoint = calculateYaxisValueOnLine(pointA, pointB, clickedPosition);
+					// check if calculated point lies around selected line
+					if (qAbs(clickedPosition.y() - linePoint) <= PIXEL_OFFSET)
+					{
+						index1 = objPointsIndex;
+						index2 = objPointsIndex + 1;
+						return EPointPositionType::OnLine;
+					}
+				}
+			}
+		}
+		else if (pointA.x() + PIXEL_OFFSET > pointB.x())
+		{
+			// check whether selected point lies between pointA and pointB
+			if ((clickedPosition.x() + PIXEL_OFFSET >= pointB.x()) && (clickedPosition.x() <= pointA.x() + PIXEL_OFFSET) )
+			{
+				if ( (clickedPosition.y() <= pointB.y() + PIXEL_OFFSET && clickedPosition.y() + PIXEL_OFFSET >= pointA.y()) )
+				{
+					// clicked position lies between pointA and pointB
+					// check if clicked position lies on line
+					linePoint = calculateYaxisValueOnLine(pointA, pointB, clickedPosition);
 
-                        // check if calculated point lies around selected line
-                        if (qAbs(clickedPosition.y() - linePoint) <= PIXEL_OFFSET)
-                        {
-                            index1 = objPointsIndex;
-                            index2 = objPointsIndex + 1;
-                            return EPointPositionType::OnLine;
-                        }
-                    }
-                }
-         }
-    }
-    index1 = -1;
-    index2 = -1;
-    return EPointPositionType::NotOnLine;
+					// check if calculated point lies around selected line
+					if (qAbs(clickedPosition.y() - linePoint) <= PIXEL_OFFSET)
+					{
+						index1 = objPointsIndex;
+						index2 = objPointsIndex + 1;
+						return EPointPositionType::OnLine;
+					}
+				}
+			}
+		}
+	}
+	index1 = -1;
+	index2 = -1;
+	return EPointPositionType::NotOnLine;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -966,27 +959,27 @@ EPointPositionType CUserMapsLayer::pointPositionToLine(const QPointF &clickedPos
 /// \return		qreal Value on YAxis calculated using linear function equation.
 qreal CUserMapsLayer::calculateYaxisValueOnLine(const QPointF &pointA, const QPointF &pointB, const QPointF clickedPoint)
 {
-    // line equation between two points
-    // m = (yA − yB)/(xA − xB)
-    // y - yA = m (x − xA)
-    // y = mx - mxA + yA
-    // b= -mxA + yA
+	// line equation between two points
+	// m = (yA − yB)/(xA − xB)
+	// y - yA = m (x − xA)
+	// y = mx - mxA + yA
+	// b= -mxA + yA
 
-    // 800 300 900 300 825 300
+	// 800 300 900 300 825 300
 
-    qreal m, b;
-    if (qAbs(pointA.x() - pointB.x()) > 0)
-    {
-        // not vertical line
-        m = (pointA.y() - pointB.y())/(pointA.x() - pointB.x());
-    }
-    else
-    {
-        // vertical line
-        return clickedPoint.y();
-        qDebug() << "Vertical line: " << clickedPoint.y();
-    }
-    b = -m * pointA.x() + pointA.y();
-    // qDebug() << "Normal line: " << m * clickedPoint.x() + b;
-    return m * clickedPoint.x() + b;
+	qreal m, b;
+	if (qAbs(pointA.x() - pointB.x()) > 0)
+	{
+		// not vertical line
+		m = (pointA.y() - pointB.y())/(pointA.x() - pointB.x());
+	}
+	else
+	{
+		// vertical line
+		return clickedPoint.y();
+		qDebug() << "Vertical line: " << clickedPoint.y();
+	}
+	b = -m * pointA.x() + pointA.y();
+	// qDebug() << "Normal line: " << m * clickedPoint.x() + b;
+	return m * clickedPoint.x() + b;
 }

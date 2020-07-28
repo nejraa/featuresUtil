@@ -61,7 +61,7 @@ private:
     void moveObjPoint(const QPointF &initialPosition, const QPointF &endPosition, const int index);
     void moveObjPoints(const QPointF &initialPosition, const QPointF &endPosition, const int index1, const int index2);
     void deleteObjPoint(const int index);
-    void addObjPoint(const int index, const QPointF &clickedPoint);
+	void insertObjPoint(const int index, const QPointF &pos);
 
     // Position estimation of clicked point
     EPointPositionType checkPointPosition (const QPointF &clickedPosition, int &index1, int &index2);
