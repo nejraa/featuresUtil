@@ -18,10 +18,13 @@
 #include <QDateTime>
 #include "usermapsmanager.h"
 
-//TODO AM: add comments
+// Predefined pixel offset for mouse klick event
 const int PIXEL_OFFSET			= 10;
+// Predefined move event time limit
 const int MOVE_EVT_TIME_LIMIT		= 20;
+// Predefined long press event duration in ms
 const int LONG_PRESS_DURATION_MS	= 1000;
+// Predefined move event pixel threshold
 const int MOVE_EVT_PIXEL_THRESHOLD	= 20;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -387,9 +390,6 @@ void CUserMapsLayer::moveObjPoint(const QPointF &initialPosition, const QPointF 
     m_selectedObjPoints[index] += pointDifference;
 }
 
-//TODO AM: fix indenting in functions comments from here to the end of file.
-// Always indent one tab from fn/brief/param/return.
-// Comments should not go far beyond where "////" ends,a few characters is ok. If it goes on, do something like in following function
 ////////////////////////////////////////////////////////////////////////////////
 /// \fn void CUserMapsLayer::moveObjPoints(const QPointF &initialPosition,
 ///                         const QPointF &endPosition, const int index1, const int index2)
@@ -419,11 +419,11 @@ void CUserMapsLayer::moveObjPoints(const QPointF &initialPosition, const QPointF
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn         void CUserMapsLayer::deleteObjPoint(const int index)
+/// \fn void CUserMapsLayer::deleteObjPoint(const int index)
 ///
-/// \brief      Deletes point from given index position.
+/// \brief  Deletes point from given index position.
 ///
-/// \param		index - Vector index.
+/// \param  index - Vector index.
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::deleteObjPoint(const int index)
 {    
@@ -445,12 +445,12 @@ void CUserMapsLayer::deleteObjPoint(const int index)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn         void CUserMapsLayer::insertObjPoint(const int index, const QPointF &pos)
+/// \fn void CUserMapsLayer::insertObjPoint(const int index, const QPointF &pos)
 ///
-/// \brief      Inserts point at index position.
+/// \brief  Inserts point at index position.
 ///
-/// \param		index - vector index.
-///				pos - Position of point to be added.
+/// \param  index - vector index.
+///			pos - Position of point to be added.
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::insertObjPoint(const int index, const QPointF &pos)
 {
@@ -459,9 +459,10 @@ void CUserMapsLayer::insertObjPoint(const int index, const QPointF &pos)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn		EPointPositionType CUserMapsLayer::checkPointPosition(const QPointF &clickedPosition, int &index1, int &index2)
+/// \fn EPointPositionType CUserMapsLayer::checkPointPosition(const QPointF &clickedPosition,
+///                                       int &index1, int &index2)
 ///
-/// \brief	Checks whether clicked point lies inside selected object boundaries (Line and Area object).
+/// \brief  Checks whether clicked point lies inside selected object boundaries (Line and Area object).
 ///
 /// \param  clickedPoint - Clicked point.
 ///         index1 - Index of the first point on line segment of area/line object where clicked position lies.
@@ -469,7 +470,8 @@ void CUserMapsLayer::insertObjPoint(const int index, const QPointF &pos)
 ///
 /// \return EPointPositionType Position of clicked point with respect to an object.
 ////////////////////////////////////////////////////////////////////////////////
-EPointPositionType CUserMapsLayer::checkPointPositionToObj(const QPointF &clickedPosition, int &index1, int &index2)
+EPointPositionType CUserMapsLayer::checkPointPositionToObj(const QPointF &clickedPosition,
+                                                           int &index1, int &index2)
 {
     index1 = -1;
     index2 = -1;
@@ -489,12 +491,12 @@ EPointPositionType CUserMapsLayer::checkPointPositionToObj(const QPointF &clicke
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn         void CUserMapsLayer::selectedObjType(bool isObjSelected, EUserMapObjectType objType)
+/// \fn void CUserMapsLayer::selectedObjType(bool isObjSelected, EUserMapObjectType objType)
 ///
-/// \brief		Based on object type it gets the position points.
+/// \brief  Based on object type it gets the position points.
 ///
-/// \param		isObjSelected - Flag indicating whether an object is selected or not.
-///             objType - Type of object.
+/// \param  isObjSelected - Flag indicating whether an object is selected or not.
+///         objType - Type of object.
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::setSelectedObject(bool isObjSelected, EUserMapObjectType objType)
 {
@@ -518,15 +520,16 @@ void CUserMapsLayer::setSelectedObject(bool isObjSelected, EUserMapObjectType ob
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn		void CUserMapsLayer::convertGeoVectorToPixelVector(const QVector<CPosition> &geoPoint,
+/// \fn void CUserMapsLayer::convertGeoVectorToPixelVector(const QVector<CPosition> &geoPoint,
 ///														  QVector<QPointF> &pixelPoints)
 ///
-/// \brief	Converts vector of Geo coordinates into vector of pixel coordinates.
+/// \brief  Converts vector of Geo coordinates into vector of pixel coordinates.
 ///
-/// \param	geoPoints - Geo coordinates.
+/// \param  geoPoints - Geo coordinates.
 ///         pixelPoints - Pixel coordinates.
 ////////////////////////////////////////////////////////////////////////////////
-void CUserMapsLayer::convertGeoVectorToPixelVector(const QVector<CPosition> &geoPoints, QVector<QPointF> &pixelPoints)
+void CUserMapsLayer::convertGeoVectorToPixelVector(const QVector<CPosition> &geoPoints,
+                                                   QVector<QPointF> &pixelPoints)
 {
     pixelPoints.clear();
     pixelPoints.reserve(geoPoints.size());
@@ -535,29 +538,31 @@ void CUserMapsLayer::convertGeoVectorToPixelVector(const QVector<CPosition> &geo
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn         void CUserMapsLayer::convertGeoPointToPixelVector(const CPosition &geoPoint,
+/// \fn void CUserMapsLayer::convertGeoPointToPixelVector(const CPosition &geoPoint,
 ///														     QVector<QPointF> &pixelPoints)
-/// \brief      Converts Geo point into pixel vector.
+/// \brief  Converts Geo point into pixel vector.
 ///
-/// \param		geoPoint - Geo coordinates.
-///             pixelPoints - Pixel coordinates.
+/// \param  geoPoint - Geo coordinates.
+///         pixelPoints - Pixel coordinates.
 ////////////////////////////////////////////////////////////////////////////////
-void CUserMapsLayer::convertGeoPointToPixelVector(const CPosition &geoPoint, QVector<QPointF> &pixelPoints)
+void CUserMapsLayer::convertGeoPointToPixelVector(const CPosition &geoPoint,
+                                                  QVector<QPointF> &pixelPoints)
 {
     pixelPoints.clear();
     pixelPoints.append(convertGeoPointToPixelPoint(geoPoint));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn         void CUserMapsLayer::convertPixelVectorToGeoVector(const QVector<QPointF> &pixelVector)
+/// \fn void CUserMapsLayer::convertPixelVectorToGeoVector(const QVector<QPointF> &pixelVector,
+///                                                 QVector<CPosition> &geoPoints)
+/// \brief  Converts vector of pixel coordinates into vector of geo coordinates.
 ///
-/// \brief      Converts vector of pixel coordinates into vector of geo coordinates.
+/// \param  pixelVector - Vector of pixel coordinates.
 ///
-/// \param		pixelVector - Vector of pixel coordinates.
-///
-/// \return		Vector with geo coordinates.
+/// \return Vector with geo coordinates.
 ////////////////////////////////////////////////////////////////////////////////
-void CUserMapsLayer::convertPixelVectorToGeoVector(const QVector<QPointF> &pixelVector, QVector<CPosition> &geoPoints)
+void CUserMapsLayer::convertPixelVectorToGeoVector(const QVector<QPointF> &pixelVector,
+                                                   QVector<CPosition> &geoPoints)
 {
     geoPoints.clear();
     geoPoints.reserve(pixelVector.size());
@@ -566,13 +571,13 @@ void CUserMapsLayer::convertPixelVectorToGeoVector(const QVector<QPointF> &pixel
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn         CPosition CUserMapsLayer::convertPixelPointToGeoPoint(const QPointF &pixelPoint)
+/// \fn CPosition CUserMapsLayer::convertPixelPointToGeoPoint(const QPointF &pixelPoint)
 ///
-/// \brief      Converts pixel point into geo point.
+/// \brief  Converts pixel point into geo point.
 ///
-/// \param		pixelPoint - Pixel coordinate to be converted to geo coordinate.
+/// \param  pixelPoint - Pixel coordinate to be converted to geo coordinate.
 ///
-/// \return		Geo coordinate.
+/// \return Geo coordinate.
 ////////////////////////////////////////////////////////////////////////////////
 CPosition CUserMapsLayer::convertPixelPointToGeoPoint(const QPointF &pixelPoint)
 {
@@ -583,13 +588,13 @@ CPosition CUserMapsLayer::convertPixelPointToGeoPoint(const QPointF &pixelPoint)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn         QPointF CUserMapsLayer::convertGeoPointToPixelPoint(const CPosition &geoPoint)
+/// \fn QPointF CUserMapsLayer::convertGeoPointToPixelPoint(const CPosition &geoPoint)
 ///
-/// \brief      Converts geo coordinate into pixel coordinate.
+/// \brief  Converts geo coordinate into pixel coordinate.
 ///
-/// \param		geoPoint - Point in geo coordinates.
+/// \param  geoPoint - Point in geo coordinates.
 ///
-/// \return		Point in pixel coordinates.
+/// \return Point in pixel coordinates.
 ////////////////////////////////////////////////////////////////////////////////
 QPointF CUserMapsLayer::convertGeoPointToPixelPoint(const CPosition &geoPoint)
 {
@@ -600,11 +605,11 @@ QPointF CUserMapsLayer::convertGeoPointToPixelPoint(const CPosition &geoPoint)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn         void CUserMapsLayer::onPositionClicked(const QPointF &clickedPosition)
+/// \fn void CUserMapsLayer::onPositionClicked(const QPointF &clickedPosition)
 ///
-/// \brief      When user clicks once.
+/// \brief  When user clicks once.
 ///
-/// \param		clickedPosition Position where user has clicked.
+/// \param  clickedPosition Position where user has clicked.
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::onPositionClicked(const QPointF &clickedPosition)
 {
@@ -628,9 +633,9 @@ void CUserMapsLayer::onPositionClicked(const QPointF &clickedPosition)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn         void CUserMapsLayer::updateObjectPosition()
+/// \fn void CUserMapsLayer::updateObjectPosition()
 ///
-/// \brief      Updates object position based on its type.
+/// \brief  Updates object position based on its type.
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsLayer::updateObjectPosition()
 {
@@ -656,16 +661,19 @@ void CUserMapsLayer::updateObjectPosition()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn         EPointPositionType CUserMapsLayer::pointPositionToArea(const QPointF &clickedPosition, int &index1, int &index2)
+/// \fn EPointPositionType CUserMapsLayer::pointPositionToArea(const QPointF &clickedPosition,
+///                                         int &index1, int &index2)
 ///
-/// \brief      Returns position of clicked point with respect to an the selected object.
+/// \brief  Returns position of clicked point with respect to an the selected object.
 ///
-/// \param		clickedPosition - Clicked position in pixel coordinates.
-///             index1 - Index of the first point on area object between segments where clicked position lies.
-///             index2 - Index of the second point on area object between segments where clicked position lies.
+/// \param  clickedPosition - Clicked position in pixel coordinates.
+///         index1 - Index of the first point on area object between segments where clicked position lies.
+///         index2 - Index of the second point on area object between segments where clicked position lies.
 ///
-/// \return		EPointPositionType Selected point position with respect to the selected area.
-EPointPositionType CUserMapsLayer::pointPositionToArea(const QPointF &clickedPosition, int &index1, int &index2)
+/// \return EPointPositionType Selected point position with respect to the selected area.
+////////////////////////////////////////////////////////////////////////////////
+EPointPositionType CUserMapsLayer::pointPositionToArea(const QPointF &clickedPosition,
+                                                       int &index1, int &index2)
 {
     // detection of inner/outer position of selected point
     QPointF pointC;
@@ -733,13 +741,14 @@ EPointPositionType CUserMapsLayer::pointPositionToArea(const QPointF &clickedPos
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn         EPointPositionType CUserMapsLayer::pointPositionToCircle(const QPointF &clickedPosition)
+/// \fn EPointPositionType CUserMapsLayer::pointPositionToCircle(const QPointF &clickedPosition)
 ///
-/// \brief      Returns position of clicked point with respect to the selected circle object.
+/// \brief  Returns position of clicked point with respect to the selected circle object.
 ///
-/// \param		clickedPosition - Clicked position in pixel coordinates.
+/// \param  clickedPosition - Clicked position in pixel coordinates.
 ///
-/// \return		EPointPositionType Selected point position with respect to the selected circle.
+/// \return EPointPositionType Selected point position with respect to the selected circle.
+////////////////////////////////////////////////////////////////////////////////
 EPointPositionType CUserMapsLayer::pointPositionToCircle(const QPointF &clickedPosition)
 {
     float radiusVal = CUserMapsManager::getObjRadiusStat();
@@ -761,16 +770,19 @@ EPointPositionType CUserMapsLayer::pointPositionToCircle(const QPointF &clickedP
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn         EPointPositionType CUserMapsLayer::pointPositionToLine(const QPointF &clickedPosition, int &index1, int &index2)
+/// \fn EPointPositionType CUserMapsLayer::pointPositionToLine(const QPointF &clickedPosition,
+///                                                 int &index1, int &index2)
 ///
-/// \brief      Returns position of clicked point with respect to the selected line object.
+/// \brief  Returns position of clicked point with respect to the selected line object.
 ///
-/// \param      clickedPosition - Clicked position in pixel coordinates.
-///             index1 - Index of the first point on line object on segment where clicked position lies.
-///             index2 - Index of the second point on line object on segment where clicked position lies.
+/// \param  clickedPosition - Clicked position in pixel coordinates.
+///         index1 - Index of the first point on line object on segment where clicked position lies.
+///         index2 - Index of the second point on line object on segment where clicked position lies.
 ///
-/// \return		EPointPositionType Selected point position with respect to the selected line.
-EPointPositionType CUserMapsLayer::pointPositionToLine(const QPointF &clickedPosition, int &index1, int &index2)
+/// \return EPointPositionType Selected point position with respect to the selected line.
+////////////////////////////////////////////////////////////////////////////////
+EPointPositionType CUserMapsLayer::pointPositionToLine(const QPointF &clickedPosition,
+                                                       int &index1, int &index2)
 {
     QPointF pointA;
     QPointF pointB;
@@ -874,16 +886,19 @@ EPointPositionType CUserMapsLayer::pointPositionToPointObj(const QPointF &clicke
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn         qreal CUserMapsLayer::calculateYaxisValueOnLine(const QPointF &pointA, const QPointF &pointB, const QPointF clickedPoint)
+/// \fn qreal CUserMapsLayer::calculateYaxisValueOnLine(const QPointF &pointA,
+///                                 const QPointF &pointB, const QPointF clickedPoint)
 ///
-/// \brief      Calculates yAxis point value for given XAxis point of linear function.
+/// \brief  Calculates yAxis point value for given XAxis point of linear function.
 ///
-/// \param		pointA - First point used to determine linear function equation.
-///             pointB - Second point used to determine linear function equation.
-///             clickedPoint - Clicked point.
+/// \param  pointA - First point used to determine linear function equation.
+///         pointB - Second point used to determine linear function equation.
+///         clickedPoint - Clicked point.
 ///
-/// \return		qreal Value on YAxis calculated using linear function equation.
-qreal CUserMapsLayer::calculateYaxisValueOnLine(const QPointF &pointA, const QPointF &pointB, const QPointF clickedPoint)
+/// \return qreal Value on YAxis calculated using linear function equation.
+////////////////////////////////////////////////////////////////////////////////
+qreal CUserMapsLayer::calculateYaxisValueOnLine(const QPointF &pointA,
+                                      const QPointF &pointB, const QPointF clickedPoint)
 {
     // line equation between two points
     // m = (yA − yB)/(xA − xB)
