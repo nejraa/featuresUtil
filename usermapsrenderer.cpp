@@ -326,10 +326,12 @@ void CUserMapsRenderer::updateLines(const QMap<int, QSharedPointer<CUserMapLine>
 	qreal offsetY = 0.0;
 	CViewCoordinates::Instance()->getGeoOriginOffsetPixel( offsetX, offsetY );
 
+//	void updateLine(QSharedPointer<CUserMapLine> line, CUserMapsVertexData &)
+
 	for(QMap<int, QSharedPointer<CUserMapLine> >::Iterator it; it != loadedLines.end() ; it++)
 	{
 		std::vector<GenericVertexData> line;
-		foreach(const CPosition & point , it.value()->getPoints())
+		for (const CPosition & point : it.value()->getPoints())
 		{
 
 			// Relative target position (in pixels) from the ownship (Geo Origin)
