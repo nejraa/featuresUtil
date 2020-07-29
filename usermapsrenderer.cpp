@@ -22,8 +22,6 @@
 #ifndef GL_PRIMITIVE_RESTART_FIXED_INDEX
 #define GL_PRIMITIVE_RESTART_FIXED_INDEX  0x8D69 ///<taken from opengl specifications
 #endif
-const int CIRCLE_BUFFER_SIZE = 362; ///<points used for drawing circles
-const int POINT_BUFFER_SIZE = 100; // will be removed
 const bool LOG_OPENGL_ERRORS = false; ///<used for open gl errors
 const int rbDegrees = 360; ///< a circle has 360 degrees
 static const int FONT_PT_SIZE = 20; ///< font
@@ -171,28 +169,21 @@ void CUserMapsRenderer::synchronize(QQuickFramebufferObject *item)
 	m_pLineData.clear();
 	m_pPolygonData.clear();
 
-	//TODO AM: this is C++ 11 range-based "for" loop
 	 for (const QSharedPointer<const CUserMap> &pMap : CUserMapsManager::getLoadedMapsStat() )
 	 {
-//	foreach( QSharedPointer<CUserMap>pointer, CUserMapsManager::getLoadedMapsStat()) {
-
-		 //TODO AM: using reference to const to avoid copying (function returns a reference to const, but we will
-		 // copy the object unless we declare ref to const here.)
 		const CUserMapObjectContainer<CUserMapPoint> &points = pMap->getPoints();
 		const CUserMapObjectContainer<CUserMapArea> &areas = pMap->getAreas();
 		const CUserMapObjectContainer<CUserMapLine> &lines = pMap->getLines();
 		const CUserMapObjectContainer<CUserMapCircle> &circles = pMap->getCircles();
 
-		//TODO AM: update created and edited objects as well, not only loaded ones
+		for (auto item : {EUserMapObjectStatus::Loaded, EUserMapObjectStatus::Edited, EUserMapObjectStatus::Created})
+		{
+		updatePointData(points.map(item));
+		updateLine(lines.map(item));
+		updateCircle(circles.map(item));
+		updatePolygon(areas.map(item));
+		}
 
-		//updatePoint();
-		//updatefillPolygon();
-		//updatefillCircle();none of these above vould be needed
-		updatePointData(points.map(EUserMapObjectStatus::Loaded));
-		updateLine(lines.map(EUserMapObjectStatus::Loaded));
-		updateCircle(circles.map(EUserMapObjectStatus::Loaded));
-		updatePolygon(areas.map(EUserMapObjectStatus::Loaded));
-		//updateText();
 	}
 
 
@@ -272,12 +263,12 @@ void CUserMapsRenderer::initializeGL()
 void CUserMapsRenderer::renderPrimitives(QOpenGLFunctions *func)
 {
 
-	drawPoint(func);
-	drawfilledPolygon(func);
-	drawfilledCircle(func);
-	drawLine(func);
-	drawCircle(func);
-	drawPolygon(func);
+	drawPoints(func);
+	drawfilledPolygons(func);
+	drawfilledCircles(func);
+	drawLines(func);
+	drawCircles(func);
+	drawPolygons(func);
 
 
 	//test data
@@ -509,7 +500,7 @@ void CUserMapsRenderer::updateCircle(const QMap<int, QSharedPointer<CUserMapCirc
 
 
 		std::vector<GenericVertexData> filledCircle;
-		foreach(GenericVertexData data, circle)
+		foreach(const GenericVertexData & data, circle)
 		{
 			filledCircle.push_back(GenericVertexData(data.position(),convertColour(it.value()->getColor(),it.value()->getTransparency())));
 		}
@@ -558,7 +549,7 @@ void CUserMapsRenderer::updatePolygon(const QMap<int, QSharedPointer<CUserMapAre
 	{
 		std::vector<GenericVertexData> polygon; //test case polygon ,will be deleted
 
-		foreach(CPosition point , it.value()->getPoints())
+		foreach(const CPosition & point , it.value()->getPoints())
 		{
 
 			// Relative target position (in pixels) from the ownship (Geo Origin)
@@ -603,7 +594,7 @@ void CUserMapsRenderer::updatePolygon(const QMap<int, QSharedPointer<CUserMapAre
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CUserMapsRenderer::updatePointData(const QMap<int, QSharedPointer<CUserMapPoint> > &uPointData)
 {
-	foreach(QSharedPointer<CUserMapPoint> uPoint , uPointData)
+	foreach(const QSharedPointer<CUserMapPoint>& uPoint , uPointData)
 	{
 
 		MapPoint data;
@@ -642,13 +633,13 @@ void CUserMapsRenderer::updatePointData(const QMap<int, QSharedPointer<CUserMapP
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn     CUserMapsRenderer::drawPoint(QOpenGLFunctions *func)
+/// \fn     CUserMapsRenderer::drawPoints(QOpenGLFunctions *func)
 ///
 /// \brief  Handles mouse move event.
 ///
 /// \param  Pointer that points to QOpenGLFunctions.
 ////////////////////////////////////////////////////////////////////////////////
-void CUserMapsRenderer::drawPoint(QOpenGLFunctions *func) {
+void CUserMapsRenderer::drawPoints(QOpenGLFunctions *func) {
 
 	// Set translation matrix (no translation)
 	QMatrix4x4 translation;
@@ -676,7 +667,7 @@ void CUserMapsRenderer::drawPoint(QOpenGLFunctions *func) {
 	// Check Frame buffer is OK
 	GLenum e = func->glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if( e != GL_FRAMEBUFFER_COMPLETE)
-		qDebug() << "CUserMapsRenderer::drawPoint() failed! Not GL_FRAMEBUFFER_COMPLETE";
+		qDebug() << "CUserMapsRenderer::drawPoints() failed! Not GL_FRAMEBUFFER_COMPLETE";
 
 	m_primShader.setupVertexState();
 
@@ -691,13 +682,13 @@ void CUserMapsRenderer::drawPoint(QOpenGLFunctions *func) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn     CUserMapsRenderer::drawLine(QOpenGLFunctions *func)
+/// \fn     CUserMapsRenderer::drawLines(QOpenGLFunctions *func)
 ///
-/// \brief  Draws Line.
+/// \brief  Draws Lines.
 ///
 /// \param  func - Pointer that points to QOpenGLFunctions.
 ////////////////////////////////////////////////////////////////////////////////
-void CUserMapsRenderer::drawLine(QOpenGLFunctions *func) {
+void CUserMapsRenderer::drawLines(QOpenGLFunctions *func) {
 
 	// Set translation matrix (no translation)
 	QMatrix4x4 translation;
@@ -726,14 +717,14 @@ void CUserMapsRenderer::drawLine(QOpenGLFunctions *func) {
 	m_pMapShader->setResolution(winWidth, winHeight);
 
 
-	int counter=drawMultipleElements(m_LineBuf, m_pLineData);
+	drawMultipleElements(m_LineBuf, m_pLineData);
 
 	m_LineBuf->bind();
 
 	// Check Frame buffer is OK
 	GLenum e = func->glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if( e != GL_FRAMEBUFFER_COMPLETE)
-		qDebug() << "CUserMapsRenderer::drawLine() failed! Not GL_FRAMEBUFFER_COMPLETE";
+		qDebug() << "CUserMapsRenderer::drawLines() failed! Not GL_FRAMEBUFFER_COMPLETE";
 
 	m_pMapShader->setupVertexState();
 
@@ -764,13 +755,13 @@ void CUserMapsRenderer::drawLine(QOpenGLFunctions *func) {
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn     CUserMapsRenderer::drawPolygon(QOpenGLFunctions *func)
+/// \fn     CUserMapsRenderer::drawPolygons(QOpenGLFunctions *func)
 ///
-/// \brief  Draws polygon.
+/// \brief  Draws polygons.
 ///
 /// \param  Pointer that points to QOpenGLFunctions.
 ////////////////////////////////////////////////////////////////////////////////
-void CUserMapsRenderer::drawPolygon(QOpenGLFunctions *func) {
+void CUserMapsRenderer::drawPolygons(QOpenGLFunctions *func) {
 
 	// Set translation matrix (no translation)
 	QMatrix4x4 translation;
@@ -800,14 +791,14 @@ void CUserMapsRenderer::drawPolygon(QOpenGLFunctions *func) {
 	m_pMapShader->setGapSize(10.0f);
 	m_pMapShader->setDotSize(15.0f);
 
-	int counter = drawMultipleElements(m_PolygonBuf, m_pPolygonData);
+	drawMultipleElements(m_PolygonBuf, m_pPolygonData);
 
 	m_PolygonBuf->bind();
 
 	// Check Frame buffer is OK
 	GLenum e = func->glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if( e != GL_FRAMEBUFFER_COMPLETE)
-		qDebug() << "COwnshipRenderer::drawPolygon() failed! Not GL_FRAMEBUFFER_COMPLETE";
+		qDebug() << "CUserMapsRenderer::drawPolygons() failed! Not GL_FRAMEBUFFER_COMPLETE";
 
 	m_pMapShader->setupVertexState();
 
@@ -834,13 +825,13 @@ void CUserMapsRenderer::drawPolygon(QOpenGLFunctions *func) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn     CUserMapsRenderer::drawfilledPolygon(QOpenGLFunctions *func)
+/// \fn     CUserMapsRenderer::drawfilledPolygons(QOpenGLFunctions *func)
 ///
-/// \brief  Draws polygon.
+/// \brief  Draws polygons.
 ///
 /// \param  Pointer that points to QOpenGLFunctions.
 ////////////////////////////////////////////////////////////////////////////////
-void CUserMapsRenderer::drawfilledPolygon(QOpenGLFunctions *func) {
+void CUserMapsRenderer::drawfilledPolygons(QOpenGLFunctions *func) {
 
 	// Set translation matrix (no translation)
 	QMatrix4x4 translation;
@@ -867,7 +858,7 @@ void CUserMapsRenderer::drawfilledPolygon(QOpenGLFunctions *func) {
 	// Check Frame buffer is OK
 	GLenum e = func->glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if( e != GL_FRAMEBUFFER_COMPLETE)
-		qDebug() << "COwnshipRenderer::drawPolygon() failed! Not GL_FRAMEBUFFER_COMPLETE";
+		qDebug() << "COwnshipRenderer::drawPolygons() failed! Not GL_FRAMEBUFFER_COMPLETE";
 
 	m_primShader.setupVertexState();
 
@@ -884,13 +875,13 @@ void CUserMapsRenderer::drawfilledPolygon(QOpenGLFunctions *func) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn     CUserMapsRenderer::drawfilledCircle(QOpenGLFunctions *func)
+/// \fn     CUserMapsRenderer::drawfilledCircles(QOpenGLFunctions *func)
 ///
-/// \brief  Draws Circle.
+/// \brief  Draws Circles.
 ///
 /// \param  Pointer that points to QOpenGLFunctions.
 ////////////////////////////////////////////////////////////////////////////////
-void CUserMapsRenderer::drawfilledCircle(QOpenGLFunctions *func) {
+void CUserMapsRenderer::drawfilledCircles(QOpenGLFunctions *func) {
 
 
 	// Set translation matrix (no translation)
@@ -914,14 +905,14 @@ void CUserMapsRenderer::drawfilledCircle(QOpenGLFunctions *func) {
 
 
 	// Tell OpenGL which VBOs to use
-	int counter = drawMultipleElements(m_InlineCircleBuf, m_pfilledCircleData);
+	drawMultipleElements(m_InlineCircleBuf, m_pfilledCircleData);
 	m_InlineCircleBuf->bind();
 
 
 	// Check Frame buffer is OK
 	GLenum e = func->glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if( e != GL_FRAMEBUFFER_COMPLETE)
-		qDebug() << "CBearingScaleRenderer::drawScale() failed! Not GL_FRAMEBUFFER_COMPLETE";
+		qDebug() << "CUserMapsRenderer::drawfilledCircles() failed! Not GL_FRAMEBUFFER_COMPLETE";
 
 	m_primShader.setupVertexState();
 	int offset = 0; //offset
@@ -945,13 +936,13 @@ void CUserMapsRenderer::drawfilledCircle(QOpenGLFunctions *func) {
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn     CUserMapsRenderer::drawCircle(QOpenGLFunctions *func)
+/// \fn     CUserMapsRenderer::drawCircles(QOpenGLFunctions *func)
 ///
 /// \brief  Draws outline Circle.
 ///
 /// \param  Pointer that points to QOpenGLFunctions.
 ////////////////////////////////////////////////////////////////////////////////
-void CUserMapsRenderer::drawCircle(QOpenGLFunctions *func) {
+void CUserMapsRenderer::drawCircles(QOpenGLFunctions *func) {
 
 	// Set translation matrix (no translation)
 	QMatrix4x4 translation;
@@ -983,13 +974,13 @@ void CUserMapsRenderer::drawCircle(QOpenGLFunctions *func) {
 	m_pMapShader->setDotSize(1.0f);
 
 	// Tell OpenGL which VBOs to use
-	int counter= drawMultipleElements(m_CircleBuf, m_pCircleData);
+	drawMultipleElements(m_CircleBuf, m_pCircleData);
 	m_CircleBuf->bind();
 
 	// Check Frame buffer is OK
 	GLenum e = func->glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if( e != GL_FRAMEBUFFER_COMPLETE)
-		qDebug() << "CBearingScaleRenderer::drawScale() failed! Not GL_FRAMEBUFFER_COMPLETE";
+		qDebug() << "CUserMapsRenderer::drawCircles() failed! Not GL_FRAMEBUFFER_COMPLETE";
 
 	m_pMapShader->setupVertexState();
 	func->glLineWidth(1);
@@ -1160,8 +1151,8 @@ void CUserMapsRenderer::testCircle(qreal originX, qreal originY) {
 ///
 /// \param x - x-coordinates of the first pixel
 ///        y-y coordinates of the first pixel
-///        width-width of the pixel rectangle
-///        height-height of the pixel rectangle
+///        width-width of the pixel rectangle, should be 1
+///        height-height of the pixel rectangle, should be 1
 ///        format-format of the pixel data
 ///        type- data type of the pixel data
 ///        func-pointer that points to qopenglfunctions
@@ -1174,7 +1165,7 @@ void CUserMapsRenderer::read( GLint x, GLint y, GLsizei width, GLsizei height, G
 
 	unsigned char data[4] = { 0, 0, 0, 0 };
 
-	func->glReadPixels( x, y, 1, 1, format, type, data );//TO DO:: solve problem with correct pixel position
+	func->glReadPixels( x, y, width, height, format, type, data );//TO DO:: solve problem with correct pixel position
 	CLoggingLib::logging( E_DEBUGGING )<<endl<<"Colours of<<"<<x<<"and"<<y<<"are r:" <<data[0] << " g" <<data[1]<<" b" <<data[2] <<" a" << data[3];
 
 }
@@ -1211,28 +1202,28 @@ void CUserMapsRenderer::setLineStyle(CUserMapsVertexData& tempData, EUserMapLine
 		tempData.setDashSize(30.0f);
 		tempData.setDotSize(0.0f);
 		tempData.setGapSize(0.0f);
-		break; //TODO AM: without "break", it might execute the next statement as well
+		break;
 	}
 	case EUserMapLineStyle::Dashed :
 	{
 		tempData.setDashSize(15.0f);
 		tempData.setDotSize(0.0f);
 		tempData.setGapSize(15.0f);
-
-
+		break;
 	}
 	case EUserMapLineStyle::Dotted :
 	{
 		tempData.setDashSize(2.0f);
 		tempData.setGapSize(10.0f);
 		tempData.setDotSize(0.0f);
-
+		break;
 	}
 	case EUserMapLineStyle::Dot_Dash :
 	{
 		tempData.setDashSize(30.0f);
 		tempData.setGapSize(15.0f);
 		tempData.setDotSize(10.0f);
+		break;
 	}
 		tempData.setLineWidth(lineWidth);
 	}

@@ -69,12 +69,12 @@ public:
 
 	void updatePointData(const QMap<int, QSharedPointer<CUserMapPoint> > &uPointData);
 	// Draws
-	void drawPoint( QOpenGLFunctions* func );
-	void drawLine( QOpenGLFunctions* func );
-	void drawCircle( QOpenGLFunctions* func );
-	void drawfilledCircle(QOpenGLFunctions* func );
-	void drawPolygon( QOpenGLFunctions* func );
-	void drawfilledPolygon( QOpenGLFunctions* func );
+	void drawPoints( QOpenGLFunctions* func );
+	void drawLines( QOpenGLFunctions* func );
+	void drawCircles( QOpenGLFunctions* func );
+	void drawfilledCircles(QOpenGLFunctions* func );
+	void drawPolygons( QOpenGLFunctions* func );
+	void drawfilledPolygons( QOpenGLFunctions* func );
 	void initShader();
 	void addText( QString text,double x, double y, QVector4D colour,TextAlignment alignment);
 	void loadMaps();
