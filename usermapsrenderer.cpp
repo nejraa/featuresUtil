@@ -30,8 +30,8 @@ static const int FONT_PT_SIZE = 20; ///< font
 
 MapPoint::MapPoint()
 	: m_vertexData(QVector4D( (0.0f),(0.0), 0.0f, 0.0f ), QVector4D(0.0f ,0.0f , 0.0f, 0.0f)),
-	  m_icon(0),
-	  m_iconSize(0.0f)
+	  m_iconSize(0.0f),
+	  m_icon(0)
 {
 
 }
@@ -44,12 +44,12 @@ MapPoint::MapPoint()
 ////////////////////////////////////////////////////////////////////////////////
 CUserMapsRenderer::CUserMapsRenderer()
 	: CBaseRenderer("UserMapsView", OGL_TYPE::PROJ_ORTHO),
+	  m_tgtTextRenderer(TextRendering::OPENGL),
 	  m_PointBuf(nullptr),
 	  m_LineBuf(nullptr),
 	  m_CircleBuf(nullptr),
 	  m_PolygonBuf(nullptr),
 	  m_pOpenGLLogger(nullptr),
-	  m_tgtTextRenderer(TextRendering::OPENGL),
 	  m_pMapShader(nullptr),
 	  out(stdout)
 
@@ -144,17 +144,18 @@ void CUserMapsRenderer::synchronize(QQuickFramebufferObject *item)
 	float textureWidthInPixels = imgWidthInMM * pixelsInMm;	// Total width in pixels
 	float imgHeightInMM = m_pTexture[0]->imageHeight() / 20.0f;
 	float textureHeightInPixel = imgHeightInMM * pixelsInMm;
-
+	m_pTexture[0]->updateTexture(QVector4D(0.0f, 0.0f, 1.0f, 1.0f));
 	m_pTexture[0]->setWidth(textureWidthInPixels/ 2.0f); // set width for one side (left/right)
 	m_pTexture[0]->setHeight(textureHeightInPixel/ 2.0f);
 	m_pTexture[0]->setProjection(left, right, bottom, top);
+
 
 	//end of delete
 
 	// Set the width, height and projection for each target texture
 	for( uint i = 0; i < m_pTexture.size(); ++i )
 	{
-		m_pTexture[i]->updateTexture(QVector4D(1.0f, 1.0f, 1.0f, 1.0f));//todo : should replace qvector4d colour vector
+		m_pTexture[i]->updateTexture(QVector4D(0.0f, 1.0f, 0.0f, 1.0f));//todo : should replace qvector4d colour vector
 		float imgWidthInMM = m_pTexture[i]->imageWidth() / 20.0f;	// Images are designed to be 20 texels/mm
 		float textureWidthInPixels = imgWidthInMM * pixelsInMm;	// Total width in pixels
 		float imgHeightInMM = m_pTexture[i]->imageHeight() / 20.0f;
@@ -321,13 +322,14 @@ void CUserMapsRenderer::renderTextures()
 	// Use texture unit 0 for the sampler
 	m_textureShader.setTextureSampler(0);
 
+
 	// Draw the target
 	m_pTexture[0]->drawTexture(&m_textureShader);
 
 	// Release the texture now that we are finished with it
 	m_pTexture[0]->releaseTexture();
 
-	for ( int i = 0; i < m_pPoints.size(); ++i )
+	for ( uint i = 0; i < m_pPoints.size(); ++i )
 	{
 		// Calculate target plot data
 		QMatrix4x4 matrix;
@@ -360,9 +362,11 @@ void CUserMapsRenderer::renderTextures()
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-/// \fn	CBearingScaleRenderer::updateLine()
+/// \fn	CBearingScaleRenderer::updateLine(const QMap<int, QSharedPointer<CUserMapLine> >&loadedLines)
 ///
 /// \brief	Add line points so line could be drawn
+///
+/// \param loadedLines- lines that should be drawn
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CUserMapsRenderer::updateLine(const QMap<int, QSharedPointer<CUserMapLine> >&loadedLines )
 {
@@ -410,7 +414,7 @@ void CUserMapsRenderer::updateLine(const QMap<int, QSharedPointer<CUserMapLine> 
 			double yPos = tgtPosY + originY;
 
 
-			line.push_back( GenericVertexData(QVector4D( static_cast<float>(xPos), static_cast<float>(yPos), 0.0f, 1.0f), convertColour(it.value()->getColor())));
+			line.push_back( GenericVertexData(QVector4D( static_cast<float>(xPos), static_cast<float>(yPos), 0.0f, 1.0f), convertColour(it.value()->getColor(), it.value()->getTransparency())));
 		}
 
 		CUserMapsVertexData tempData;
@@ -425,9 +429,11 @@ void CUserMapsRenderer::updateLine(const QMap<int, QSharedPointer<CUserMapLine> 
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-/// \fn	CBearingScaleRenderer::updateCircle()
+/// \fn	CBearingScaleRenderer::updateCircle(const QMap<int, QSharedPointer<CUserMapCircle> >& loadedCircles)
 ///
 /// \brief	Add Circle points so circle could be drawn.
+///
+/// \param	loadedCircles-circles that should be drawn
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CUserMapsRenderer::updateCircle(const QMap<int, QSharedPointer<CUserMapCircle> >& loadedCircles) {
 
@@ -505,9 +511,9 @@ void CUserMapsRenderer::updateCircle(const QMap<int, QSharedPointer<CUserMapCirc
 		std::vector<GenericVertexData> filledCircle;
 		foreach(GenericVertexData data, circle)
 		{
-			filledCircle.push_back(GenericVertexData(data.position(),convertColour(it.value()->getColor())));
+			filledCircle.push_back(GenericVertexData(data.position(),convertColour(it.value()->getColor(),it.value()->getTransparency())));
 		}
-		filledCircle.push_back(GenericVertexData(QVector4D(originX, originY, 0.0f, 1.0f), convertColour( it.value()->getColor())));// add center so,circles could be drawn more effectively in opengl
+		filledCircle.push_back(GenericVertexData(QVector4D(originX, originY, 0.0f, 1.0f), convertColour( it.value()->getColor(),it.value()->getTransparency())));// add center so,circles could be drawn more effectively in opengl
 		m_pfilledCircleData.push_back(filledCircle);
 	}
 
@@ -515,11 +521,11 @@ void CUserMapsRenderer::updateCircle(const QMap<int, QSharedPointer<CUserMapCirc
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-/// \fn	CBearingScaleRenderer::updatePolygon(QList<CUserMapArea> area)
+/// \fn	CBearingScaleRenderer::updatePolygon(const QMap<int, QSharedPointer<CUserMapArea> >& loadedArea)
 ///
 /// \brief	Add polygon points
 ///
-/// \param  area - received area that should be drawn
+/// \param  loadedArea - received areas that should be drawn
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CUserMapsRenderer::updatePolygon(const QMap<int, QSharedPointer<CUserMapArea> >& loadedArea) {
 
@@ -580,7 +586,7 @@ void CUserMapsRenderer::updatePolygon(const QMap<int, QSharedPointer<CUserMapAre
 
 		foreach(GenericVertexData data , result)
 		{
-			data.setColor(convertColour(it.value()->getColor()));
+			data.setColor(convertColour(it.value()->getColor(), it.value()->getTransparency()));
 		}
 
 		m_pfilledPolygonData.push_back(result);
@@ -588,6 +594,13 @@ void CUserMapsRenderer::updatePolygon(const QMap<int, QSharedPointer<CUserMapAre
 	}
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// \fn	CUserMapsRenderer::updatePointData(const QMap<int, QSharedPointer<CUserMapPoint> > &uPointData
+///
+/// \brief	Add textures that should be drawn
+///
+/// \param uPointData- textures details
+////////////////////////////////////////////////////////////////////////////////////////////////////
 void CUserMapsRenderer::updatePointData(const QMap<int, QSharedPointer<CUserMapPoint> > &uPointData)
 {
 	foreach(QSharedPointer<CUserMapPoint> uPoint , uPointData)
@@ -614,7 +627,7 @@ void CUserMapsRenderer::updatePointData(const QMap<int, QSharedPointer<CUserMapP
 		double xPos = tgtPosX + originX;
 		double yPos = tgtPosY + originY;
 
-		QVector4D colour = convertColour(uPoint->getColor());
+		QVector4D colour = convertColour(uPoint->getColor(),uPoint->getTransparency());
 		// Set attributes
 
 		data.m_icon = uPoint->getIcon();
@@ -1018,7 +1031,7 @@ void CUserMapsRenderer::addPointstoBuffer() {
 ////////////////////////////////////////////////////////////////////////////////
 /// \fn     CUserMapsRenderer::drawMultipleElements(QSharedPointer<CVertexBuffer> &buffer , const std::vector<std::vector<GenericVertexData>> &data)
 ///
-/// \brief  add data to buffer
+/// \brief  add genericvertexdata to buffer
 ///
 /// \param  buffer - vertex buffer
 ///         data- points that form a shape
@@ -1043,6 +1056,14 @@ int CUserMapsRenderer::drawMultipleElements(QSharedPointer<CVertexBuffer> &buffe
 	return counter;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+/// \fn     int CUserMapsRenderer::drawMultipleElements( QSharedPointer<CVertexBuffer> &buffer, const std::vector<CUserMapsVertexData> &data)
+///
+/// \brief  add usermapsvertexdata to buffer
+///
+/// \param  buffer - vertex buffer
+///         data- points that form a shape
+////////////////////////////////////////////////////////////////////////////////
 int CUserMapsRenderer::drawMultipleElements( QSharedPointer<CVertexBuffer> &buffer, const std::vector<CUserMapsVertexData> &data)
 {
 	uint totalSize = 0;
@@ -1160,15 +1181,16 @@ void CUserMapsRenderer::read( GLint x, GLint y, GLsizei width, GLsizei height, G
 
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn     QVector4D CUserMapsRenderer::convertColour(int col)//
+/// \fn     QVector4D CUserMapsRenderer::convertColour(int col, , float opacity)//
 /// \brief  This function is used for converting colour into 4d vector
 ///
 /// \param col- colour that should be converted
+///        opacity- opacity
 ///
 ////////////////////////////////////////////////////////////////////////////////
-QVector4D CUserMapsRenderer::convertColour(int col)//TO DO : check how col should be converted
+QVector4D CUserMapsRenderer::convertColour(int col , float opacity )//TO DO : check how col should be converted
 {
-	return QVector4D(col,0.0f,0.0f,1.0);
+	return QVector4D(col,0.0f,0.0f,opacity);
 
 }
 

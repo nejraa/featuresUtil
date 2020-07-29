@@ -120,7 +120,7 @@ private:
 
 	std::vector<std::vector<GenericVertexData>>m_pfilledPolygonData;///< Vector where polygons and their points with inline colour are stored
 
-	QVector<MapPoint> m_pPoints;			///< vector whose elements are lists of point objects contained in the map.
+	std::vector<MapPoint> m_pPoints;			///< vector whose elements are lists of point objects contained in the map.
 
 	void logOpenGLErrors();
 
@@ -134,7 +134,7 @@ private:
 	void testCircle(qreal originX, qreal originY);
 
 	void read(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type,QOpenGLFunctions *func);
-	QVector4D convertColour(int col);
+	QVector4D convertColour(int col, float opacity = 1.0f);
 
 	void setLineStyle(CUserMapsVertexData& tempData, EUserMapLineStyle lineStyle, float lineWidth);
 
