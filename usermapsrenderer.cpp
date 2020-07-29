@@ -170,12 +170,20 @@ void CUserMapsRenderer::synchronize(QQuickFramebufferObject *item)
 	m_pLineData.clear();
 	m_pPolygonData.clear();
 
-	foreach( QSharedPointer<CUserMap>pointer, CUserMapsManager::getLoadedMapsStat()) {
+	//TODO AM: this is C++ 11 range-based "for" loop
+	 for (const QSharedPointer<const CUserMap> &pMap : CUserMapsManager::getLoadedMapsStat() )
+	 {
+//	foreach( QSharedPointer<CUserMap>pointer, CUserMapsManager::getLoadedMapsStat()) {
 
-		CUserMapObjectContainer<CUserMapPoint> points = pointer->getPoints();
-		CUserMapObjectContainer<CUserMapArea> areas = pointer->getAreas();
-		CUserMapObjectContainer<CUserMapLine> lines = pointer->getLines();
-		CUserMapObjectContainer<CUserMapCircle>circles = pointer->getCircles();
+		 //TODO AM: using reference to const to avoid copying (function returns a reference to const, but we will
+		 // copy the object unless we declare ref to const here.)
+		const CUserMapObjectContainer<CUserMapPoint> &points = pMap->getPoints();
+		const CUserMapObjectContainer<CUserMapArea> &areas = pMap->getAreas();
+		const CUserMapObjectContainer<CUserMapLine> &lines = pMap->getLines();
+		const CUserMapObjectContainer<CUserMapCircle> &circles = pMap->getCircles();
+
+		//TODO AM: update created and edited objects as well, not only loaded ones
+
 		//updatePoint();
 		//updatefillPolygon();
 		//updatefillCircle();none of these above vould be needed
@@ -674,7 +682,7 @@ void CUserMapsRenderer::drawPoint(QOpenGLFunctions *func) {
 ///
 /// \brief  Draws Line.
 ///
-/// \param  Pointer that points to QOpenGLFunctions.
+/// \param  func - Pointer that points to QOpenGLFunctions.
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsRenderer::drawLine(QOpenGLFunctions *func) {
 
@@ -1181,6 +1189,7 @@ void CUserMapsRenderer::setLineStyle(CUserMapsVertexData& tempData, EUserMapLine
 		tempData.setDashSize(30.0f);
 		tempData.setDotSize(0.0f);
 		tempData.setGapSize(0.0f);
+		break; //TODO AM: without "break", it might execute the next statement as well
 	}
 	case EUserMapLineStyle::Dashed :
 	{
