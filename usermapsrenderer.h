@@ -30,8 +30,9 @@
 #include "../UserMapsDataLib/usermaplinestyle.h"
 #include "../ShipDataLib/shipdata.h"
 #include "../LayerLib/viewcoordinates.h"
-#include "../LayerLib/corelayer.h"			// For CCoreLayer
+#include "../LayerLib/corelayer.h"
 
+//TODO AM: is this needed any more?
 struct Color {
 	GLfloat r;
 	GLfloat g;
@@ -39,7 +40,7 @@ struct Color {
 	GLfloat a;
 };
 
-
+//TODO AM: missing doc
 struct MapPoint
 {
 	//todo use cimagetexture instead of genericvertexdata
@@ -49,6 +50,7 @@ struct MapPoint
 	int m_icon;
 };
 
+//TODO AM: missing doc
 class CUserMapsRenderer : public CBaseRenderer, public QObject
 {
 public:
@@ -64,6 +66,7 @@ public:
 	void updateLines(const QMap<int, QSharedPointer<CUserMapLine> >& loadedLines);
 	void updateCircles(const QMap<int, QSharedPointer<CUserMapCircle> >& loadedCircles);
 	void updatePolygons(const QMap<int, QSharedPointer<CUserMapArea> >& loadedAreas);
+	//TODO AM: what will not be needed?
  //soon will not be needed
 
 	void updatePointsData(const QMap<int, QSharedPointer<CUserMapPoint> > &uPointData);
@@ -133,7 +136,7 @@ private:
 	void testCircle(qreal originX, qreal originY);
 
 	void read(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type,QOpenGLFunctions *func);
-	QVector4D convertColour(int col, float opacity = 1.0f);
+	QVector4D convertColour(const QColor &col, float opacity = 1.0f);
 
 	void setLineStyle(CUserMapsVertexData& tempData, EUserMapLineStyle lineStyle, float lineWidth);
 
