@@ -62,11 +62,14 @@ public:
 	virtual void renderTextures() override;
 	// Updates
 	void updateLines(const QMap<int, QSharedPointer<CUserMapLine> >& loadedLines);
+	void updateLine(const QSharedPointer<CUserMapLine> & it, qreal originX, qreal originY, qreal offsetX, qreal offsetY);
 	void updateCircles(const QMap<int, QSharedPointer<CUserMapCircle> >& loadedCircles);
+	void updateCircle(const QSharedPointer<CUserMapCircle>& it, std::vector<GenericVertexData>& circle, qreal originX, qreal originY, qreal offsetX, qreal offsetY);
 	void updatePolygons(const QMap<int, QSharedPointer<CUserMapArea> >& loadedAreas);
- //soon will not be needed
+	void updatePolygon(const QSharedPointer<CUserMapArea>& it,  std::vector<GenericVertexData>& polygon, qreal originX, qreal originY, qreal offsetX, qreal offsetY);
 
 	void updatePointsData(const QMap<int, QSharedPointer<CUserMapPoint> > &uPointData);
+	void updatePointData(const QSharedPointer<CUserMapPoint>& it, qreal originX, qreal originY, qreal offsetX, qreal offsetY);
 	// Draws
 	void drawPoints( QOpenGLFunctions* func );
 	void drawLines( QOpenGLFunctions* func );

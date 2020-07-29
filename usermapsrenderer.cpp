@@ -314,8 +314,6 @@ void CUserMapsRenderer::updateLines(const QMap<int, QSharedPointer<CUserMapLine>
 	if ( pixelsInMm == 0.0 )
 		return ;//if screen information cannot be read also return;
 
-	std::vector<GenericVertexData> line;
-
 	// Get coordiante system data
 	qreal originX = 0.0;
 	qreal originY = 0.0;
@@ -330,30 +328,50 @@ void CUserMapsRenderer::updateLines(const QMap<int, QSharedPointer<CUserMapLine>
 
 	for(QMap<int, QSharedPointer<CUserMapLine> >::Iterator it; it != loadedLines.end() ; it++)
 	{
-		std::vector<GenericVertexData> line;
-		for (const CPosition & point : it.value()->getPoints())
-		{
 
-			// Relative target position (in pixels) from the ownship (Geo Origin)
-			GEOGRAPHICAL dfLat = ToGEOGRAPHICAL(point.Latitude());
-			GEOGRAPHICAL dfLon = ToGEOGRAPHICAL(point.Longitude());
-			PIXEL tgtPosX;
-			PIXEL tgtPosY;
-			CViewCoordinates::Instance()->Convert(dfLat, dfLon, tgtPosX, tgtPosY);
-
-			// Absolute target position (in pixels)
-			double xPos = tgtPosX + originX;
-			double yPos = tgtPosY + originY;
-
-			line.push_back( GenericVertexData(QVector4D( static_cast<float>(xPos), static_cast<float>(yPos), 0.0f, 1.0f), convertColour(it.value()->getColor(), it.value()->getTransparency())));
-		}
-
-		CUserMapsVertexData tempData;
-		tempData.setVertexData(line);
-		setLineStyle(tempData,it.value()->getLineStyle(),it.value()->getLineWidth());
-
-		m_pLineData.push_back(tempData);
+		updateLine(it.value(), originX, originY, offsetX, offsetY);
 	}
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// \fn	void CUserMapsRenderer::updateLine(const QSharedPointer<CUserMapLine>& it, qreal originX, qreal originY, qreal offsetX, qreal offsetY)
+///
+/// \brief	Add points so line could be drawn.
+///
+/// \param	it-pointer that points to line
+///         originX- used for position calculations
+///         originY- used for position calculations
+///         offsetX- used for position calculations
+///         offsetY- used for position calculations
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void CUserMapsRenderer::updateLine(const QSharedPointer<CUserMapLine>& it, qreal originX, qreal originY, qreal offsetX, qreal offsetY)
+{
+	std::vector<GenericVertexData> line;
+	CUserMapsVertexData tempData;
+	for (const CPosition & point : it->getPoints())
+	{
+
+		// Relative target position (in pixels) from the ownship (Geo Origin)
+		GEOGRAPHICAL dfLat = ToGEOGRAPHICAL(point.Latitude());
+		GEOGRAPHICAL dfLon = ToGEOGRAPHICAL(point.Longitude());
+		PIXEL tgtPosX;
+		PIXEL tgtPosY;
+		CViewCoordinates::Instance()->Convert(dfLat, dfLon, tgtPosX, tgtPosY);
+
+		// Absolute target position (in pixels)
+		double xPos = tgtPosX + originX;
+		double yPos = tgtPosY + originY;
+
+		line.push_back( GenericVertexData(QVector4D( static_cast<float>(xPos), static_cast<float>(yPos), 0.0f, 1.0f), convertColour(it->getColor(), it->getTransparency())));
+	}
+
+
+	tempData.setVertexData(line);
+	setLineStyle(tempData,it->getLineStyle(),it->getLineWidth());
+
+	m_pLineData.push_back(tempData);
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -378,9 +396,6 @@ void CUserMapsRenderer::updateCircles(const QMap<int, QSharedPointer<CUserMapCir
 	if ( pixelsInMm == 0.0 )
 		return ;
 
-	int k = 8;
-
-
 	// Get coordiante system data
 	qreal originX = 0.0;
 	qreal originY = 0.0;
@@ -393,59 +408,78 @@ void CUserMapsRenderer::updateCircles(const QMap<int, QSharedPointer<CUserMapCir
 	for(QMap<int, QSharedPointer<CUserMapCircle> >::Iterator it; it != loadedCircles.end() ; it++)
 	{
 		std::vector<GenericVertexData> circle;
-		circle.reserve(360 / k + 3);//number of points needed for circle
-
-		double radius = it.value()->getRadius();
-
-		int bufferIndex = 0;
-
-		// Relative target position (in pixels) from the ownship (Geo Origin)
-		GEOGRAPHICAL dfLat = ToGEOGRAPHICAL(it.value()->getCenter().Latitude());
-		GEOGRAPHICAL dfLon = ToGEOGRAPHICAL(it.value()->getCenter().Longitude());
-		PIXEL tgtPosX;
-		PIXEL tgtPosY;
-		CViewCoordinates::Instance()->Convert(dfLat, dfLon, tgtPosX, tgtPosY);
-
-		// Absolute target position (in pixels)
-		double xCenter = tgtPosX + originX;
-		double yCenter = tgtPosY + originY;
-
-		// Draw the circle (line strip)
-		for ( bufferIndex = 0; bufferIndex <= rbDegrees; bufferIndex += k )
-		{
-			double angle = 2 * M_PI * bufferIndex / rbDegrees;
-			float x = static_cast<float>(xCenter + (radius * std::sin(angle)));
-			float y = static_cast<float>(yCenter - (radius * std::cos(angle)));
-
-			// Set Vertex data
-			circle.push_back( GenericVertexData(QVector4D(x, y, 0.0f, 1.0f), convertColour(it.value()->getOutlineColor())));
-
-			// Check if it is the last point
-			if( bufferIndex == rbDegrees )
-			{
-				// Change to transparent colour at the same position
-				bufferIndex++;
-				circle.push_back( GenericVertexData(QVector4D(x, y, 0.0f, 1.0f), convertColour(it.value()->getOutlineColor())));
-
-			}
-		}
-		CUserMapsVertexData tempData;
-		tempData.setVertexData(circle);
-		setLineStyle(tempData,it.value()->getLineStyle(),it.value()->getLineWidth());
-
-		m_pCircleData.push_back(tempData);
-
+		updateCircle(it.value(), circle , originX, originY, offsetX, offsetY);
 		circle.pop_back();//remove last point, because it is same as the first one
 
 
 		std::vector<GenericVertexData> filledCircle;
-		foreach(const GenericVertexData & data, circle)
+		for(const GenericVertexData & data : circle)
 		{
 			filledCircle.push_back(GenericVertexData(data.position(),convertColour(it.value()->getColor(),it.value()->getTransparency())));
 		}
 		filledCircle.push_back(GenericVertexData(QVector4D(originX, originY, 0.0f, 1.0f), convertColour( it.value()->getColor(),it.value()->getTransparency())));// add center so,circles could be drawn more effectively in opengl
 		m_pfilledCircleData.push_back(filledCircle);
 	}
+
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// \fn	void CUserMapsRenderer::updateCircle(const QSharedPointer<CUserMapCircle>& it, std::vector<GenericVertexData>& circle, qreal originX, qreal originY, qreal offsetX, qreal offsetY)
+///
+/// \brief	Add Circle points so circle could be drawn.
+///
+/// \param	it-pointer that points to circle
+///         circle- vector where circle points will be stored
+///         originX- used for position calculations
+///         originY- used for position calculations
+///         offsetX- used for position calculations
+///         offsetY- used for position calculations
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void CUserMapsRenderer::updateCircle(const QSharedPointer<CUserMapCircle>& it, std::vector<GenericVertexData>& circle, qreal originX, qreal originY, qreal offsetX, qreal offsetY)
+{
+	int k = 8 ;
+	circle.reserve(360 / k + 3);//number of points needed for circle
+
+	double radius = it->getRadius();
+
+	int bufferIndex = 0;
+
+
+	// Relative target position (in pixels) from the ownship (Geo Origin)
+	GEOGRAPHICAL dfLat = ToGEOGRAPHICAL(it->getCenter().Latitude());
+	GEOGRAPHICAL dfLon = ToGEOGRAPHICAL(it->getCenter().Longitude());
+	PIXEL tgtPosX;
+	PIXEL tgtPosY;
+	CViewCoordinates::Instance()->Convert(dfLat, dfLon, tgtPosX, tgtPosY);
+
+	// Absolute target position (in pixels)
+	double xCenter = tgtPosX + originX;
+	double yCenter = tgtPosY + originY;
+
+	// Draw the circle (line strip)
+	for ( bufferIndex = 0; bufferIndex <= rbDegrees; bufferIndex += k )
+	{
+		double angle = 2 * M_PI * bufferIndex / rbDegrees;
+		float x = static_cast<float>(xCenter + (radius * std::sin(angle)));
+		float y = static_cast<float>(yCenter - (radius * std::cos(angle)));
+
+		// Set Vertex data
+		circle.push_back( GenericVertexData(QVector4D(x, y, 0.0f, 1.0f), convertColour(it->getOutlineColor())));
+
+		// Check if it is the last point
+		if( bufferIndex == rbDegrees )
+		{
+			// Change to transparent colour at the same position
+			bufferIndex++;
+			circle.push_back( GenericVertexData(QVector4D(x, y, 0.0f, 1.0f), convertColour(it->getOutlineColor())));
+
+		}
+	}
+	CUserMapsVertexData tempData;
+	tempData.setVertexData(circle);
+	setLineStyle(tempData,it->getLineStyle(),it->getLineWidth());
+
+	m_pCircleData.push_back(tempData);
 
 }
 
@@ -487,34 +521,12 @@ void CUserMapsRenderer::updatePolygons(const QMap<int, QSharedPointer<CUserMapAr
 	for(QMap<int, QSharedPointer<CUserMapArea> >::Iterator it; it != loadedArea.end() ; it++)
 	{
 		std::vector<GenericVertexData> polygon; //test case polygon ,will be deleted
-
-		foreach(const CPosition & point , it.value()->getPoints())
-		{
-
-			// Relative target position (in pixels) from the ownship (Geo Origin)
-			GEOGRAPHICAL dfLat = ToGEOGRAPHICAL(point.Latitude());
-			GEOGRAPHICAL dfLon = ToGEOGRAPHICAL(point.Longitude());
-			PIXEL tgtPosX;
-			PIXEL tgtPosY;
-			CViewCoordinates::Instance()->Convert(dfLat, dfLon, tgtPosX, tgtPosY);
-
-			// Absolute target position (in pixels)
-			double xPos = tgtPosX + originX;
-			double yPos = tgtPosY + originY;
-
-
-			polygon.push_back( GenericVertexData(QVector4D( static_cast<float>(xPos), static_cast<float>(yPos), 0.0f, 1.0f), convertColour(it.value()->getOutlineColor())));
-		}
-
-		CUserMapsVertexData tempData;
-		tempData.setVertexData(polygon);
-		setLineStyle(tempData, it.value()->getLineStyle(), it.value()->getLineWidth());
-		m_pPolygonData.push_back(tempData);
+		updatePolygon(it.value(), polygon, originX, originY, offsetX, offsetY);
 
 		std::vector<GenericVertexData>result;
 		Triangulate::Process(polygon, result); //triangulate received points
 
-		foreach(GenericVertexData data , result)
+		for(GenericVertexData data : result)
 		{
 			data.setColor(convertColour(it.value()->getColor(), it.value()->getTransparency()));
 		}
@@ -525,30 +537,25 @@ void CUserMapsRenderer::updatePolygons(const QMap<int, QSharedPointer<CUserMapAr
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-/// \fn	CUserMapsRenderer::updatePointsData(const QMap<int, QSharedPointer<CUserMapPoint> > &uPointData
+/// \fn	void CUserMapsRenderer::updatePolygon(const QSharedPointer<CUserMapArea>& it, std::vector<GenericVertexData>& polygon, qreal originX, qreal originY, qreal offsetX, qreal offsetY)
 ///
-/// \brief	Add textures that should be drawn
+/// \brief	Add area points so polygon could be drawn.
 ///
-/// \param uPointData- textures details
+/// \param	it-pointer that points to circle
+///         polygon- vector where polygon points will be stored
+///         originX- used for position calculations
+///         originY- used for position calculations
+///         offsetX- used for position calculations
+///         offsetY- used for position calculations
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CUserMapsRenderer::updatePointsData(const QMap<int, QSharedPointer<CUserMapPoint> > &uPointData)
+void CUserMapsRenderer::updatePolygon(const QSharedPointer<CUserMapArea>& it, std::vector<GenericVertexData>& polygon, qreal originX, qreal originY, qreal offsetX, qreal offsetY)
 {
-	foreach(const QSharedPointer<CUserMapPoint>& uPoint , uPointData)
+	for(const CPosition & point : it->getPoints())
 	{
 
-		MapPoint data;
-		// View Origin
-		qreal originX = 0;
-		qreal originY = 0;
-		CViewCoordinates::Instance()->getViewOriginPixel( originX, originY );
-
-		// Geo Origin
-		qreal offsetX = 0;
-		qreal offsetY = 0;
-		CViewCoordinates::Instance()->getGeoOriginOffsetPixel( offsetX, offsetY );
-
-		GEOGRAPHICAL dfLat = ToGEOGRAPHICAL(uPoint->getPosition().Latitude());
-		GEOGRAPHICAL dfLon = ToGEOGRAPHICAL(uPoint->getPosition().Longitude());
+		// Relative target position (in pixels) from the ownship (Geo Origin)
+		GEOGRAPHICAL dfLat = ToGEOGRAPHICAL(point.Latitude());
+		GEOGRAPHICAL dfLon = ToGEOGRAPHICAL(point.Longitude());
 		PIXEL tgtPosX;
 		PIXEL tgtPosY;
 		CViewCoordinates::Instance()->Convert(dfLat, dfLon, tgtPosX, tgtPosY);
@@ -557,18 +564,78 @@ void CUserMapsRenderer::updatePointsData(const QMap<int, QSharedPointer<CUserMap
 		double xPos = tgtPosX + originX;
 		double yPos = tgtPosY + originY;
 
-		QVector4D colour = convertColour(uPoint->getColor(),uPoint->getTransparency());
-		// Set attributes
 
-		data.m_icon = uPoint->getIcon();
-		data.m_iconSize = uPoint->getIconSize();
-		data.m_vertexData= GenericVertexData(QVector4D( static_cast<float>(xPos), static_cast<float>(yPos), 0.0f, 1.0f ),colour);
-
-		QString strFileName = QString(":/") + data.m_icon + ".png";
-
-		m_pPoints.push_back(data);
-		m_pTexture.push_back( QSharedPointer<CImageTexture>(new CImageTexture( strFileName, colour)));
+		polygon.push_back( GenericVertexData(QVector4D( static_cast<float>(xPos), static_cast<float>(yPos), 0.0f, 1.0f), convertColour(it->getOutlineColor())));
 	}
+
+	CUserMapsVertexData tempData;
+	tempData.setVertexData(polygon);
+	setLineStyle(tempData, it->getLineStyle(), it->getLineWidth());
+	m_pPolygonData.push_back(tempData);
+
+
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// \fn	CUserMapsRenderer::updatePointsData(const QMap<int, QSharedPointer<CUserMapPoint> > &uPointData
+///
+/// \brief	Add textures that should be drawn
+///
+/// \param uPointData- textures details
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void CUserMapsRenderer::updatePointsData(const QMap<int, QSharedPointer<CUserMapPoint> > &uPointData)
+{
+	qreal originX = 0;
+	qreal originY = 0;
+	CViewCoordinates::Instance()->getViewOriginPixel( originX, originY );
+
+	// Geo Origin
+	qreal offsetX = 0;
+	qreal offsetY = 0;
+	CViewCoordinates::Instance()->getGeoOriginOffsetPixel( offsetX, offsetY );
+	for(const QSharedPointer<CUserMapPoint>& uPoint : uPointData)
+	{
+		updatePointData(uPoint, originX, originY, offsetX, offsetY);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// \fn	void CUserMapsRenderer::updatePointData(const QSharedPointer<CUserMapPoint>& uPoint, qreal originX, qreal originY, qreal offsetX, qreal offsetY)
+///
+/// \brief	Add point so it could be drawn.
+///
+/// \param	uPoint-pointer that points to UserMapPoint
+///         originX- used for position calculations
+///         originY- used for position calculations
+///         offsetX- used for position calculations
+///         offsetY- used for position calculations
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void CUserMapsRenderer::updatePointData(const QSharedPointer<CUserMapPoint>& uPoint, qreal originX, qreal originY, qreal offsetX, qreal offsetY)
+{
+	MapPoint data;
+	GEOGRAPHICAL dfLat = ToGEOGRAPHICAL(uPoint->getPosition().Latitude());
+	GEOGRAPHICAL dfLon = ToGEOGRAPHICAL(uPoint->getPosition().Longitude());
+	PIXEL tgtPosX;
+	PIXEL tgtPosY;
+	CViewCoordinates::Instance()->Convert(dfLat, dfLon, tgtPosX, tgtPosY);
+
+	// Absolute target position (in pixels)
+	double xPos = tgtPosX + originX;
+	double yPos = tgtPosY + originY;
+
+	QVector4D colour = convertColour(uPoint->getColor(),uPoint->getTransparency());
+	// Set attributes
+
+	data.m_icon = uPoint->getIcon();
+	data.m_iconSize = uPoint->getIconSize();
+	data.m_vertexData= GenericVertexData(QVector4D( static_cast<float>(xPos), static_cast<float>(yPos), 0.0f, 1.0f ),colour);
+
+	QString strFileName = QString(":/") + data.m_icon + ".png";
+
+	m_pPoints.push_back(data);
+	m_pTexture.push_back( QSharedPointer<CImageTexture>(new CImageTexture( strFileName, colour)));
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
