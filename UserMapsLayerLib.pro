@@ -34,10 +34,9 @@ HEADERS += \
     mapshaderprogram.h \
     triangulate.h \
     usermapslayer.h \
-    usermapslayerlib_global.h \ \
+    usermapslayerlib_global.h \
     usermapsrenderer.h \
     usermapsvertexdata.h \
-
     userpointpositiontype.h
 
 unix {
@@ -81,16 +80,11 @@ else{LIBS += -L$$OUT_PWD/../NavUtilsLib/ -lNavUtilsLib}
 INCLUDEPATH += $$PWD/../NavUtilsLib
 DEPENDPATH += $$PWD/../NavUtilsLib
 
-RESOURCES += \
-    usermapshader.qrc
-
 if(android){LIBS += -L$$OUT_PWD/../LoggingLib/ -lLoggingLib_$$ANDROID_TARGET_ARCH}
 else{LIBS += -L$$OUT_PWD/../LoggingLib/ -lLoggingLib}
 
 INCLUDEPATH += $$PWD/../LoggingLib
 DEPENDPATH += $$PWD/../LoggingLib
 
-DISTFILES += \
-    mapsFragShader.glsl \
-    mapsVertexShader.glsl \
-    vrmFragShader.glsl
+RESOURCES += \
+    usermapshader.qrc
