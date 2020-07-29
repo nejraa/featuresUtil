@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-///	\file   usermapsrenderer.h
+///	\file   usermapsrenderer.cpp
 ///
 ///	\author Elreg
 ///
@@ -27,7 +27,7 @@ const int rbDegrees = 360; ///< a circle has 360 degrees
 static const int FONT_PT_SIZE = 20; ///< font
 
 MapPoint::MapPoint()
-	: m_vertexData(QVector4D( (0.0f),(0.0), 0.0f, 0.0f ), QVector4D(0.0f ,0.0f , 0.0f, 0.0f)),
+	: m_vertexData(QVector4D( 0.0f, 0.0f, 0.0f, 0.0f ), QVector4D(0.0f , 0.0f, 0.0f, 0.0f)),
 	  m_iconSize(0.0f),
 	  m_icon(0)
 {
@@ -114,7 +114,7 @@ void CUserMapsRenderer::initShader()
 ///
 /// \brief	Called by the Qt framework to synchronise data with the Layer.
 ///
-/// \param	item	The CBearingScaleLayer to synchronise with.
+/// \param	item	UserMapslayer to synchronise with.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CUserMapsRenderer::synchronize(QQuickFramebufferObject *item)
 {
@@ -152,10 +152,10 @@ void CUserMapsRenderer::synchronize(QQuickFramebufferObject *item)
 
 		for (auto item : {EUserMapObjectStatus::Loaded, EUserMapObjectStatus::Edited, EUserMapObjectStatus::Created})
 		{
-			updatePointData(points.map(item));
-			updateLine(lines.map(item));
-			updateCircle(circles.map(item));
-			updatePolygon(areas.map(item));
+			updatePointsData(points.map(item));
+			updateLines(lines.map(item));
+			updateCircles(circles.map(item));
+			updatePolygons(areas.map(item));
 		}
 
 	}
@@ -163,7 +163,6 @@ void CUserMapsRenderer::synchronize(QQuickFramebufferObject *item)
 	// Set the width, height and projection for each target texture
 	for( uint i = 0; i < m_pTexture.size(); ++i )
 	{
-		m_pTexture[i]->updateTexture(QVector4D(1.0f, 1.0f, 1.0f, 1.0f));
 		float imgWidthInMM = m_pTexture[i]->imageWidth() / 20.0f;	// Images are designed to be 20 texels/mm
 		float textureWidthInPixels = imgWidthInMM * pixelsInMm;	// Total width in pixels
 		float imgHeightInMM = m_pTexture[i]->imageHeight() / 20.0f;
@@ -199,7 +198,7 @@ void CUserMapsRenderer::initializeGL()
 			{
 				if( pContext->hasExtension(QByteArrayLiteral("GL_KHR_debug")) )
 				{
-					m_pOpenGLLogger = new QOpenGLDebugLogger();//should be on this );
+					m_pOpenGLLogger = new QOpenGLDebugLogger();
 					bool bOk = m_pOpenGLLogger->initialize();
 					if ( bOk )
 						qDebug() << "\nCUserMapsRenderer OpenGL debug logging initialized";
@@ -259,9 +258,7 @@ void CUserMapsRenderer::renderPrimitives(QOpenGLFunctions *func)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CUserMapsRenderer::renderTextures()
 {
-
 	m_textureShader.bind();
-
 
 	for ( uint i = 0; i < m_pPoints.size(); ++i )
 	{
@@ -296,13 +293,13 @@ void CUserMapsRenderer::renderTextures()
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-/// \fn	CBearingScaleRenderer::updateLine(const QMap<int, QSharedPointer<CUserMapLine> >&loadedLines)
+/// \fn	CUserMapsRenderer::updateLines(const QMap<int, QSharedPointer<CUserMapLine> >&loadedLines)
 ///
 /// \brief	Add line points so line could be drawn
 ///
 /// \param loadedLines- lines that should be drawn
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CUserMapsRenderer::updateLine(const QMap<int, QSharedPointer<CUserMapLine> >&loadedLines )
+void CUserMapsRenderer::updateLines(const QMap<int, QSharedPointer<CUserMapLine> >&loadedLines )
 {
 	if( !m_LineBuf.isNull() )
 	{
@@ -358,13 +355,13 @@ void CUserMapsRenderer::updateLine(const QMap<int, QSharedPointer<CUserMapLine> 
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-/// \fn	CBearingScaleRenderer::updateCircle(const QMap<int, QSharedPointer<CUserMapCircle> >& loadedCircles)
+/// \fn	CUserMapsRenderer::updateCircles(const QMap<int, QSharedPointer<CUserMapCircle> >& loadedCircles)
 ///
 /// \brief	Add Circle points so circle could be drawn.
 ///
 /// \param	loadedCircles-circles that should be drawn
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CUserMapsRenderer::updateCircle(const QMap<int, QSharedPointer<CUserMapCircle> >& loadedCircles) {
+void CUserMapsRenderer::updateCircles(const QMap<int, QSharedPointer<CUserMapCircle> >& loadedCircles) {
 
 	if( !m_CircleBuf.isNull() )
 	{
@@ -452,13 +449,13 @@ void CUserMapsRenderer::updateCircle(const QMap<int, QSharedPointer<CUserMapCirc
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-/// \fn	CBearingScaleRenderer::updatePolygon(const QMap<int, QSharedPointer<CUserMapArea> >& loadedArea)
+/// \fn	CUserMapsRenderer::updatePolygons(const QMap<int, QSharedPointer<CUserMapArea> >& loadedArea)
 ///
 /// \brief	Add polygon points
 ///
 /// \param  loadedArea - received areas that should be drawn
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CUserMapsRenderer::updatePolygon(const QMap<int, QSharedPointer<CUserMapArea> >& loadedArea) {
+void CUserMapsRenderer::updatePolygons(const QMap<int, QSharedPointer<CUserMapArea> >& loadedArea) {
 
 	if( !m_PolygonBuf.isNull() )
 	{
@@ -526,13 +523,13 @@ void CUserMapsRenderer::updatePolygon(const QMap<int, QSharedPointer<CUserMapAre
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-/// \fn	CUserMapsRenderer::updatePointData(const QMap<int, QSharedPointer<CUserMapPoint> > &uPointData
+/// \fn	CUserMapsRenderer::updatePointsData(const QMap<int, QSharedPointer<CUserMapPoint> > &uPointData
 ///
 /// \brief	Add textures that should be drawn
 ///
 /// \param uPointData- textures details
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CUserMapsRenderer::updatePointData(const QMap<int, QSharedPointer<CUserMapPoint> > &uPointData)
+void CUserMapsRenderer::updatePointsData(const QMap<int, QSharedPointer<CUserMapPoint> > &uPointData)
 {
 	foreach(const QSharedPointer<CUserMapPoint>& uPoint , uPointData)
 	{
@@ -568,7 +565,7 @@ void CUserMapsRenderer::updatePointData(const QMap<int, QSharedPointer<CUserMapP
 		QString strFileName = QString(":/") + data.m_icon + ".png";
 
 		m_pPoints.push_back(data);
-		m_pTexture.push_back( QSharedPointer<CImageTexture>(new CImageTexture( strFileName, QVector4D(0.0f, 1.0f, 0.0f, 1.0f))));
+		m_pTexture.push_back( QSharedPointer<CImageTexture>(new CImageTexture( strFileName, colour)));
 	}
 }
 
@@ -1042,7 +1039,6 @@ void CUserMapsRenderer::logOpenGLErrors()
 void CUserMapsRenderer::addText( QString text,double x, double y, QVector4D colour,TextAlignment alignment)
 {
 	m_tgtTextRenderer.addText( text, static_cast<int> (x ), static_cast<int> ( y ), FONT_PT_SIZE, colour, alignment );
-	//to do check where text would be added
 }
 
 ////////////////////////////////////////////////////////////////////////////////

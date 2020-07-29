@@ -61,13 +61,12 @@ public:
 	virtual void renderPrimitives( QOpenGLFunctions* func ) override;
 	virtual void renderTextures() override;
 	// Updates
-	void updatePoint(); //TODO AM: rename all of these to contain "s" (multiple points, lines, ...), e.g. updatePoints(). Same for draw() and other functions
-	void updateLine(const QMap<int, QSharedPointer<CUserMapLine> >& loadedLines);
-	void updateCircle(const QMap<int, QSharedPointer<CUserMapCircle> >& loadedCircles);
-	void updatePolygon(const QMap<int, QSharedPointer<CUserMapArea> >& loadedAreas);
+	void updateLines(const QMap<int, QSharedPointer<CUserMapLine> >& loadedLines);
+	void updateCircles(const QMap<int, QSharedPointer<CUserMapCircle> >& loadedCircles);
+	void updatePolygons(const QMap<int, QSharedPointer<CUserMapArea> >& loadedAreas);
  //soon will not be needed
 
-	void updatePointData(const QMap<int, QSharedPointer<CUserMapPoint> > &uPointData);
+	void updatePointsData(const QMap<int, QSharedPointer<CUserMapPoint> > &uPointData);
 	// Draws
 	void drawPoints( QOpenGLFunctions* func );
 	void drawLines( QOpenGLFunctions* func );
