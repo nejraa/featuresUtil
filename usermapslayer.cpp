@@ -901,8 +901,8 @@ qreal CUserMapsLayer::calculateYaxisValueOnLine(const QPointF &pointA,
                                       const QPointF &pointB, const QPointF clickedPoint)
 {
     // line equation between two points
-    // m = (yA − yB)/(xA − xB)
-    // y - yA = m (x − xA)
+    // m = (yA - yB)/(xA - xB)
+    // y - yA = m (x - xA)
     // y = mx - mxA + yA
     // b= -mxA + yA
 
