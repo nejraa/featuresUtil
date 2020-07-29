@@ -329,7 +329,7 @@ void CUserMapsRenderer::updateLines(const QMap<int, QSharedPointer<CUserMapLine>
 	for(QMap<int, QSharedPointer<CUserMapLine> >::Iterator it; it != loadedLines.end() ; it++)
 	{
 		std::vector<GenericVertexData> line;
-		foreach(const CPosition & point , it.value()->getPoints())
+		for(const CPosition & point : it.value()->getPoints())
 		{
 
 			// Relative target position (in pixels) from the ownship (Geo Origin)
@@ -437,7 +437,7 @@ void CUserMapsRenderer::updateCircles(const QMap<int, QSharedPointer<CUserMapCir
 
 
 		std::vector<GenericVertexData> filledCircle;
-		foreach(const GenericVertexData & data, circle)
+		for(const GenericVertexData & data : circle)
 		{
 			filledCircle.push_back(GenericVertexData(data.position(),convertColour(it.value()->getColor(),it.value()->getTransparency())));
 		}
@@ -486,7 +486,7 @@ void CUserMapsRenderer::updatePolygons(const QMap<int, QSharedPointer<CUserMapAr
 	{
 		std::vector<GenericVertexData> polygon; //test case polygon ,will be deleted
 
-		foreach(const CPosition & point , it.value()->getPoints())
+		for(const CPosition & point : it.value()->getPoints())
 		{
 
 			// Relative target position (in pixels) from the ownship (Geo Origin)
@@ -512,7 +512,7 @@ void CUserMapsRenderer::updatePolygons(const QMap<int, QSharedPointer<CUserMapAr
 		std::vector<GenericVertexData>result;
 		Triangulate::Process(polygon, result); //triangulate received points
 
-		foreach(GenericVertexData data , result)
+		for(GenericVertexData data : result)
 		{
 			data.setColor(convertColour(it.value()->getColor(), it.value()->getTransparency()));
 		}
@@ -531,7 +531,7 @@ void CUserMapsRenderer::updatePolygons(const QMap<int, QSharedPointer<CUserMapAr
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CUserMapsRenderer::updatePointsData(const QMap<int, QSharedPointer<CUserMapPoint> > &uPointData)
 {
-	foreach(const QSharedPointer<CUserMapPoint>& uPoint , uPointData)
+	for(const QSharedPointer<CUserMapPoint>& uPoint : uPointData)
 	{
 
 		MapPoint data;
