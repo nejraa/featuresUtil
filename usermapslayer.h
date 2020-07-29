@@ -18,6 +18,9 @@
 #include "userpointpositiontype.h"
 #include <QTimer>
 
+////////////////////////////////////////////////////////////////////////////////
+/// \brief CUserMapsLayer - class which represents the user maps layer.
+////////////////////////////////////////////////////////////////////////////////
 class USERMAPSLAYERLIB_API CUserMapsLayer : public CBaseLayer
 {
 	Q_OBJECT
@@ -79,10 +82,8 @@ private:
 	QVector<QPointF> m_selectedObjPoints;    ///< Vector of points of selected object.
 	qint64 m_moveEvtTimestamp;               ///< Timestamp for move event.
 	EPointPositionType  m_pointPositionType; ///< Type of clicked point position.
-	int m_index1;                            ///< Index of the first point on line segment of
-	///< area/line object where clicked position lies.
-	int m_index2;                            ///< Index of the second point on line segment of
-	///< area/line object where clicked position lies.
+	int m_index1;                            ///< Index of the first point on line segment of area/line object where clicked position lies.
+	int m_index2;                            ///< Index of the second point on line segment of area/line object where clicked position lies.
 };
 
 #endif // CUSERMAPSLAYER_H

@@ -1,12 +1,12 @@
 ////////////////////////////////////////////////////////////////////////////////
-///	\file   usermapslayer.cpp
+/// \file   usermapslayer.cpp
 ///
-///	\author Elreg
+/// \author Elreg
 ///
-///	\brief	Definition of the CUserMapsLayer class which represents
-///			the user maps layer.
+/// \brief  Implementation of the CUserMapsLayer class which represents
+///         the user maps layer.
 ///
-///	(C) Kelvin Hughes, 2020.
+/// (C) Kelvin Hughes, 2020.
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "usermapslayer.h"
@@ -387,25 +387,30 @@ void CUserMapsLayer::moveObjPoint(const QPointF &initialPosition, const QPointF 
     m_selectedObjPoints[index] += pointDifference;
 }
 
+//TODO AM: fix indenting in functions comments from here to the end of file.
+// Always indent one tab from fn/brief/param/return.
+// Comments should not go far beyond where "////" ends,a few characters is ok. If it goes on, do something like in following function
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn         void CUserMapsLayer::moveObjPoints(const QPointF &initialPosition, const QPointF &endPosition, const int index1, const int index2)
+/// \fn void CUserMapsLayer::moveObjPoints(const QPointF &initialPosition,
+///                         const QPointF &endPosition, const int index1, const int index2)
 ///
-/// \brief      Moves two points forming line segment if mouse press occurred on line or area object.
+/// \brief  Moves two points forming line segment if mouse press occurred on line or area object.
 ///
-/// \param		initialPosition - Start click position.
-///             endPosition - End click position.
-///             index1 - Index of the first point.
-///             index2 - Index of the second point.
+/// \param  initialPosition - Start click position.
+///         endPosition - End click position.
+///         index1 - Index of the first point.
+///         index2 - Index of the second point.
 ////////////////////////////////////////////////////////////////////////////////
-void CUserMapsLayer::moveObjPoints(const QPointF &initialPosition, const QPointF &endPosition, const int index1, const int index2)
+void CUserMapsLayer::moveObjPoints(const QPointF &initialPosition, const QPointF &endPosition,
+                                   const int index1, const int index2)
 {
     if ( m_selectedObjPoints.isEmpty() )
         return;
 
+    // Check if consecutive points
     if ( ( qAbs(index1 - index2) != 1 ) || index1 > m_selectedObjPoints.size()
          || index2 > m_selectedObjPoints.size()
          || index1 < 0 || index2 < 0)
-        // check if consequtive points
         return;
 
     QPointF pointDifference = endPosition - initialPosition;
