@@ -86,47 +86,47 @@ public:
 	void loadMaps();
 
 private:
-	QVector4D m_PointColour;					///< Point colour
-	QVector4D m_LineColour;					    ///<Line colour
-	QVector4D m_CircleColour;					///<Circle colour
-	QVector4D m_PolygonColour;					///<Polygon colour
-	QVector4D m_TextColour;					    ///<Text colour
-	CStringRenderer	m_tgtTextRenderer;	    ///<Used for rendering text
-	QSharedPointer<CVertexBuffer> m_PointBuf;	///< OpenGL vertex buffer (vertices and colour) to draw points
-	std::vector<QSharedPointer<CImageTexture>> m_pTexture;  ///< image used as a textures
+	QVector4D m_PointColour;					///< Point colour.
+	QVector4D m_LineColour;					    ///< Line colour.
+	QVector4D m_CircleColour;					///< Circle colour.
+	QVector4D m_PolygonColour;					///< Polygon colour.
+	QVector4D m_TextColour;					    ///< Text colour.
+	CStringRenderer	m_tgtTextRenderer;	    	///< Used for rendering text.
+	QSharedPointer<CVertexBuffer> m_PointBuf;	///< OpenGL vertex buffer (vertices and colour) to draw points.
+	std::vector<QSharedPointer<CImageTexture>> m_pTexture;  ///< image used as a textures.
 
 	// Lines buffer
-	QSharedPointer<CVertexBuffer> m_LineBuf;	///< VBO used to draw Lines
+	QSharedPointer<CVertexBuffer> m_LineBuf;	///< VBO used to draw Lines.
 
-	//circle buffer
-	QSharedPointer<CVertexBuffer> m_CircleBuf;  ///< OpenGL vertex buffer (vertices and colour) to draw circles
+	// Circle buffer
+	QSharedPointer<CVertexBuffer> m_CircleBuf;  ///< OpenGL vertex buffer (vertices and colour) to draw circles.
 
-	//circle buffer
-	QSharedPointer<CVertexBuffer> m_InlineCircleBuf;  ///< OpenGL vertex buffer (vertices and colour) to draw filled circle
+	// Circle buffer
+	QSharedPointer<CVertexBuffer> m_InlineCircleBuf;  ///< OpenGL vertex buffer (vertices and colour) to draw filled circle.
 
-	//polygon buffer
-	QSharedPointer<CVertexBuffer> m_PolygonBuf;  ///< OpenGL vertex buffer (vertices and colour) to draw polygons
+	// Polygon buffer
+	QSharedPointer<CVertexBuffer> m_PolygonBuf;  ///< OpenGL vertex buffer (vertices and colour) to draw polygons.
 
-	//filled polygon buffer
-	QSharedPointer<CVertexBuffer> m_filledPolygonBuf;  ///< OpenGL vertex buffer (vertices and colour) to draw filled polygons
+	// Filled polygon buffer
+	QSharedPointer<CVertexBuffer> m_filledPolygonBuf;  ///< OpenGL vertex buffer (vertices and colour) to draw filled polygons.
 
-	QOpenGLDebugLogger *m_pOpenGLLogger;	///< OpenGL error logger
+	QOpenGLDebugLogger *m_pOpenGLLogger;	///< OpenGL error logger.
 
-	QSharedPointer<CMapShaderProgram> m_pMapShader;///shader
+	QSharedPointer<CMapShaderProgram> m_pMapShader;	///< Shader.
 
-	std::vector<CUserMapsVertexData> m_pLineData; ///< Vector where all lines are stored
+	std::vector<CUserMapsVertexData> m_pLineData; ///< Vector where all lines are stored.
 
-	std::vector<GenericVertexData> m_pPointData; ///< Vector where all points are stored
+	std::vector<GenericVertexData> m_pPointData; ///< Vector where all points are stored.
 
-	std::vector<CUserMapsVertexData> m_pPolygonData; ///< Vector where all polygons and their points are stored
+	std::vector<CUserMapsVertexData> m_pPolygonData; ///< Vector where all polygons and their points are stored.
 
-	std::vector<CUserMapsVertexData> m_pCircleData;///< Vector where circles and their points are stored
+	std::vector<CUserMapsVertexData> m_pCircleData;	///< Vector where circles and their points are stored.
 
-	std::vector<std::vector<GenericVertexData>> m_pfilledCircleData;///< Vector where circles and their points with inline colour are stored
+	std::vector<std::vector<GenericVertexData>> m_pfilledCircleData;	///< Vector where circles and their points with inline colour are stored.
 
-	std::vector<std::vector<GenericVertexData>> m_pfilledPolygonData;///< Vector where polygons and their points with inline colour are stored
+	std::vector<std::vector<GenericVertexData>> m_pfilledPolygonData;	///< Vector where polygons and their points with inline colour are stored.
 
-	std::vector<MapPoint> m_pPoints;			///< vector whose elements are lists of point objects contained in the map.
+	std::vector<MapPoint> m_pPoints;			///< Vector whose elements are lists of point objects contained in the map.
 
 	void logOpenGLErrors();
 
