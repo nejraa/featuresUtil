@@ -1064,9 +1064,8 @@ void CUserMapsRenderer::addText( QString text,double x, double y, QVector4D colo
 ///
 /// \brief  This function is used for measuring drawing speed
 ///
-/// \param  origin x - x-position of the center
-///        x-x position of the center
-///        y-y position of the center
+/// \param  originX - x position of the center
+///			originY - y position of the center
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsRenderer::testCircle(qreal originX, qreal originY) {
 	double radius = CViewCoordinates::Instance()->getRadiusPixels() / 128;
@@ -1097,12 +1096,12 @@ void CUserMapsRenderer::testCircle(qreal originX, qreal originY) {
 /// \brief  This function should read colour data from pixel
 ///
 /// \param x - x-coordinates of the first pixel
-///        y-y coordinates of the first pixel
-///        width-width of the pixel rectangle, should be 1
-///        height-height of the pixel rectangle, should be 1
-///        format-format of the pixel data
-///        type- data type of the pixel data
-///        func-pointer that points to qopenglfunctions
+///        y -y coordinates of the first pixel
+///        width - width of the pixel rectangle, should be 1
+///        height - height of the pixel rectangle, should be 1
+///        format - format of the pixel data
+///        type - data type of the pixel data
+///        func - pointer that points to qopenglfunctions
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsRenderer::read( GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, QOpenGLFunctions *func)
 {
@@ -1122,8 +1121,8 @@ void CUserMapsRenderer::read( GLint x, GLint y, GLsizei width, GLsizei height, G
 /// \fn     QVector4D CUserMapsRenderer::convertColour(int col, , float opacity)//
 /// \brief  This function is used for converting colour into 4d vector
 ///
-/// \param col- colour that should be converted
-///        opacity- opacity
+/// \param col - colour that should be converted
+///        opacity - opacity
 ///
 ////////////////////////////////////////////////////////////////////////////////
 QVector4D CUserMapsRenderer::convertColour(int colourKey, float opacity)
@@ -1143,35 +1142,32 @@ QVector4D CUserMapsRenderer::convertColour(int colourKey, float opacity)
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsRenderer::setLineStyle(CUserMapsVertexData& tempData, EUserMapLineStyle lineStyle, float lineWidth)
 {
-	switch (lineStyle) {
-	case EUserMapLineStyle::Solid :
+	switch (lineStyle)
 	{
+	case EUserMapLineStyle::Solid :
 		tempData.setDashSize(30.0f);
 		tempData.setDotSize(0.0f);
 		tempData.setGapSize(0.0f);
 		break;
-	}
+
 	case EUserMapLineStyle::Dashed :
-	{
 		tempData.setDashSize(15.0f);
 		tempData.setDotSize(0.0f);
 		tempData.setGapSize(15.0f);
 		break;
-	}
+
 	case EUserMapLineStyle::Dotted :
-	{
 		tempData.setDashSize(2.0f);
 		tempData.setGapSize(10.0f);
 		tempData.setDotSize(0.0f);
 		break;
-	}
+
 	case EUserMapLineStyle::Dot_Dash :
-	{
 		tempData.setDashSize(30.0f);
 		tempData.setGapSize(15.0f);
 		tempData.setDotSize(10.0f);
 		break;
-	}
+
 	}
 	tempData.setLineWidth(lineWidth);
 }
