@@ -16,12 +16,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 enum class EPointPositionType
 {
-    InsideObject,
-    OutsideObject,
-    OnLine,
-    NotOnLine,
-    AtSpecificPoint,
-    Unknown
+	InsideObject,
+	OutsideObject,
+	OnLine,
+	NotOnLine,
+	AtSpecificPoint,
+	Unknown
 };
 
 #endif // EPOINTPOSITIONTYPE_H

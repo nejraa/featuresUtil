@@ -30,12 +30,12 @@ static const float EPSILON = 0.0000000001f; ///< Used to denote a small quantity
 float Triangulate::Area(const Vector2dVector &contour)
 {
 	int n = contour.size();
-    float A = 0.0f;
+	float A = 0.0f;
 
-    for(int p = n-1, q = 0; q < n; p = q++)
+	for(int p = n-1, q = 0; q < n; p = q++)
 	{
-        A+= contour[p].position().x()*contour[q].position().y() -
-                contour[q].position().x()*contour[p].position().y();
+		A+= contour[p].position().x()*contour[q].position().y() -
+				contour[q].position().x()*contour[p].position().y();
 	}
 	return A*0.5f;
 }
@@ -113,17 +113,17 @@ bool Triangulate::Snip(const Vector2dVector &contour,int u,int v,int w,int n,int
 	Cx = contour[V[w]].position().x();
 	Cy = contour[V[w]].position().y();
 
-    if ( EPSILON > (((Bx-Ax)*(Cy-Ay)) - ((By-Ay)*(Cx-Ax))) )
-        return false;
+	if ( EPSILON > (((Bx-Ax)*(Cy-Ay)) - ((By-Ay)*(Cx-Ax))) )
+		return false;
 
-    for (p = 0; p < n; p++)
+	for (p = 0; p < n; p++)
 	{
-        if( (p == u) || (p == v) || (p == w) )
-            continue;
+		if( (p == u) || (p == v) || (p == w) )
+			continue;
 		Px = contour[V[p]].position().x();
 		Py = contour[V[p]].position().y();
-        if (InsideTriangle(Ax,Ay,Bx,By,Cx,Cy,Px,Py))
-            return false;
+		if (InsideTriangle(Ax,Ay,Bx,By,Cx,Cy,Px,Py))
+			return false;
 	}
 	return true;
 }
@@ -141,72 +141,72 @@ bool Triangulate::Snip(const Vector2dVector &contour,int u,int v,int w,int n,int
 ////////////////////////////////////////////////////////////////////////////////
 bool Triangulate::Process(const Vector2dVector &contour, Vector2dVector &result)
 {
-    // allocate and initialize list of Vertices in polygon
+	// allocate and initialize list of Vertices in polygon
 	int n = contour.size();
 	if ( n < 3 ) return false;
 
 	int *V = new int[n];
 
-    // a counter-clockwise polygon in V
+	// a counter-clockwise polygon in V
 	if ( 0.0f < Area(contour) )
-    {
-        for (int v = 0; v < n; v++)
-            V[v] = v;
-    }
+	{
+		for (int v = 0; v < n; v++)
+			V[v] = v;
+	}
 	else
-    {
-        for(int v = 0; v < n; v++)
-            V[v] = (n-1)-v;
-    }
+	{
+		for(int v = 0; v < n; v++)
+			V[v] = (n-1)-v;
+	}
 
 	int nv = n;
-    int count = 2*nv;
+	int count = 2*nv;
 
-    // removes nv-2 Vertices, creating one triangle every time
-    for(int m = 0, v = nv-1; nv > 2; )
+	// removes nv-2 Vertices, creating one triangle every time
+	for(int m = 0, v = nv-1; nv > 2; )
 	{
-        // check whether it is a non-simple polygon or not
+		// check whether it is a non-simple polygon or not
 		if (0 >= (count--))
 		{
-            //Triangulate error - a non-simple polygon (probably bad polygon)
+			//Triangulate error - a non-simple polygon (probably bad polygon)
 			return false;
 		}
 
-        // three consecutive vertices in current polygon, <u,v,w>
-        int u = v;
-        if (nv <= u)
-            u = 0;
-        v = u+1;
-        if (nv <= v)
-            v = 0;
-        int w = v+1;
-        if (nv <= w)
-            w = 0;
+		// three consecutive vertices in current polygon, <u,v,w>
+		int u = v;
+		if (nv <= u)
+			u = 0;
+		v = u+1;
+		if (nv <= v)
+			v = 0;
+		int w = v+1;
+		if (nv <= w)
+			w = 0;
 
-        if ( Snip(contour, u, v, w, nv, V) )
+		if ( Snip(contour, u, v, w, nv, V) )
 		{
 			int a,b,c,s,t;
 
-            // true names of the vertices
-            a = V[u];
-            b = V[v];
-            c = V[w];
+			// true names of the vertices
+			a = V[u];
+			b = V[v];
+			c = V[w];
 
-            // output Triangle
+			// output Triangle
 			result.push_back( contour[a] );
 			result.push_back( contour[b] );
 			result.push_back( contour[c] );
 			m++;
 
-            // remove v from remaining polygon
-            for(s = v, t = v+1; t < nv; s++, t++)
-                V[s] = V[t];
-            nv--;
+			// remove v from remaining polygon
+			for(s = v, t = v+1; t < nv; s++, t++)
+				V[s] = V[t];
+			nv--;
 
-            // resest error detection counter
+			// resest error detection counter
 			count = 2*nv;
 		}
 	}
 	delete[] V;
-    return true;
+	return true;
 }
