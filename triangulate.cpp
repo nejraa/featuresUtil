@@ -13,7 +13,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-
 #include "triangulate.h"
 
 static const float EPSILON = 0.0000000001f; ///< Used to denote a small quantity, error offset.
