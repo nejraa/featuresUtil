@@ -222,15 +222,19 @@ void CUserMapsLayer::handleObjAction(const QPointF &initialPosition, const QPoin
     case EUserMapObjectType::Area:
         handleAreaObjAction(initialPosition, endPosition);
         break;
+
     case EUserMapObjectType::Line:
         handleLineObjAction(initialPosition, endPosition);
         break;
+
     case EUserMapObjectType::Circle:
         handleCircleObjAction(initialPosition, endPosition);
         break;
+
     case EUserMapObjectType::Point:
         handlePointObjAction(initialPosition, endPosition);
         break;
+
     default:
         break;
     }
@@ -257,6 +261,7 @@ void CUserMapsLayer::handleAreaObjAction(const QPointF &initialPosition, const Q
             moveObjPoint(initialPosition, endPosition, m_index1);
         break;
     }
+
     case EPointPositionType::OnLine:
     {
         if (m_isLongMousePress)
@@ -265,18 +270,21 @@ void CUserMapsLayer::handleAreaObjAction(const QPointF &initialPosition, const Q
             moveObjPoints(initialPosition, endPosition, m_index1, m_index2);
         break;
     }
+
     case EPointPositionType::InsideObject:
     {
         if (m_isCursorMoving)
             moveObj(initialPosition, endPosition);
         break;
     }
+
     case EPointPositionType::OutsideObject:
     {
         if (CUserMapsManager::getObjSelectedStat())
             CUserMapsManager::deselectObjectStat();
         break;
     }
+
     default:
         // no action
         break;
@@ -304,6 +312,7 @@ void CUserMapsLayer::handleLineObjAction(const QPointF &initialPosition, const Q
             moveObjPoint(initialPosition, endPosition, m_index1);
         break;
     }
+
     case EPointPositionType::OnLine:
     {
         if (m_isLongMousePress)
@@ -312,10 +321,12 @@ void CUserMapsLayer::handleLineObjAction(const QPointF &initialPosition, const Q
             moveObj(initialPosition, endPosition);
         break;
     }
+
     case EPointPositionType::NotOnLine:
         if (CUserMapsManager::getObjSelectedStat())
             CUserMapsManager::deselectObjectStat();
         break;
+
     default:
         // no action
         break;
@@ -341,6 +352,7 @@ void CUserMapsLayer::handleCircleObjAction(const QPointF &initialPosition, const
             moveObj(initialPosition, endPosition);
         break;
     }
+
     case EPointPositionType::OnLine:
     {
         // Resize object
@@ -358,10 +370,12 @@ void CUserMapsLayer::handleCircleObjAction(const QPointF &initialPosition, const
         }
         break;
     }
+
     case EPointPositionType::OutsideObject:
         if (CUserMapsManager::getObjSelectedStat())
             CUserMapsManager::deselectObjectStat();
         break;
+
     default:
         // no action
         break;
@@ -503,7 +517,7 @@ void CUserMapsLayer::insertObjPoint(const int index, const QPointF &pos)
 ///         index1 - Index of the first point on line segment of area/line object where clicked position lies.
 ///         index2 - Index of the second point on line segment of area/line object where clicked position lies.
 ///
-/// \return EPointPositionType Position of clicked point with respect to an object.
+/// \return Position of clicked point with respect to an object.
 ////////////////////////////////////////////////////////////////////////////////
 EPointPositionType CUserMapsLayer::checkPointPositionToObj(const QPointF &clickedPosition,
                                                            int &index1, int &index2)
@@ -514,12 +528,16 @@ EPointPositionType CUserMapsLayer::checkPointPositionToObj(const QPointF &clicke
     {
     case EUserMapObjectType::Area:
         return pointPositionToArea(clickedPosition, index1, index2);
+
     case EUserMapObjectType::Line:
         return pointPositionToLine(clickedPosition, index1, index2);
+
     case EUserMapObjectType::Circle:
         return pointPositionToCircle(clickedPosition);
+
     case EUserMapObjectType::Point:
         return pointPositionToPointObj(clickedPosition);
+
     default:
         return EPointPositionType::Unknown;
     }
@@ -545,10 +563,12 @@ void CUserMapsLayer::setSelectedObject(bool isObjSelected, EUserMapObjectType ob
     case EUserMapObjectType::Circle:
         convertGeoPointToPixelVector(CUserMapsManager::getObjPositionStat(), m_selectedObjPoints);
         break;
+
     case EUserMapObjectType::Area:
     case EUserMapObjectType::Line:
         convertGeoVectorToPixelVector(CUserMapsManager::getObjPointsVectorStat(), m_selectedObjPoints);
         break;
+
     default:
         break;
     }
@@ -686,10 +706,12 @@ void CUserMapsLayer::updateObjectPosition()
     case EUserMapObjectType::Circle:
         CUserMapsManager::setObjPositionStat(geoPoints[0]);
         break;
+
     case EUserMapObjectType::Area:
     case EUserMapObjectType::Line:
         CUserMapsManager::setObjPointsVectorStat(geoPoints);
         break;
+
     default:
         break;
     }
@@ -705,7 +727,7 @@ void CUserMapsLayer::updateObjectPosition()
 ///         index1 - Index of the first point on area object between segments where clicked position lies.
 ///         index2 - Index of the second point on area object between segments where clicked position lies.
 ///
-/// \return EPointPositionType Selected point position with respect to the selected area.
+/// \return Selected point position with respect to the selected area.
 ////////////////////////////////////////////////////////////////////////////////
 EPointPositionType CUserMapsLayer::pointPositionToArea(const QPointF &clickedPosition,
                                                        int &index1, int &index2)
@@ -782,7 +804,7 @@ EPointPositionType CUserMapsLayer::pointPositionToArea(const QPointF &clickedPos
 ///
 /// \param  clickedPosition - Clicked position in pixel coordinates.
 ///
-/// \return EPointPositionType Selected point position with respect to the selected circle.
+/// \return Selected point position with respect to the selected circle.
 ////////////////////////////////////////////////////////////////////////////////
 EPointPositionType CUserMapsLayer::pointPositionToCircle(const QPointF &clickedPosition)
 {
@@ -814,7 +836,7 @@ EPointPositionType CUserMapsLayer::pointPositionToCircle(const QPointF &clickedP
 ///         index1 - Index of the first point on line object on segment where clicked position lies.
 ///         index2 - Index of the second point on line object on segment where clicked position lies.
 ///
-/// \return EPointPositionType Selected point position with respect to the selected line.
+/// \return Selected point position with respect to the selected line.
 ////////////////////////////////////////////////////////////////////////////////
 EPointPositionType CUserMapsLayer::pointPositionToLine(const QPointF &clickedPosition,
                                                        int &index1, int &index2)
@@ -905,7 +927,7 @@ EPointPositionType CUserMapsLayer::pointPositionToLine(const QPointF &clickedPos
 ///
 /// \param  clickedPosition - Clicked position in pixel coordinates.
 ///
-/// \return EPointPositionType Selected point position with respect to the selected point object.
+/// \return Selected point position with respect to the selected point object.
 ////////////////////////////////////////////////////////////////////////////////
 EPointPositionType CUserMapsLayer::pointPositionToPointObj(const QPointF &clickedPosition)
 {
@@ -930,7 +952,7 @@ EPointPositionType CUserMapsLayer::pointPositionToPointObj(const QPointF &clicke
 ///         pointB - Second point used to determine linear function equation.
 ///         clickedPoint - Clicked point.
 ///
-/// \return qreal Value on YAxis calculated using linear function equation.
+/// \return Value on YAxis calculated using linear function equation.
 ////////////////////////////////////////////////////////////////////////////////
 qreal CUserMapsLayer::calculateYaxisValueOnLine(const QPointF &pointA,
                                       const QPointF &pointB, const QPointF clickedPoint)

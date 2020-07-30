@@ -18,6 +18,9 @@
 
 typedef std::vector<GenericVertexData> Vector2dVector;
 
+////////////////////////////////////////////////////////////////////////////////
+/// \brief Triangulate - Class representing polygon triangulation.
+////////////////////////////////////////////////////////////////////////////////
 class Triangulate
 {
 public:
@@ -41,6 +44,5 @@ private:
 	static bool Snip(const Vector2dVector &contour,int u,int v,int w,int n,int *V);
 };
 
-
-#endif
+#endif // TRIANGULATE_H
 

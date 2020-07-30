@@ -5,7 +5,7 @@
 ///         https://www.flipcode.com/archives/Efficient_Polygon_Triangulation.shtml
 ///
 ///	\brief	Implementation of the Triangulate class
-///         which  triangulates any polygon without hole.
+///         which triangulates any polygon without hole.
 ///
 ///	(C) Kelvin Hughes, 2020.
 ////////////////////////////////////////////////////////////////////////////////
