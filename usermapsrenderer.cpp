@@ -697,10 +697,10 @@ void CUserMapsRenderer::updatePointData(const QSharedPointer<CUserMapPoint>& uPo
 	data.m_iconSize = uPoint->getIconSize();
 	data.m_vertexData= GenericVertexData(QVector4D( static_cast<float>(xPos), static_cast<float>(yPos), 0.0f, 1.0f ),colour);
 
-	QString strFileName = QString(":/") + data.m_icon + ".png";
+	QString strIconPath = CUserMapIconManager::instance()->getIconPath(data.m_icon);
 
 	m_pPoints.push_back(data);
-	m_pTexture.push_back( QSharedPointer<CImageTexture>(new CImageTexture( strFileName, colour)));
+	m_pTexture.push_back( QSharedPointer<CImageTexture>(new CImageTexture( strIconPath, colour)));
 
 }
 
