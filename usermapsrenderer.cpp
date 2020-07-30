@@ -138,6 +138,8 @@ void CUserMapsRenderer::synchronize(QQuickFramebufferObject *item)
 	if ( pixelsInMm == 0.0f )
 		return;
 
+	m_pPoints.clear();
+	m_pTexture.clear();
 	m_pfilledPolygonData.clear();
 	m_pCircleData.clear();
 	m_pfilledCircleData.clear();
@@ -366,7 +368,8 @@ void CUserMapsRenderer::updateLines(const QMap<int, QSharedPointer<CUserMapLine>
 ///
 /// \param	loadedCircles-circles that should be drawn
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CUserMapsRenderer::updateCircles(const QMap<int, QSharedPointer<CUserMapCircle> >& loadedCircles) {
+void CUserMapsRenderer::updateCircles(const QMap<int, QSharedPointer<CUserMapCircle> >& loadedCircles)
+{
 
 	if( !m_CircleBuf.isNull() )
 	{
@@ -382,8 +385,7 @@ void CUserMapsRenderer::updateCircles(const QMap<int, QSharedPointer<CUserMapCir
 	if ( pixelsInMm == 0.0 )
 		return ;
 
-	//TODO AM: better name and/or explanation of the variable needed. If it does not change, declare it const.
-	int k = 8;
+	const int k = 8; // k is used as a circle segment for  drawing circle
 
 
 	// Get coordiante system data
@@ -462,7 +464,8 @@ void CUserMapsRenderer::updateCircles(const QMap<int, QSharedPointer<CUserMapCir
 ///
 /// \param  loadedArea - received areas that should be drawn
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CUserMapsRenderer::updatePolygons(const QMap<int, QSharedPointer<CUserMapArea> >& loadedAreas) {
+void CUserMapsRenderer::updatePolygons(const QMap<int, QSharedPointer<CUserMapArea> >& loadedAreas)
+{
 
 	if( !m_PolygonBuf.isNull() )
 	{
@@ -535,10 +538,9 @@ void CUserMapsRenderer::updatePolygons(const QMap<int, QSharedPointer<CUserMapAr
 ///
 /// \param uPointData- textures details
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CUserMapsRenderer::updatePointsData(const QMap<int, QSharedPointer<CUserMapPoint> > &uPointData)
+void CUserMapsRenderer::updatePointsData(const QMap<int, QSharedPointer<CUserMapPoint> > &pointData)
 {
-	//TODO AM: why not just pointData?
-	for(const QSharedPointer<CUserMapPoint>& uPoint : uPointData)
+	for(const QSharedPointer<CUserMapPoint>& uPoint : pointData)
 	{
 
 		MapPoint data;
@@ -583,7 +585,8 @@ void CUserMapsRenderer::updatePointsData(const QMap<int, QSharedPointer<CUserMap
 ///
 /// \param  Pointer that points to QOpenGLFunctions.
 ////////////////////////////////////////////////////////////////////////////////
-void CUserMapsRenderer::drawPoints(QOpenGLFunctions *func) {
+void CUserMapsRenderer::drawPoints(QOpenGLFunctions *func)
+{
 
 	// Set translation matrix (no translation)
 	QMatrix4x4 translation;
@@ -632,7 +635,8 @@ void CUserMapsRenderer::drawPoints(QOpenGLFunctions *func) {
 ///
 /// \param  func - Pointer that points to QOpenGLFunctions.
 ////////////////////////////////////////////////////////////////////////////////
-void CUserMapsRenderer::drawLines(QOpenGLFunctions *func) {
+void CUserMapsRenderer::drawLines(QOpenGLFunctions *func)
+{
 
 	// Set translation matrix (no translation)
 	QMatrix4x4 translation;
@@ -705,7 +709,8 @@ void CUserMapsRenderer::drawLines(QOpenGLFunctions *func) {
 ///
 /// \param  Pointer that points to QOpenGLFunctions.
 ////////////////////////////////////////////////////////////////////////////////
-void CUserMapsRenderer::drawPolygons(QOpenGLFunctions *func) {
+void CUserMapsRenderer::drawPolygons(QOpenGLFunctions *func)
+{
 
 	// Set translation matrix (no translation)
 	QMatrix4x4 translation;
@@ -771,7 +776,8 @@ void CUserMapsRenderer::drawPolygons(QOpenGLFunctions *func) {
 ///
 /// \param  Pointer that points to QOpenGLFunctions.
 ////////////////////////////////////////////////////////////////////////////////
-void CUserMapsRenderer::drawfilledPolygons(QOpenGLFunctions *func) {
+void CUserMapsRenderer::drawfilledPolygons(QOpenGLFunctions *func)
+{
 
 	// Set translation matrix (no translation)
 	QMatrix4x4 translation;
@@ -859,7 +865,8 @@ void CUserMapsRenderer::drawfilledCircles(QOpenGLFunctions *func) {
 
 	//Draw inline and outline circle from data in the VBOs
 
-	for(uint  i = 0; i<m_pfilledCircleData.size(); i++) {
+	for(uint  i = 0; i<m_pfilledCircleData.size(); i++)
+	{
 		func->glDrawArrays(GL_TRIANGLE_FAN, offset, m_pfilledCircleData[i].size());
 		offset += m_pfilledCircleData[i].size();
 	}
@@ -967,15 +974,18 @@ void CUserMapsRenderer::addPointstoBuffer() {
 int CUserMapsRenderer::drawMultipleElements(QSharedPointer<CVertexBuffer> &buffer , const std::vector<std::vector<GenericVertexData>> &data) {
 	uint counter = 0;
 
-	for( uint  i = 0; i < data.size(); i++) {
+	for( uint  i = 0; i < data.size(); i++)
+	{
 		counter += data[i].size();
 	}
 
 	std::vector<GenericVertexData> vertices;
 	vertices.reserve(counter);
 
-	for( uint  i=0; i < data.size(); i++) {
-		for( uint j=0; j < data[i].size(); j++) {
+	for( uint  i=0; i < data.size(); i++)
+	{
+		for( uint j=0; j < data[i].size(); j++)
+		{
 			vertices.push_back(data[i][j]);
 		}
 	}
@@ -1066,7 +1076,7 @@ void CUserMapsRenderer::testCircle(qreal originX, qreal originY) {
 	std::vector<GenericVertexData> circle3;
 
 	// Draw the circle (line strip)
-	for ( bufferIndex = 0 ; bufferIndex < rbDegrees; bufferIndex += 8 )//if circle is not round enough use ++ instead of 8
+	for ( bufferIndex = 0 ; bufferIndex < rbDegrees; bufferIndex += 8 ) //if circle is not round enough use ++ instead of 8
 	{
 		double angle = 2 * M_PI * bufferIndex / rbDegrees;
 		float x = static_cast<float>(originX + (radius * std::sin(angle)));
