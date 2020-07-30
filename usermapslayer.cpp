@@ -197,7 +197,19 @@ void CUserMapsLayer::pressTimerTimeout()
 ////////////////////////////////////////////////////////////////////////////////
 QQuickFramebufferObject::Renderer *CUserMapsLayer::createRenderer() const
 {
-    return new CUserMapsRenderer();
+	return new CUserMapsRenderer();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// \fn	const QVector<QPointF> &CUserMapsLayer::getSelectedObjectPoints() const
+///
+/// \brief	Returns all the points (pixel coordinates) of the selected object.
+///
+/// \return	Points (pixel coordinates) of the selected object.
+////////////////////////////////////////////////////////////////////////////////
+const QVector<QPointF> &CUserMapsLayer::getSelectedObjectPoints() const
+{
+	return m_selectedObjPoints;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

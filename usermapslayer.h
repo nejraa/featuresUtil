@@ -31,6 +31,8 @@ public:
 
 	QQuickFramebufferObject::Renderer* createRenderer() const override;
 
+	const QVector<QPointF> &getSelectedObjectPoints() const;
+
 public slots:
 	void onOffsetChanged();
 
