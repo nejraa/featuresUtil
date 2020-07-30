@@ -1,10 +1,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 ///	\file	triangulate.cpp
 ///
-///	\author	ELREG, most of the code from https://www.flipcode.com/archives/Efficient_Polygon_Triangulation.shtml
+///	\author	ELREG, most of the code from
+///         https://www.flipcode.com/archives/Efficient_Polygon_Triangulation.shtml
 ///
-///	\brief	definition of the class that triangulates any polygon without hole
-///			.
+///	\brief	Implementation of the Triangulate class
+///         which  triangulates any polygon without hole.
 ///
 ///	(C) Kelvin Hughes, 2020.
 ////////////////////////////////////////////////////////////////////////////////
@@ -15,40 +16,45 @@
 
 #include "triangulate.h"
 
-static const float EPSILON=0.0000000001f;
+static const float EPSILON = 0.0000000001f; ///< Used to denote a small quantity, error offset.
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn     float Triangulate::Area(const Vector2dVector &contour)
+/// \fn float Triangulate::Area(const Vector2dVector &contour)
 ///
-/// \brief   compute area of contour
+/// \brief  Computes an area of contour.
 ///
-/// \param  const Vector2dVector &contour
+/// \param  contour - Contour area.
 ////////////////////////////////////////////////////////////////////////////////
 float Triangulate::Area(const Vector2dVector &contour)
 {
-
 	int n = contour.size();
+    float A = 0.0f;
 
-	float A=0.0f;
-
-	for(int p=n-1,q=0; q<n; p=q++)
+    for(int p = n-1, q = 0; q < n; p = q++)
 	{
-		A+= contour[p].position().x()*contour[q].position().y() - contour[q].position().x()*contour[p].position().y();
+        A+= contour[p].position().x()*contour[q].position().y() -
+                contour[q].position().x()*contour[p].position().y();
 	}
 	return A*0.5f;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn     bool Triangulate::InsideTriangle(float Ax, float Ay,
-///                                         float Bx, float By,
-///                                         float Cx, float Cy,
-///                                         float Px, float Py)
+/// \fn bool Triangulate::InsideTriangle(float Ax, float Ay,
+///                                      float Bx, float By,
+///                                      float Cx, float Cy,
+///                                      float Px, float Py)
 ///
-/// \brief   InsideTriangle decides if a point P is Inside of the triangle
-///         defined by A, B, C.
+/// \brief  Returns true if a point P is Inside of the triangle
+///         defined by points A, B, and C, otherwise false.
 ///
-/// \param  bool Triangulate::InsideTriangle(float Ax, float Ay,float Bx, float By,
-///        float Cx, float Cy,float Px, float Py
+/// \param  Ax - Value on xAxis for point A.
+///         Ay - Value on yAxis for point A.
+///         Bx - Value on xAxis for point B.
+///         By - Value on yAxis for point B.
+///         Cx - Value on xAxis for point C.
+///         Cy - Value on yAxis for point C.
+///         Px - Value on xAxis for point P.
+///         Py - Value on yAxis for point P.
 ////////////////////////////////////////////////////////////////////////////////
 bool Triangulate::InsideTriangle(float Ax, float Ay,
 								 float Bx, float By,
@@ -74,11 +80,17 @@ bool Triangulate::InsideTriangle(float Ax, float Ay,
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn     bool Triangulate::Snip(const Vector2dVector &contour,int u,int v,int w,int n,int *V)
+/// \fn bool Triangulate::Snip(const Vector2dVector &contour,int u,int v,int w,int n,int *V)
 ///
-/// \brief   check three consecutive points
+/// \brief  Checks three consecutive points.
 ///
-/// \param  const Vector2dVector &contour,int u,int v,int w,int n,int *V
+/// \param  contour - Contour area.
+///         u - Three consecutive vertices in polygon - previous
+///         v - Three consecutive vertices in polygon - current
+///         w - Three consecutive vertices in polygon - next
+///         n - Number of vertices in polygon
+///         V - Vector as series of Triangles
+////////////////////////////////////////////////////////////////////////////////
 bool Triangulate::Snip(const Vector2dVector &contour,int u,int v,int w,int n,int *V)
 {
 	int p;
@@ -93,87 +105,98 @@ bool Triangulate::Snip(const Vector2dVector &contour,int u,int v,int w,int n,int
 	Cx = contour[V[w]].position().x();
 	Cy = contour[V[w]].position().y();
 
-	if ( EPSILON > (((Bx-Ax)*(Cy-Ay)) - ((By-Ay)*(Cx-Ax))) ) return false;
+    if ( EPSILON > (((Bx-Ax)*(Cy-Ay)) - ((By-Ay)*(Cx-Ax))) )
+        return false;
 
-	for (p=0;p<n;p++)
+    for (p = 0; p < n; p++)
 	{
-		if( (p == u) || (p == v) || (p == w) ) continue;
+        if( (p == u) || (p == v) || (p == w) )
+            continue;
 		Px = contour[V[p]].position().x();
 		Py = contour[V[p]].position().y();
-		if (InsideTriangle(Ax,Ay,Bx,By,Cx,Cy,Px,Py)) return false;
+        if (InsideTriangle(Ax,Ay,Bx,By,Cx,Cy,Px,Py))
+            return false;
 	}
-
 	return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn     bool Triangulate::Process(const Vector2dVector &contour,Vector2dVector &result)
+/// \fn bool Triangulate::Process(const Vector2dVector &contour, Vector2dVector &result)
 ///
-/// \brief   triangulate a contour/polygon, places results in STL vector
-///          as series of triangles.
+/// \brief  Triangulate a contour/polygon and places results in STL vector
+///         as series of triangles.
 ///
-/// \param  const Vector2dVector &contour ,const Vector2dVector &contour)
+/// \param  contour - Contour area.
+///         result  - STL vector as series of triangles.
 ////////////////////////////////////////////////////////////////////////////////
-bool Triangulate::Process(const Vector2dVector &contour,Vector2dVector &result)
+bool Triangulate::Process(const Vector2dVector &contour, Vector2dVector &result)
 {
-	/* allocate and initialize list of Vertices in polygon */
-
+    // allocate and initialize list of Vertices in polygon
 	int n = contour.size();
 	if ( n < 3 ) return false;
 
 	int *V = new int[n];
 
-	/* we want a counter-clockwise polygon in V */
-
+    // a counter-clockwise polygon in V
 	if ( 0.0f < Area(contour) )
-		for (int v=0; v<n; v++) V[v] = v;
+    {
+        for (int v = 0; v < n; v++)
+            V[v] = v;
+    }
 	else
-		for(int v=0; v<n; v++) V[v] = (n-1)-v;
+    {
+        for(int v = 0; v < n; v++)
+            V[v] = (n-1)-v;
+    }
 
 	int nv = n;
+    int count = 2*nv;
 
-	/*  remove nv-2 Vertices, creating 1 triangle every time */
-	int count = 2*nv;   /* error detection */
-
-	for(int m=0, v=nv-1; nv>2; )
+    // removes nv-2 Vertices, creating one triangle every time
+    for(int m = 0, v = nv-1; nv > 2; )
 	{
-		/* if we loop, it is probably a non-simple polygon */
+        // check whether it is a non-simple polygon or not
 		if (0 >= (count--))
 		{
-			//** Triangulate: ERROR - probable bad polygon!
+            //Triangulate error - a non-simple polygon (probably bad polygon)
 			return false;
 		}
 
-		/* three consecutive vertices in current polygon, <u,v,w> */
-		int u = v  ; if (nv <= u) u = 0;     /* previous */
-		v = u+1; if (nv <= v) v = 0;     /* new v    */
-		int w = v+1; if (nv <= w) w = 0;     /* next     */
+        // three consecutive vertices in current polygon, <u,v,w>
+        int u = v;
+        if (nv <= u)
+            u = 0;
+        v = u+1;
+        if (nv <= v)
+            v = 0;
+        int w = v+1;
+        if (nv <= w)
+            w = 0;
 
-		if ( Snip(contour,u,v,w,nv,V) )
+        if ( Snip(contour, u, v, w, nv, V) )
 		{
 			int a,b,c,s,t;
 
-			/* true names of the vertices */
-			a = V[u]; b = V[v]; c = V[w];
+            // true names of the vertices
+            a = V[u];
+            b = V[v];
+            c = V[w];
 
-			/* output Triangle */
+            // output Triangle
 			result.push_back( contour[a] );
 			result.push_back( contour[b] );
 			result.push_back( contour[c] );
-
 			m++;
 
-			/* remove v from remaining polygon */
-			for(s=v,t=v+1;t<nv;s++,t++) V[s] = V[t]; nv--;
+            // remove v from remaining polygon
+            for(s = v, t = v+1; t < nv; s++, t++)
+                V[s] = V[t];
+            nv--;
 
-			/* resest error detection counter */
+            // resest error detection counter
 			count = 2*nv;
 		}
 	}
-
-
-
 	delete[] V;
-
-	return true;
+    return true;
 }
