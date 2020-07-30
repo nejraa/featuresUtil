@@ -25,16 +25,16 @@ class Triangulate
 {
 public:
 
-    // Triangulates a contour/polygon and places results in a vector
-    // as series of triangles
+	// Triangulates a contour/polygon and places results in a vector
+	// as series of triangles
 	static bool Process(const Vector2dVector &contour,
 						Vector2dVector &result);
 
-    // Computes area of a contour/polygon
+	// Computes area of a contour/polygon
 	static float Area(const Vector2dVector &contour);
 
-    // Calculates whether point P is inside triangle defined by
-    // (Ax,Ay) (Bx,By) (Cx,Cy) or not
+	// Calculates whether point P is inside triangle defined by
+	// (Ax,Ay) (Bx,By) (Cx,Cy) or not
 	static bool InsideTriangle(float Ax, float Ay,
 							   float Bx, float By,
 							   float Cx, float Cy,
