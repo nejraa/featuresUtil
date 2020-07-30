@@ -24,6 +24,8 @@ static const float EPSILON = 0.0000000001f; ///< Used to denote a small quantity
 /// \brief  Computes an area of contour.
 ///
 /// \param  contour - Contour area.
+///
+/// \return Returns calculated area of polygon.
 ////////////////////////////////////////////////////////////////////////////////
 float Triangulate::Area(const Vector2dVector &contour)
 {
@@ -44,8 +46,8 @@ float Triangulate::Area(const Vector2dVector &contour)
 ///                                      float Cx, float Cy,
 ///                                      float Px, float Py)
 ///
-/// \brief  Returns true if a point P is Inside of the triangle
-///         defined by points A, B, and C, otherwise false.
+/// \brief  Checks if a point P is inside the triangle
+///         defined by points A, B, and C.
 ///
 /// \param  Ax - Value on xAxis for point A.
 ///         Ay - Value on yAxis for point A.
@@ -55,6 +57,9 @@ float Triangulate::Area(const Vector2dVector &contour)
 ///         Cy - Value on yAxis for point C.
 ///         Px - Value on xAxis for point P.
 ///         Py - Value on yAxis for point P.
+///
+/// \return Returns true when the point lies inside triangle,
+///         otherwise false.
 ////////////////////////////////////////////////////////////////////////////////
 bool Triangulate::InsideTriangle(float Ax, float Ay,
 								 float Bx, float By,
@@ -82,14 +87,17 @@ bool Triangulate::InsideTriangle(float Ax, float Ay,
 ////////////////////////////////////////////////////////////////////////////////
 /// \fn bool Triangulate::Snip(const Vector2dVector &contour,int u,int v,int w,int n,int *V)
 ///
-/// \brief  Checks three consecutive points.
+/// \brief  Checks if consecutive points can form closed polygon.
 ///
 /// \param  contour - Contour area.
 ///         u - Three consecutive vertices in polygon - previous
 ///         v - Three consecutive vertices in polygon - current
 ///         w - Three consecutive vertices in polygon - next
 ///         n - Number of vertices in polygon
-///         V - Vector as series of Triangles
+///         V - Vector of polygon points as series of Triangles
+///
+/// \return Returns true if given consequtive points can be points of a polygon
+///         (polygon created successfully), otherwise false.
 ////////////////////////////////////////////////////////////////////////////////
 bool Triangulate::Snip(const Vector2dVector &contour,int u,int v,int w,int n,int *V)
 {
@@ -123,11 +131,13 @@ bool Triangulate::Snip(const Vector2dVector &contour,int u,int v,int w,int n,int
 ////////////////////////////////////////////////////////////////////////////////
 /// \fn bool Triangulate::Process(const Vector2dVector &contour, Vector2dVector &result)
 ///
-/// \brief  Triangulate a contour/polygon and places results in STL vector
+/// \brief  Triangulate a contour/polygon and places results in a vector
 ///         as series of triangles.
 ///
 /// \param  contour - Contour area.
-///         result  - STL vector as series of triangles.
+///         result  - A vector containing a series of triangles.
+///
+/// \return Returns true if a polygon created successfully.
 ////////////////////////////////////////////////////////////////////////////////
 bool Triangulate::Process(const Vector2dVector &contour, Vector2dVector &result)
 {

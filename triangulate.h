@@ -22,7 +22,7 @@ class Triangulate
 {
 public:
 
-    // Triangulates a contour/polygon and places results in STL vector
+    // Triangulates a contour/polygon and places results in a vector
     // as series of triangles
 	static bool Process(const Vector2dVector &contour,
 						Vector2dVector &result);
