@@ -54,6 +54,8 @@ private:
 	static CPosition convertPixelPointToGeoPoint(const QPointF &pixelPoint);
 	static QPointF convertGeoPointToPixelPoint(const CPosition &geoPoint);
 
+	void createManagerConnections();
+
 	// Object manipulation
 	void onPositionClicked(const QPointF &clickedPosition);
 	void updateObjectPosition();
