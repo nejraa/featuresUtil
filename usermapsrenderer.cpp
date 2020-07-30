@@ -3,12 +3,11 @@
 ///
 ///	\author Elreg
 ///
-///	\brief	Definition of the CUserMapsRenderer class which renders
+///	\brief	Implementation of the CUserMapsRenderer class which renders
 ///			the user maps layer.
 ///
-///	(C) Kelvin Hughes, 2019.
+///	(C) Kelvin Hughes, 2020.
 ////////////////////////////////////////////////////////////////////////////////
-
 #include "usermapsrenderer.h"
 #include <QDebug>
 #include <QElapsedTimer>
@@ -20,13 +19,13 @@
 #include "../UserMapsDataLib/usermapcolourmanager.h"
 #include "../UserMapsDataLib/usermapiconmanager.h"
 
-
 #ifndef GL_PRIMITIVE_RESTART_FIXED_INDEX
-#define GL_PRIMITIVE_RESTART_FIXED_INDEX  0x8D69 ///<taken from opengl specifications
+#define GL_PRIMITIVE_RESTART_FIXED_INDEX  0x8D69 ///< Taken from opengl specifications
 #endif
-const bool LOG_OPENGL_ERRORS = false; ///<used for open gl errors
-const int rbDegrees = 360; ///< a circle has 360 degrees
-static const int FONT_PT_SIZE = 20; ///< font
+
+const bool LOG_OPENGL_ERRORS = false; ///< Used for open GL errors.
+const int rbDegrees = 360; ///< A circle has 360 degrees.
+static const int FONT_PT_SIZE = 20; ///< Font size.
 
 MapPoint::MapPoint()
 	: m_vertexData(QVector4D( 0.0f, 0.0f, 0.0f, 0.0f ), QVector4D(0.0f , 0.0f, 0.0f, 0.0f)),
@@ -37,10 +36,9 @@ MapPoint::MapPoint()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn     CUserMapsRenderer::CUserMapsRenderer()
+/// \fn	CUserMapsRenderer::CUserMapsRenderer()
 ///
-/// \brief  Constructor
-///
+/// \brief	Constructor
 ////////////////////////////////////////////////////////////////////////////////
 CUserMapsRenderer::CUserMapsRenderer()
 	: CBaseRenderer("UserMapsView", OGL_TYPE::PROJ_ORTHO),
@@ -52,7 +50,6 @@ CUserMapsRenderer::CUserMapsRenderer()
 	  m_pOpenGLLogger(nullptr),
 	  m_pMapShader(nullptr),
 	  out(stdout)
-
 {
 }
 
@@ -68,7 +65,7 @@ CUserMapsRenderer::~CUserMapsRenderer()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-/// \fn	CCUserMapsRenderer::render()
+/// \fn	void CCUserMapsRenderer::render()
 ///
 /// \brief	Called by the Qt framework to render shapes and text.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -95,11 +92,10 @@ void CUserMapsRenderer::render()
 	pFunctions->glDisable( GL_BLEND );
 
 	framebufferObject()->release();
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-/// \fn	CCUserMapsRenderer::initShader()
+/// \fn	void CCUserMapsRenderer::initShader()
 ///
 /// \brief	Called by the Qt framework to initialize map shader
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -107,16 +103,15 @@ void CUserMapsRenderer::initShader()
 {
 	if( m_pMapShader == nullptr )
 		m_pMapShader = QSharedPointer<CMapShaderProgram>(new CMapShaderProgram());
-
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-/// \fn	CUserMapsRenderer::synchronize(QQuickFramebufferObject *item)
+/// \fn	void CUserMapsRenderer::synchronize(QQuickFramebufferObject *item)
 ///
 /// \brief	Called by the Qt framework to synchronise data with the Layer.
 ///
-/// \param	item	UserMapslayer to synchronise with.
+/// \param	item - UserMapslayer to synchronise with.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CUserMapsRenderer::synchronize(QQuickFramebufferObject *item)
 {
@@ -125,7 +120,6 @@ void CUserMapsRenderer::synchronize(QQuickFramebufferObject *item)
 	// Get the view dimensions
 	qreal left = 0, right = 0, top = 0, bottom = 0;
 	CViewCoordinates::Instance()->getViewDimensions( left, right, bottom, top );
-
 
 	// Initialise OpenGL if needed
 	if(!m_bGLinit)
@@ -179,12 +173,10 @@ void CUserMapsRenderer::synchronize(QQuickFramebufferObject *item)
 		m_pTexture[i]->setHeight(textureHeightInPixel/2.0f);
 		m_pTexture[i]->setProjection(left, right, bottom, top);
 	}
-
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-/// \fn	CUserMapsRenderer::initializeGL()
+/// \fn	void CUserMapsRenderer::initializeGL()
 ///
 /// \brief	Initialise OpenGL for this renderer.
 ///			Includes creating the image textures;
@@ -234,18 +226,16 @@ void CUserMapsRenderer::initializeGL()
 													static_cast<int> ( top ),
 													static_cast<int> ( right ),
 													static_cast<int> ( bottom ) ) );
-
 	}
 	m_bGLinit = true;
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-/// \fn	CUserMapsRenderer::renderPrimitives( QOpenGLFunctions* func )
+/// \fn	void CUserMapsRenderer::renderPrimitives( QOpenGLFunctions* func )
 ///
 /// \brief	Render shapes.
 ///
-/// \param	func	The QOpenGLFunctions to use if needed.
+/// \param	func - The QOpenGLFunctions to use if needed.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CUserMapsRenderer::renderPrimitives(QOpenGLFunctions *func)
 {
@@ -256,11 +246,10 @@ void CUserMapsRenderer::renderPrimitives(QOpenGLFunctions *func)
 	drawLines(func);
 	drawCircles(func);
 	drawPolygons(func);
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-/// \fn	CUserMapsRenderer::renderTextures()
+/// \fn	void CUserMapsRenderer::renderTextures()
 ///
 /// \brief	Render the textures and text.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -293,19 +282,16 @@ void CUserMapsRenderer::renderTextures()
 		// Draw the target
 		m_pTexture[i]->drawTexture(&m_textureShader);
 	}
-
-
 	m_tgtTextRenderer.renderText();
 	m_textureShader.release();
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-/// \fn	CUserMapsRenderer::updateLines(const QMap<int, QSharedPointer<CUserMapLine> >&loadedLines)
+/// \fn	void CUserMapsRenderer::updateLines(const QMap<int, QSharedPointer<CUserMapLine> >&loadedLines)
 ///
-/// \brief	Add line points so line could be drawn
+/// \brief	Add line points so line could be drawn.
 ///
-/// \param loadedLines- lines that should be drawn
+/// \param	loadedLines- lines that should be drawn.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CUserMapsRenderer::updateLines(const QMap<int, QSharedPointer<CUserMapLine> >&loadedLines )
 {
@@ -329,7 +315,6 @@ void CUserMapsRenderer::updateLines(const QMap<int, QSharedPointer<CUserMapLine>
 	qreal originY = 0.0;
 	CViewCoordinates::Instance()->getViewOriginPixel( originX, originY );
 
-
 	qreal offsetX = 0.0;
 	qreal offsetY = 0.0;
 	CViewCoordinates::Instance()->getGeoOriginOffsetPixel( offsetX, offsetY );
@@ -339,7 +324,6 @@ void CUserMapsRenderer::updateLines(const QMap<int, QSharedPointer<CUserMapLine>
 		std::vector<GenericVertexData> line;
 		for(const CPosition & point : it.value()->getPoints())
 		{
-
 			// Relative target position (in pixels) from the ownship (Geo Origin)
 			GEOGRAPHICAL dfLat = ToGEOGRAPHICAL(point.Latitude());
 			GEOGRAPHICAL dfLon = ToGEOGRAPHICAL(point.Longitude());
@@ -357,21 +341,19 @@ void CUserMapsRenderer::updateLines(const QMap<int, QSharedPointer<CUserMapLine>
 		CUserMapsVertexData tempData;
 		tempData.setVertexData(line);
 		setLineStyle(tempData,it.value()->getLineStyle(),it.value()->getLineWidth());
-
 		m_pLineData.push_back(tempData);
 	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-/// \fn	CUserMapsRenderer::updateCircles(const QMap<int, QSharedPointer<CUserMapCircle> >& loadedCircles)
+/// \fn	void CUserMapsRenderer::updateCircles(const QMap<int, QSharedPointer<CUserMapCircle> >& loadedCircles)
 ///
 /// \brief	Add Circle points so circle could be drawn.
 ///
-/// \param	loadedCircles-circles that should be drawn
+/// \param	loadedCircles - Circles that should be drawn.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CUserMapsRenderer::updateCircles(const QMap<int, QSharedPointer<CUserMapCircle> >& loadedCircles)
-{
-
+{	
 	if( !m_CircleBuf.isNull() )
 	{
 		m_CircleBuf.clear();
@@ -388,7 +370,6 @@ void CUserMapsRenderer::updateCircles(const QMap<int, QSharedPointer<CUserMapCir
 
 	const int k = 8; // k is used as a circle segment for  drawing circle
 
-
 	// Get coordiante system data
 	qreal originX = 0.0;
 	qreal originY = 0.0;
@@ -404,7 +385,6 @@ void CUserMapsRenderer::updateCircles(const QMap<int, QSharedPointer<CUserMapCir
 		circle.reserve(360 / k + 3);//number of points needed for circle
 
 		double radius = it.value()->getRadius() * CViewCoordinates::getNauticalMilesToPixels();
-
 		int bufferIndex = 0;
 
 		// Relative target position (in pixels) from the ownship (Geo Origin)
@@ -434,17 +414,13 @@ void CUserMapsRenderer::updateCircles(const QMap<int, QSharedPointer<CUserMapCir
 				// Change to transparent colour at the same position
 				bufferIndex++;
 				circle.push_back( GenericVertexData(QVector4D(x, y, 0.0f, 1.0f), convertColour(it.value()->getOutlineColor())));
-
 			}
 		}
 		CUserMapsVertexData tempData;
 		tempData.setVertexData(circle);
 		setLineStyle(tempData,it.value()->getLineStyle(),it.value()->getLineWidth());
-
 		m_pCircleData.push_back(tempData);
-
 		circle.pop_back();//remove last point, because it is same as the first one
-
 
 		std::vector<GenericVertexData> filledCircle;
 		for(const GenericVertexData & data : circle)
@@ -454,20 +430,17 @@ void CUserMapsRenderer::updateCircles(const QMap<int, QSharedPointer<CUserMapCir
 		filledCircle.push_back(GenericVertexData(QVector4D(originX, originY, 0.0f, 1.0f), convertColour( it.value()->getColor(),it.value()->getTransparency())));// add center so,circles could be drawn more effectively in opengl
 		m_pfilledCircleData.push_back(filledCircle);
 	}
-
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-/// \fn	CUserMapsRenderer::updatePolygons(const QMap<int, QSharedPointer<CUserMapArea> >& loadedArea)
+/// \fn	void CUserMapsRenderer::updatePolygons(const QMap<int, QSharedPointer<CUserMapArea> >& loadedArea)
 ///
-/// \brief	Add polygon points
+/// \brief	Adds polygon points.
 ///
-/// \param  loadedArea - received areas that should be drawn
+/// \param	loadedArea - Received areas that should be drawn.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CUserMapsRenderer::updatePolygons(const QMap<int, QSharedPointer<CUserMapArea> >& loadedAreas)
 {
-
 	if( !m_PolygonBuf.isNull() )
 	{
 		m_PolygonBuf.clear();
@@ -493,14 +466,11 @@ void CUserMapsRenderer::updatePolygons(const QMap<int, QSharedPointer<CUserMapAr
 	qreal offsetY = 0.0;
 	CViewCoordinates::Instance()->getGeoOriginOffsetPixel( offsetX, offsetY );
 
-
 	for (QMap<int, QSharedPointer<CUserMapArea> >::const_iterator it = loadedAreas.constBegin(); it != loadedAreas.constEnd() ; it++)
 	{
 		std::vector<GenericVertexData> polygon; //test case polygon ,will be deleted
-
 		for(const CPosition & point : it.value()->getPoints())
 		{
-
 			// Relative target position (in pixels) from the ownship (Geo Origin)
 			GEOGRAPHICAL dfLat = ToGEOGRAPHICAL(point.Latitude());
 			GEOGRAPHICAL dfLon = ToGEOGRAPHICAL(point.Longitude());
@@ -511,7 +481,6 @@ void CUserMapsRenderer::updatePolygons(const QMap<int, QSharedPointer<CUserMapAr
 			// Absolute target position (in pixels)
 			double xPos = tgtPosX + originX;
 			double yPos = tgtPosY + originY;
-
 
 			polygon.push_back( GenericVertexData(QVector4D( static_cast<float>(xPos), static_cast<float>(yPos), 0.0f, 1.0f), convertColour(it.value()->getOutlineColor())));
 		}
@@ -528,23 +497,22 @@ void CUserMapsRenderer::updatePolygons(const QMap<int, QSharedPointer<CUserMapAr
 			data.setColor(convertColour(it.value()->getColor(), it.value()->getTransparency()));
 
 		m_pfilledPolygonData.push_back(result);
-
 	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-/// \fn	CUserMapsRenderer::updatePointsData(const QMap<int, QSharedPointer<CUserMapPoint> > &uPointData
+/// \fn	void CUserMapsRenderer::updatePointsData(const QMap<int, QSharedPointer<CUserMapPoint> > &uPointData
 ///
-/// \brief	Add textures that should be drawn
+/// \brief	Add textures that should be drawn.
 ///
-/// \param uPointData- textures details
+/// \param	uPointData - Textures details.
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CUserMapsRenderer::updatePointsData(const QMap<int, QSharedPointer<CUserMapPoint> > &pointData)
 {
 	for(const QSharedPointer<CUserMapPoint>& uPoint : pointData)
 	{
-
 		MapPoint data;
+
 		// View Origin
 		qreal originX = 0;
 		qreal originY = 0;
@@ -580,15 +548,14 @@ void CUserMapsRenderer::updatePointsData(const QMap<int, QSharedPointer<CUserMap
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn     CUserMapsRenderer::drawPoints(QOpenGLFunctions *func)
+/// \fn void CUserMapsRenderer::drawPoints(QOpenGLFunctions *func)
 ///
 /// \brief  Handles mouse move event.
 ///
-/// \param  Pointer that points to QOpenGLFunctions.
+/// \param  func - Pointer that points to QOpenGLFunctions.
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsRenderer::drawPoints(QOpenGLFunctions *func)
 {
-
 	// Set translation matrix (no translation)
 	QMatrix4x4 translation;
 	translation.translate(0.0, 0.0, 0.0);
@@ -607,9 +574,7 @@ void CUserMapsRenderer::drawPoints(QOpenGLFunctions *func)
 
 	// Set the projection and translation
 	m_primShader.setMVPMatrix(projection * translation);
-
 	addPointstoBuffer();
-
 	m_PointBuf->bind();
 
 	// Check Frame buffer is OK
@@ -622,23 +587,19 @@ void CUserMapsRenderer::drawPoints(QOpenGLFunctions *func)
 	func->glDrawArrays(GL_POINTS, 0, m_pPointData.size());
 	// Tidy up
 	m_primShader.cleanupVertexState();
-
 	m_PointBuf->release();
-
 	m_primShader.release();
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn     CUserMapsRenderer::drawLines(QOpenGLFunctions *func)
+/// \fn	void CUserMapsRenderer::drawLines(QOpenGLFunctions *func)
 ///
-/// \brief  Draws Lines.
+/// \brief	Draws Lines.
 ///
 /// \param  func - Pointer that points to QOpenGLFunctions.
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsRenderer::drawLines(QOpenGLFunctions *func)
 {
-
 	// Set translation matrix (no translation)
 	QMatrix4x4 translation;
 	translation.translate(0.0, 0.0, 0.0);
@@ -664,10 +625,7 @@ void CUserMapsRenderer::drawLines(QOpenGLFunctions *func)
 	GLfloat winHeight = static_cast<float>(bottom-top);
 
 	m_pMapShader->setResolution(winWidth, winHeight);
-
-
 	drawMultipleElements(m_LineBuf, m_pLineData);
-
 	m_LineBuf->bind();
 
 	// Check Frame buffer is OK
@@ -676,10 +634,7 @@ void CUserMapsRenderer::drawLines(QOpenGLFunctions *func)
 		qDebug() << "CUserMapsRenderer::drawLines() failed! Not GL_FRAMEBUFFER_COMPLETE";
 
 	m_pMapShader->setupVertexState();
-
 	int offset = 0;
-
-
 	func->glLineWidth(500);
 
 	for(uint i = 0; i<m_pLineData.size(); i++ )
@@ -692,27 +647,22 @@ void CUserMapsRenderer::drawLines(QOpenGLFunctions *func)
 		func->glLineWidth(1);
 		offset += m_pLineData[i].getVertexData().size();
 	}
-	//func->glDrawArrays(GL_LINE_STRIP, 0,  counter);
+
 	// Tidy up
 	m_pMapShader->cleanupVertexState();
-
 	m_LineBuf->release();
-
 	m_pMapShader->release();
-
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn     CUserMapsRenderer::drawPolygons(QOpenGLFunctions *func)
+/// \fn	void CUserMapsRenderer::drawPolygons(QOpenGLFunctions *func)
 ///
-/// \brief  Draws polygons.
+/// \brief	Draws polygons.
 ///
-/// \param  Pointer that points to QOpenGLFunctions.
+/// \param  func - Pointer that points to QOpenGLFunctions.
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsRenderer::drawPolygons(QOpenGLFunctions *func)
 {
-
 	// Set translation matrix (no translation)
 	QMatrix4x4 translation;
 	translation.translate(0.0, 0.0, 0.0);
@@ -736,9 +686,7 @@ void CUserMapsRenderer::drawPolygons(QOpenGLFunctions *func)
 	GLfloat winHeight = static_cast<float>(bottom-top);
 
 	m_pMapShader->setResolution(winWidth, winHeight);
-
 	drawMultipleElements(m_PolygonBuf, m_pPolygonData);
-
 	m_PolygonBuf->bind();
 
 	// Check Frame buffer is OK
@@ -749,7 +697,6 @@ void CUserMapsRenderer::drawPolygons(QOpenGLFunctions *func)
 	m_pMapShader->setupVertexState();
 
 	int offset = 0;
-
 	for(uint i = 0; i<m_pPolygonData.size(); i++ )
 	{
 		m_pMapShader->setDashSize(m_pPolygonData[i].getDashSize());
@@ -763,23 +710,19 @@ void CUserMapsRenderer::drawPolygons(QOpenGLFunctions *func)
 
 	// Tidy up
 	m_pMapShader->cleanupVertexState();
-
 	m_PolygonBuf->release();
-
 	m_pMapShader->release();
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn     CUserMapsRenderer::drawfilledPolygons(QOpenGLFunctions *func)
+/// \fn	void CUserMapsRenderer::drawfilledPolygons(QOpenGLFunctions *func)
 ///
 /// \brief  Draws polygons.
 ///
-/// \param  Pointer that points to QOpenGLFunctions.
+/// \param  func - Pointer that points to QOpenGLFunctions.
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsRenderer::drawfilledPolygons(QOpenGLFunctions *func)
 {
-
 	// Set translation matrix (no translation)
 	QMatrix4x4 translation;
 	translation.translate(0.0, 0.0, 0.0);
@@ -809,28 +752,24 @@ void CUserMapsRenderer::drawfilledPolygons(QOpenGLFunctions *func)
 
 	m_primShader.setupVertexState();
 
-	//draw
+	// Draw
 	func->glDrawArrays(GL_TRIANGLES, 0, counter);
 
 	// Tidy up
 	m_primShader.cleanupVertexState();
-
 	m_filledPolygonBuf->release();
-
 	m_primShader.release();
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn     CUserMapsRenderer::drawfilledCircles(QOpenGLFunctions *func)
+/// \fn void CUserMapsRenderer::drawfilledCircles(QOpenGLFunctions *func)
 ///
 /// \brief  Draws Circles.
 ///
-/// \param  Pointer that points to QOpenGLFunctions.
+/// \param  func - Pointer that points to QOpenGLFunctions.
 ////////////////////////////////////////////////////////////////////////////////
-void CUserMapsRenderer::drawfilledCircles(QOpenGLFunctions *func) {
-
-
+void CUserMapsRenderer::drawfilledCircles(QOpenGLFunctions *func)
+{
 	// Set translation matrix (no translation)
 	QMatrix4x4 translation;
 	translation.translate(0.0, 0.0, 0.0);
@@ -850,11 +789,9 @@ void CUserMapsRenderer::drawfilledCircles(QOpenGLFunctions *func) {
 	// Set the projection and translation
 	m_primShader.setMVPMatrix(projection * translation);
 
-
 	// Tell OpenGL which VBOs to use
 	drawMultipleElements(m_InlineCircleBuf, m_pfilledCircleData);
 	m_InlineCircleBuf->bind();
-
 
 	// Check Frame buffer is OK
 	GLenum e = func->glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -865,7 +802,6 @@ void CUserMapsRenderer::drawfilledCircles(QOpenGLFunctions *func) {
 	int offset = 0; //offset
 
 	//Draw inline and outline circle from data in the VBOs
-
 	for(uint  i = 0; i<m_pfilledCircleData.size(); i++)
 	{
 		func->glDrawArrays(GL_TRIANGLE_FAN, offset, m_pfilledCircleData[i].size());
@@ -875,23 +811,19 @@ void CUserMapsRenderer::drawfilledCircles(QOpenGLFunctions *func) {
 
 	// Tidy up
 	m_InlineCircleBuf->release();
-
 	m_primShader.cleanupVertexState();
-
 	m_primShader.release();
-
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn     CUserMapsRenderer::drawCircles(QOpenGLFunctions *func)
+/// \fn	void CUserMapsRenderer::drawCircles(QOpenGLFunctions *func)
 ///
 /// \brief  Draws outline Circle.
 ///
-/// \param  Pointer that points to QOpenGLFunctions.
+/// \param  func - Pointer that points to QOpenGLFunctions.
 ////////////////////////////////////////////////////////////////////////////////
-void CUserMapsRenderer::drawCircles(QOpenGLFunctions *func) {
-
+void CUserMapsRenderer::drawCircles(QOpenGLFunctions *func)
+{
 	// Set translation matrix (no translation)
 	QMatrix4x4 translation;
 	translation.translate(0.0, 0.0, 0.0);
@@ -912,7 +844,6 @@ void CUserMapsRenderer::drawCircles(QOpenGLFunctions *func) {
 	// Set the projection and translation
 	m_pMapShader->setMVPMatrix(projection * translation);
 
-
 	GLfloat winWidth = static_cast<float>(right-left);
 	GLfloat winHeight = static_cast<float>(bottom-top);
 
@@ -931,7 +862,6 @@ void CUserMapsRenderer::drawCircles(QOpenGLFunctions *func) {
 	func->glLineWidth(1);
 
 	int offset = 0;
-
 	for(uint i = 0; i<m_pCircleData.size(); i++ )
 	{
 		m_pMapShader->setDashSize(m_pCircleData[i].getDashSize());
@@ -945,36 +875,33 @@ void CUserMapsRenderer::drawCircles(QOpenGLFunctions *func) {
 
 	// Tidy up
 	m_pMapShader->cleanupVertexState();
-
 	m_CircleBuf->release();
-
 	m_pMapShader->release();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn     CUserMapsRenderer::addPointstoBuffer()
+/// \fn void CUserMapsRenderer::addPointstoBuffer()
 ///
-/// \brief  add points from vector to buffer
-///
-/// \param  no params
+/// \brief	Adds points from vector to buffer
 ////////////////////////////////////////////////////////////////////////////////
-void CUserMapsRenderer::addPointstoBuffer() {
+void CUserMapsRenderer::addPointstoBuffer()
+{
 	m_PointBuf = QSharedPointer<CVertexBuffer>( new CVertexBuffer(m_pPointData.data(), m_pPointData.size()));
 }
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn     CUserMapsRenderer::drawMultipleElements(QSharedPointer<CVertexBuffer> &buffer , const std::vector<std::vector<GenericVertexData>> &data)
+/// \fn	int CUserMapsRenderer::drawMultipleElements(QSharedPointer<CVertexBuffer> &buffer , const std::vector<std::vector<GenericVertexData>> &data)
 ///
-/// \brief  add genericvertexdata to buffer
+/// \brief  Adds generic vertexdata to buffer.
 ///
-/// \param  buffer - vertex buffer
-///         data- points that form a shape
+/// \param  buffer - Vertex buffer.
+///         data- Points that form a shape.
+///
+/// \return Number of elements to be rendered.
 ////////////////////////////////////////////////////////////////////////////////
-int CUserMapsRenderer::drawMultipleElements(QSharedPointer<CVertexBuffer> &buffer , const std::vector<std::vector<GenericVertexData>> &data) {
+int CUserMapsRenderer::drawMultipleElements(QSharedPointer<CVertexBuffer> &buffer , const std::vector<std::vector<GenericVertexData>> &data)
+{
 	uint counter = 0;
-
 	for( uint  i = 0; i < data.size(); i++)
 	{
 		counter += data[i].size();
@@ -991,17 +918,18 @@ int CUserMapsRenderer::drawMultipleElements(QSharedPointer<CVertexBuffer> &buffe
 		}
 	}
 	buffer = QSharedPointer<CVertexBuffer>( new CVertexBuffer(vertices.data(), counter));
-
 	return counter;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn     int CUserMapsRenderer::drawMultipleElements( QSharedPointer<CVertexBuffer> &buffer, const std::vector<CUserMapsVertexData> &data)
+/// \fn	int CUserMapsRenderer::drawMultipleElements( QSharedPointer<CVertexBuffer> &buffer, const std::vector<CUserMapsVertexData> &data)
 ///
-/// \brief  add usermapsvertexdata to buffer
+/// \brief	Adds usermapsvertexdata to buffer.
 ///
-/// \param  buffer - vertex buffer
-///         data- points that form a shape
+/// \param  buffer - Vertex buffer.
+///         data - Points that form a shape.
+///
+/// \return Number of elements to be rendered.
 ////////////////////////////////////////////////////////////////////////////////
 int CUserMapsRenderer::drawMultipleElements( QSharedPointer<CVertexBuffer> &buffer, const std::vector<CUserMapsVertexData> &data)
 {
@@ -1019,16 +947,13 @@ int CUserMapsRenderer::drawMultipleElements( QSharedPointer<CVertexBuffer> &buff
 	}
 
 	buffer = QSharedPointer<CVertexBuffer>(new CVertexBuffer( vertices.data(), totalSize));
-
 	return totalSize;
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn     CUserMapsRenderer::logOpenGLErrors()
+/// \fn void CUserMapsRenderer::logOpenGLErrors()
 ///
-/// \brief  Opengl logger.
-///
+/// \brief  OpenGL logger.
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsRenderer::logOpenGLErrors()
 {
@@ -1037,22 +962,21 @@ void CUserMapsRenderer::logOpenGLErrors()
 		const QList<QOpenGLDebugMessage> messages = m_pOpenGLLogger->loggedMessages();
 		for (const QOpenGLDebugMessage &message : messages)
 		{
-			//if( message.severity() == QOpenGLDebugMessage::HighSeverity || message.severity() == QOpenGLDebugMessage::MediumSeverity )
 			qDebug() << "CUserMapsRenderer:" << message;
 		}
 	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn     CUserMapsRenderer::addText( QString text,double x, double y, QVector4D colour,TextAlignment alignment)
+/// \fn void CUserMapsRenderer::addText( QString text, double x, double y, QVector4D colour, TextAlignment alignment)
 ///
-/// \brief  This function is used for writing text
+/// \brief	This function is used for writing text.
 ///
-/// \param  text-text that will be written
-///        x-x position of text
-///        y-y position
-///        colour-colour of the text
-///        alignment-specifies text alignment
+/// \param  text - Text to be written.
+///			x - xAxis position of text.
+///			y - yAxis position of text.
+///			colour - Colour of the text.
+///			alignment - Specifies text alignment.
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsRenderer::addText( QString text,double x, double y, QVector4D colour,TextAlignment alignment)
 {
@@ -1060,12 +984,12 @@ void CUserMapsRenderer::addText( QString text,double x, double y, QVector4D colo
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn     CUserMapsRenderer::testCircle(qreal originX, qreal originY)
+/// \fn void CUserMapsRenderer::testCircle(qreal originX, qreal originY)
 ///
-/// \brief  This function is used for measuring drawing speed
+/// \brief	This function is used for measuring drawing speed
 ///
-/// \param  originX - x position of the center
-///			originY - y position of the center
+/// \param	originX - xAxis position of the origin.
+///         originY - yAxis position of the origin.
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsRenderer::testCircle(qreal originX, qreal originY) {
 	double radius = CViewCoordinates::Instance()->getRadiusPixels() / 128;
@@ -1084,24 +1008,22 @@ void CUserMapsRenderer::testCircle(qreal originX, qreal originY) {
 
 		// Set Vertex data
 		circle.push_back(GenericVertexData(QVector4D( x, y, 0.0f, 1.0f ), QVector4D(1.0f ,0.0f , 0.0f, 1.0f)));
-
-		// Check if it is the last point
 	}
 	m_pfilledCircleData.push_back(circle);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn     CUserMapsRenderer::read(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type,QOpenGLFunctions *func)
+/// \fn void CUserMapsRenderer::read( GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, QOpenGLFunctions *func)
 ///
-/// \brief  This function should read colour data from pixel
+/// \brief	Reads colour data of the pixel.
 ///
-/// \param x - x-coordinates of the first pixel
-///        y -y coordinates of the first pixel
-///        width - width of the pixel rectangle, should be 1
-///        height - height of the pixel rectangle, should be 1
-///        format - format of the pixel data
-///        type - data type of the pixel data
-///        func - pointer that points to qopenglfunctions
+/// \param	x - xAxis coordinate of the first pixel.
+///			y - yAxis coordinate of the first pixel.
+///			width - Width of the pixel rectangle, should be 1.
+///			height - Height of the pixel rectangle, should be 1.
+///			format - Format of the pixel data.
+///			type - Data type of the pixel data.
+///			func - Pointer that points to qopengl functions.
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsRenderer::read( GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, QOpenGLFunctions *func)
 {
@@ -1113,17 +1035,17 @@ void CUserMapsRenderer::read( GLint x, GLint y, GLsizei width, GLsizei height, G
 
 	func->glReadPixels( x, y, width, height, format, type, data );
 	CLoggingLib::logging( E_DEBUGGING )<<endl<<"Colours of<<"<<x<<"and"<<y<<"are r:" <<data[0] << " g" <<data[1]<<" b" <<data[2] <<" a" << data[3];
-
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn     QVector4D CUserMapsRenderer::convertColour(int col, , float opacity)//
-/// \brief  This function is used for converting colour into 4d vector
+/// \fn QVector4D CUserMapsRenderer::convertColour(int colourKey, float opacity)
 ///
-/// \param col - colour that should be converted
-///        opacity - opacity
+/// \brief  This function is used for converting colour into 4d vector.
 ///
+/// \param	colourKey - Colour that should be converted.
+///			opacity - opacity.
+///
+/// \return	4D Qvector of converted colour.
 ////////////////////////////////////////////////////////////////////////////////
 QVector4D CUserMapsRenderer::convertColour(int colourKey, float opacity)
 {
@@ -1132,42 +1054,48 @@ QVector4D CUserMapsRenderer::convertColour(int colourKey, float opacity)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// \fn     CUserMapsRenderer::setLineStyle(CUserMapsVertexData& tempData, EUserMapLineStyle lineStyle, float lineWidth)
+/// \fn	void CUserMapsRenderer::setLineStyle(CUserMapsVertexData& tempData, EUserMapLineStyle lineStyle, float lineWidth)
 ///
-/// \brief  This function is used for setting up linestyles
+/// \brief	This function is used for setting up linestyles
 ///
-/// \param tempData - data that should be drawn
-///        lineStyle- enumerated lineStyle
-///        lineWidth-Width of the line
+/// \param	tempData - Data to be drawn.
+///			lineStyle - Enumerated lineStyle.
+///			lineWidth - Width of the line.
 ////////////////////////////////////////////////////////////////////////////////
 void CUserMapsRenderer::setLineStyle(CUserMapsVertexData& tempData, EUserMapLineStyle lineStyle, float lineWidth)
 {
-	switch (lineStyle)
-	{
+	switch (lineStyle) {
 	case EUserMapLineStyle::Solid :
+	{
 		tempData.setDashSize(30.0f);
 		tempData.setDotSize(0.0f);
 		tempData.setGapSize(0.0f);
 		break;
+	}
 
 	case EUserMapLineStyle::Dashed :
+	{
 		tempData.setDashSize(15.0f);
 		tempData.setDotSize(0.0f);
 		tempData.setGapSize(15.0f);
 		break;
+	}
 
 	case EUserMapLineStyle::Dotted :
+	{
 		tempData.setDashSize(2.0f);
 		tempData.setGapSize(10.0f);
 		tempData.setDotSize(0.0f);
 		break;
+	}
 
 	case EUserMapLineStyle::Dot_Dash :
+	{
 		tempData.setDashSize(30.0f);
 		tempData.setGapSize(15.0f);
 		tempData.setDotSize(10.0f);
 		break;
-
+	}
 	}
 	tempData.setLineWidth(lineWidth);
 }
