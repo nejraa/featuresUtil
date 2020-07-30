@@ -86,5 +86,11 @@ else{LIBS += -L$$OUT_PWD/../LoggingLib/ -lLoggingLib}
 INCLUDEPATH += $$PWD/../LoggingLib
 DEPENDPATH += $$PWD/../LoggingLib
 
+if(android){LIBS += -L$$OUT_PWD/../ColourManagerLib/ -lColourManagerLib_$$ANDROID_TARGET_ARCH}
+else{LIBS += -L$$OUT_PWD/../ColourManagerLib/ -lColourManagerLib}
+
+INCLUDEPATH += $$PWD/../ColourManagerLib
+DEPENDPATH += $$PWD/../ColourManagerLib
+
 RESOURCES += \
     usermapshader.qrc

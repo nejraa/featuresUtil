@@ -17,6 +17,7 @@
 #include <QTextStream>
 #include "../UserMapsDataLib/usermapsmanager.h"
 #include "../LoggingLib/logginglib.h"
+#include "../UserMapsDataLib/usermapcolourmanager.h"
 
 
 #ifndef GL_PRIMITIVE_RESTART_FIXED_INDEX
@@ -1114,10 +1115,10 @@ void CUserMapsRenderer::read( GLint x, GLint y, GLsizei width, GLsizei height, G
 ///        opacity- opacity
 ///
 ////////////////////////////////////////////////////////////////////////////////
-QVector4D CUserMapsRenderer::convertColour(const QColor &col, float opacity)
+QVector4D CUserMapsRenderer::convertColour(int colourKey, float opacity)
 {
-	//TODO AM: 0 - 1 or 0 - 255 ?
-	return QVector4D(col.red(), col.green(), col.blue(), opacity);
+	QColor colour = CUserMapColourManager::instance()->getColourByKey(colourKey);
+	return QVector4D(colour.red() / 255.0f, colour.green() / 255.0f, colour.blue() / 255.0f, opacity);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -136,7 +136,7 @@ private:
 	void testCircle(qreal originX, qreal originY);
 
 	void read(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type,QOpenGLFunctions *func);
-	QVector4D convertColour(const QColor &col, float opacity = 1.0f);
+	QVector4D convertColour(int colourKey, float opacity = 1.0f);
 
 	void setLineStyle(CUserMapsVertexData& tempData, EUserMapLineStyle lineStyle, float lineWidth);
 
