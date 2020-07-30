@@ -34,9 +34,10 @@ HEADERS += \
     mapshaderprogram.h \
     triangulate.h \
     usermapslayer.h \
-    usermapslayerlib_global.h \ \
+    usermapslayerlib_global.h \
     usermapsrenderer.h \
-    usermapsvertexdata.h
+    usermapsvertexdata.h \
+    userpointpositiontype.h
 
 unix {
     target.path = /usr/lib
@@ -77,13 +78,19 @@ if(android){LIBS += -L$$OUT_PWD/../NavUtilsLib/ -lNavUtilsLib_$$ANDROID_TARGET_A
 else{LIBS += -L$$OUT_PWD/../NavUtilsLib/ -lNavUtilsLib}
 
 INCLUDEPATH += $$PWD/../NavUtilsLib
-DEgitPENDPATH += $$PWD/../NavUtilsLib
-
-RESOURCES += \
-    usermapshader.qrc
+DEPENDPATH += $$PWD/../NavUtilsLib
 
 if(android){LIBS += -L$$OUT_PWD/../LoggingLib/ -lLoggingLib_$$ANDROID_TARGET_ARCH}
 else{LIBS += -L$$OUT_PWD/../LoggingLib/ -lLoggingLib}
 
 INCLUDEPATH += $$PWD/../LoggingLib
 DEPENDPATH += $$PWD/../LoggingLib
+
+if(android){LIBS += -L$$OUT_PWD/../ColourManagerLib/ -lColourManagerLib_$$ANDROID_TARGET_ARCH}
+else{LIBS += -L$$OUT_PWD/../ColourManagerLib/ -lColourManagerLib}
+
+INCLUDEPATH += $$PWD/../ColourManagerLib
+DEPENDPATH += $$PWD/../ColourManagerLib
+
+RESOURCES += \
+    usermapshader.qrc

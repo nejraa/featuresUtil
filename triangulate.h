@@ -1,10 +1,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 ///	\file	triangulate.h
 ///
-///	\author	ELREG, most of the code from https://www.flipcode.com/archives/Efficient_Polygon_Triangulation.shtml
+///	\author	ELREG, most of the code from
+///         https://www.flipcode.com/archives/Efficient_Polygon_Triangulation.shtml
 ///
-///	\brief	definition of the class that triangulates any polygon without hole.
-///
+///	\brief	Implementation of the Triangulate class
+///         which  triangulates any polygon without hole.
 ///
 ///	(C) Kelvin Hughes, 2020.
 ////////////////////////////////////////////////////////////////////////////////
@@ -21,25 +22,23 @@ class Triangulate
 {
 public:
 
-	// triangulate a contour/polygon, places results in STL vector
-	// as series of triangles.
+    // Triangulates a contour/polygon and places results in STL vector
+    // as series of triangles
 	static bool Process(const Vector2dVector &contour,
 						Vector2dVector &result);
 
-	// compute area of a contour/polygon
+    // Computes area of a contour/polygon
 	static float Area(const Vector2dVector &contour);
 
-	// decide if point Px/Py is inside triangle defined by
-	// (Ax,Ay) (Bx,By) (Cx,Cy)
+    // Calculates whether point P is inside triangle defined by
+    // (Ax,Ay) (Bx,By) (Cx,Cy) or not
 	static bool InsideTriangle(float Ax, float Ay,
 							   float Bx, float By,
 							   float Cx, float Cy,
 							   float Px, float Py);
 
-
 private:
 	static bool Snip(const Vector2dVector &contour,int u,int v,int w,int n,int *V);
-
 };
 
 

@@ -17,6 +17,8 @@
 #include <QTextStream>
 #include "../UserMapsDataLib/usermapsmanager.h"
 #include "../LoggingLib/logginglib.h"
+#include "../UserMapsDataLib/usermapcolourmanager.h"
+#include "../UserMapsDataLib/usermapiconmanager.h"
 
 
 #ifndef GL_PRIMITIVE_RESTART_FIXED_INDEX
@@ -137,14 +139,19 @@ void CUserMapsRenderer::synchronize(QQuickFramebufferObject *item)
 	if ( pixelsInMm == 0.0f )
 		return;
 
+	m_pPoints.clear();
+	m_pTexture.clear();
 	m_pfilledPolygonData.clear();
 	m_pCircleData.clear();
 	m_pfilledCircleData.clear();
 	m_pLineData.clear();
 	m_pPolygonData.clear();
 
-	for (const QSharedPointer<const CUserMap> &pMap : CUserMapsManager::getLoadedMapsStat() )
+	const QMap<QString, QSharedPointer<CUserMap> > &loadedMaps = CUserMapsManager::getLoadedMapsStat();
+	QMap<QString, QSharedPointer<CUserMap>>::const_iterator iter = loadedMaps.constBegin();
+	while (iter != loadedMaps.constEnd())
 	{
+		auto &pMap = iter.value();
 		const CUserMapObjectContainer<CUserMapPoint> &points = pMap->getPoints();
 		const CUserMapObjectContainer<CUserMapArea> &areas = pMap->getAreas();
 		const CUserMapObjectContainer<CUserMapLine> &lines = pMap->getLines();
@@ -158,6 +165,7 @@ void CUserMapsRenderer::synchronize(QQuickFramebufferObject *item)
 			updatePolygons(areas.map(item));
 		}
 
+		iter++;
 	}
 
 	// Set the width, height and projection for each target texture
@@ -326,9 +334,10 @@ void CUserMapsRenderer::updateLines(const QMap<int, QSharedPointer<CUserMapLine>
 
 //	void updateLine(QSharedPointer<CUserMapLine> line, CUserMapsVertexData &)
 
-	for(QMap<int, QSharedPointer<CUserMapLine> >::Iterator it; it != loadedLines.end() ; it++)
-	{
 
+	for(QMap<int, QSharedPointer<CUserMapLine> >::const_iterator it = loadedLines.constBegin(); it != loadedLines.constEnd() ; it++)
+	{
+		std::vector<GenericVertexData> line;
 		updateLine(it.value(), originX, originY, offsetX, offsetY);
 	}
 }
@@ -381,7 +390,8 @@ void CUserMapsRenderer::updateLine(const QSharedPointer<CUserMapLine>& it, qreal
 ///
 /// \param	loadedCircles-circles that should be drawn
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CUserMapsRenderer::updateCircles(const QMap<int, QSharedPointer<CUserMapCircle> >& loadedCircles) {
+void CUserMapsRenderer::updateCircles(const QMap<int, QSharedPointer<CUserMapCircle> >& loadedCircles)
+{
 
 	if( !m_CircleBuf.isNull() )
 	{
@@ -389,12 +399,14 @@ void CUserMapsRenderer::updateCircles(const QMap<int, QSharedPointer<CUserMapCir
 		m_CircleBuf = nullptr;
 	}
 
-	if(loadedCircles.empty()) return; //if there is not any Circle
+	if(loadedCircles.empty())
+		return;
 
 	// Screen information
 	double pixelsInMm = CViewCoordinates::Instance()->getScreenMmToPixels();
 	if ( pixelsInMm == 0.0 )
 		return ;
+	const int k = 8; // k is used as a circle segment for  drawing circle
 
 	// Get coordiante system data
 	qreal originX = 0.0;
@@ -405,12 +417,13 @@ void CUserMapsRenderer::updateCircles(const QMap<int, QSharedPointer<CUserMapCir
 	qreal offsetY = 0.0;
 	CViewCoordinates::Instance()->getGeoOriginOffsetPixel( offsetX, offsetY );
 
-	for(QMap<int, QSharedPointer<CUserMapCircle> >::Iterator it; it != loadedCircles.end() ; it++)
+	for (QMap<int, QSharedPointer<CUserMapCircle> >::const_iterator it = loadedCircles.constBegin(); it != loadedCircles.constEnd() ; it++)
 	{
 		std::vector<GenericVertexData> circle;
 		updateCircle(it.value(), circle , originX, originY, offsetX, offsetY);
 		circle.pop_back();//remove last point, because it is same as the first one
 
+		double radius = it.value()->getRadius() * CViewCoordinates::getNauticalMilesToPixels();
 
 		std::vector<GenericVertexData> filledCircle;
 		for(const GenericVertexData & data : circle)
@@ -468,6 +481,8 @@ void CUserMapsRenderer::updateCircle(const QSharedPointer<CUserMapCircle>& it, s
 
 		// Check if it is the last point
 		if( bufferIndex == rbDegrees )
+
+		for(const GenericVertexData & data : circle)
 		{
 			// Change to transparent colour at the same position
 			bufferIndex++;
@@ -491,7 +506,8 @@ void CUserMapsRenderer::updateCircle(const QSharedPointer<CUserMapCircle>& it, s
 ///
 /// \param  loadedArea - received areas that should be drawn
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CUserMapsRenderer::updatePolygons(const QMap<int, QSharedPointer<CUserMapArea> >& loadedArea) {
+void CUserMapsRenderer::updatePolygons(const QMap<int, QSharedPointer<CUserMapArea> >& loadedAreas)
+{
 
 	if( !m_PolygonBuf.isNull() )
 	{
@@ -499,7 +515,8 @@ void CUserMapsRenderer::updatePolygons(const QMap<int, QSharedPointer<CUserMapAr
 		m_PolygonBuf = nullptr;
 	}
 
-	if(loadedArea.empty()) return; //if there is not any area end function
+	if(loadedAreas.empty())
+		return;
 
 	// Screen information
 	double pixelsInMm = CViewCoordinates::Instance()->getScreenMmToPixels();
@@ -518,18 +535,40 @@ void CUserMapsRenderer::updatePolygons(const QMap<int, QSharedPointer<CUserMapAr
 	CViewCoordinates::Instance()->getGeoOriginOffsetPixel( offsetX, offsetY );
 
 
-	for(QMap<int, QSharedPointer<CUserMapArea> >::Iterator it; it != loadedArea.end() ; it++)
+	for (QMap<int, QSharedPointer<CUserMapArea> >::const_iterator it = loadedAreas.constBegin(); it != loadedAreas.constEnd() ; it++)
 	{
 		std::vector<GenericVertexData> polygon; //test case polygon ,will be deleted
+
 		updatePolygon(it.value(), polygon, originX, originY, offsetX, offsetY);
+
+		for(const CPosition & point : it.value()->getPoints())
+		{
+
+			// Relative target position (in pixels) from the ownship (Geo Origin)
+			GEOGRAPHICAL dfLat = ToGEOGRAPHICAL(point.Latitude());
+			GEOGRAPHICAL dfLon = ToGEOGRAPHICAL(point.Longitude());
+			PIXEL tgtPosX;
+			PIXEL tgtPosY;
+			CViewCoordinates::Instance()->Convert(dfLat, dfLon, tgtPosX, tgtPosY);
+
+			// Absolute target position (in pixels)
+			double xPos = tgtPosX + originX;
+			double yPos = tgtPosY + originY;
+
+
+			polygon.push_back( GenericVertexData(QVector4D( static_cast<float>(xPos), static_cast<float>(yPos), 0.0f, 1.0f), convertColour(it.value()->getOutlineColor())));
+		}
+
+		CUserMapsVertexData tempData;
+		tempData.setVertexData(polygon);
+		setLineStyle(tempData, it.value()->getLineStyle(), it.value()->getLineWidth());
+		m_pPolygonData.push_back(tempData);
 
 		std::vector<GenericVertexData>result;
 		Triangulate::Process(polygon, result); //triangulate received points
 
-		for(GenericVertexData data : result)
-		{
+		for(GenericVertexData &data : result)
 			data.setColor(convertColour(it.value()->getColor(), it.value()->getTransparency()));
-		}
 
 		m_pfilledPolygonData.push_back(result);
 
@@ -548,6 +587,7 @@ void CUserMapsRenderer::updatePolygons(const QMap<int, QSharedPointer<CUserMapAr
 ///         offsetX- used for position calculations
 ///         offsetY- used for position calculations
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
 void CUserMapsRenderer::updatePolygon(const QSharedPointer<CUserMapArea>& it, std::vector<GenericVertexData>& polygon, qreal originX, qreal originY, qreal offsetX, qreal offsetY)
 {
 	for(const CPosition & point : it->getPoints())
@@ -572,7 +612,6 @@ void CUserMapsRenderer::updatePolygon(const QSharedPointer<CUserMapArea>& it, st
 	tempData.setVertexData(polygon);
 	setLineStyle(tempData, it->getLineStyle(), it->getLineWidth());
 	m_pPolygonData.push_back(tempData);
-
 
 }
 
@@ -645,7 +684,8 @@ void CUserMapsRenderer::updatePointData(const QSharedPointer<CUserMapPoint>& uPo
 ///
 /// \param  Pointer that points to QOpenGLFunctions.
 ////////////////////////////////////////////////////////////////////////////////
-void CUserMapsRenderer::drawPoints(QOpenGLFunctions *func) {
+void CUserMapsRenderer::drawPoints(QOpenGLFunctions *func)
+{
 
 	// Set translation matrix (no translation)
 	QMatrix4x4 translation;
@@ -694,7 +734,8 @@ void CUserMapsRenderer::drawPoints(QOpenGLFunctions *func) {
 ///
 /// \param  func - Pointer that points to QOpenGLFunctions.
 ////////////////////////////////////////////////////////////////////////////////
-void CUserMapsRenderer::drawLines(QOpenGLFunctions *func) {
+void CUserMapsRenderer::drawLines(QOpenGLFunctions *func)
+{
 
 	// Set translation matrix (no translation)
 	QMatrix4x4 translation;
@@ -767,7 +808,8 @@ void CUserMapsRenderer::drawLines(QOpenGLFunctions *func) {
 ///
 /// \param  Pointer that points to QOpenGLFunctions.
 ////////////////////////////////////////////////////////////////////////////////
-void CUserMapsRenderer::drawPolygons(QOpenGLFunctions *func) {
+void CUserMapsRenderer::drawPolygons(QOpenGLFunctions *func)
+{
 
 	// Set translation matrix (no translation)
 	QMatrix4x4 translation;
@@ -833,7 +875,8 @@ void CUserMapsRenderer::drawPolygons(QOpenGLFunctions *func) {
 ///
 /// \param  Pointer that points to QOpenGLFunctions.
 ////////////////////////////////////////////////////////////////////////////////
-void CUserMapsRenderer::drawfilledPolygons(QOpenGLFunctions *func) {
+void CUserMapsRenderer::drawfilledPolygons(QOpenGLFunctions *func)
+{
 
 	// Set translation matrix (no translation)
 	QMatrix4x4 translation;
@@ -921,7 +964,8 @@ void CUserMapsRenderer::drawfilledCircles(QOpenGLFunctions *func) {
 
 	//Draw inline and outline circle from data in the VBOs
 
-	for(uint  i = 0; i<m_pfilledCircleData.size(); i++) {
+	for(uint  i = 0; i<m_pfilledCircleData.size(); i++)
+	{
 		func->glDrawArrays(GL_TRIANGLE_FAN, offset, m_pfilledCircleData[i].size());
 		offset += m_pfilledCircleData[i].size();
 	}
@@ -1029,15 +1073,18 @@ void CUserMapsRenderer::addPointstoBuffer() {
 int CUserMapsRenderer::drawMultipleElements(QSharedPointer<CVertexBuffer> &buffer , const std::vector<std::vector<GenericVertexData>> &data) {
 	uint counter = 0;
 
-	for( uint  i = 0; i < data.size(); i++) {
+	for( uint  i = 0; i < data.size(); i++)
+	{
 		counter += data[i].size();
 	}
 
 	std::vector<GenericVertexData> vertices;
 	vertices.reserve(counter);
 
-	for( uint  i=0; i < data.size(); i++) {
-		for( uint j=0; j < data[i].size(); j++) {
+	for( uint  i=0; i < data.size(); i++)
+	{
+		for( uint j=0; j < data[i].size(); j++)
+		{
 			vertices.push_back(data[i][j]);
 		}
 	}
@@ -1128,7 +1175,7 @@ void CUserMapsRenderer::testCircle(qreal originX, qreal originY) {
 	std::vector<GenericVertexData> circle3;
 
 	// Draw the circle (line strip)
-	for ( bufferIndex = 0 ; bufferIndex < rbDegrees; bufferIndex += 8 )//if circle is not round enough use ++ instead of 8
+	for ( bufferIndex = 0 ; bufferIndex < rbDegrees; bufferIndex += 8 ) //if circle is not round enough use ++ instead of 8
 	{
 		double angle = 2 * M_PI * bufferIndex / rbDegrees;
 		float x = static_cast<float>(originX + (radius * std::sin(angle)));
@@ -1177,10 +1224,10 @@ void CUserMapsRenderer::read( GLint x, GLint y, GLsizei width, GLsizei height, G
 ///        opacity- opacity
 ///
 ////////////////////////////////////////////////////////////////////////////////
-QVector4D CUserMapsRenderer::convertColour(int col , float opacity )//TO DO : check how col should be converted
+QVector4D CUserMapsRenderer::convertColour(int colourKey, float opacity)
 {
-	return QVector4D(col,0.0f,0.0f,opacity);
-
+	QColor colour = CUserMapColourManager::instance()->getColourByKey(colourKey);
+	return QVector4D(colour.red() / 255.0f, colour.green() / 255.0f, colour.blue() / 255.0f, opacity);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
