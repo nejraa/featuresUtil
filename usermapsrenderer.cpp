@@ -18,6 +18,7 @@
 #include "../UserMapsDataLib/usermapsmanager.h"
 #include "../LoggingLib/logginglib.h"
 #include "../UserMapsDataLib/usermapcolourmanager.h"
+#include "../UserMapsDataLib/usermapiconmanager.h"
 
 
 #ifndef GL_PRIMITIVE_RESTART_FIXED_INDEX
@@ -571,10 +572,10 @@ void CUserMapsRenderer::updatePointsData(const QMap<int, QSharedPointer<CUserMap
 		data.m_iconSize = uPoint->getIconSize();
 		data.m_vertexData= GenericVertexData(QVector4D( static_cast<float>(xPos), static_cast<float>(yPos), 0.0f, 1.0f ),colour);
 
-		QString strFileName = QString(":/") + data.m_icon + ".png";
+		QString strFilePath = CUserMapIconManager::instance()->getIconPath(data.m_icon);
 
 		m_pPoints.push_back(data);
-		m_pTexture.push_back( QSharedPointer<CImageTexture>(new CImageTexture( strFileName, colour)));
+		m_pTexture.push_back( QSharedPointer<CImageTexture>(new CImageTexture( strFilePath, colour)));
 	}
 }
 
