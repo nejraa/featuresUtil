@@ -64,15 +64,15 @@ public:
 	virtual void renderTextures() override;
 	// Updates
 	void updateLines( const QMap<int, QSharedPointer<CUserMapLine> >& loadedLines);
-	void updateLine( const QSharedPointer<CUserMapLine> & it, qreal originX, qreal originY, qreal offsetX, qreal offsetY);
+	void updateLine( const QSharedPointer<CUserMapLine> & it);
 	void updateCircles( const QMap<int, QSharedPointer<CUserMapCircle> >& loadedCircles);
-	void updateCircle( const QSharedPointer<CUserMapCircle>& it, std::vector<GenericVertexData>& circle, qreal originX, qreal originY, qreal offsetX, qreal offsetY);
-	void fillCircle( const std::vector<GenericVertexData>& circle, qreal originX, qreal originY, QVector4D colour);
+	void updateCircle( const QSharedPointer<CUserMapCircle>& it, std::vector<GenericVertexData>& circle);
+	void fillCircle( const std::vector<GenericVertexData>& circle, QVector4D colour);
 	void updatePolygons( const QMap<int, QSharedPointer<CUserMapArea> >& loadedAreas);
-	void updatePolygon( const QSharedPointer<CUserMapArea>& it,  std::vector<GenericVertexData>& polygon, qreal originX, qreal originY, qreal offsetX, qreal offsetY);
+	void updatePolygon( const QSharedPointer<CUserMapArea>& it,  std::vector<GenericVertexData>& polygon);
 	void fillPolygon( const std::vector<GenericVertexData>& polygon, QVector4D colour);
 	void updatePointsData( const QMap<int, QSharedPointer<CUserMapPoint> > &uPointData);
-	void updatePointData( const QSharedPointer<CUserMapPoint>& it, qreal originX, qreal originY, qreal offsetX, qreal offsetY);
+	void updatePointData( const QSharedPointer<CUserMapPoint>& it);
 
 	// Draws
 	void drawPoints( QOpenGLFunctions* func );
