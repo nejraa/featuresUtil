@@ -31,8 +31,6 @@ public:
 
 	QQuickFramebufferObject::Renderer* createRenderer() const override;
 
-	const QVector<QPointF> &getSelectedObjectPoints() const;
-
 public slots:
 	void onOffsetChanged();
 
@@ -55,6 +53,8 @@ private:
 	static void convertPixelVectorToGeoVector(const QVector<QPointF> &pixelVector, QVector<CPosition> &geoPoints);
 	static CPosition convertPixelPointToGeoPoint(const QPointF &pixelPoint);
 	static QPointF convertGeoPointToPixelPoint(const CPosition &geoPoint);
+
+	void createManagerConnections();
 
 	// Object manipulation
 	void onPositionClicked(const QPointF &clickedPosition);
